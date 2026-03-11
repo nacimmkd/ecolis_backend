@@ -2,6 +2,7 @@ package com.deliveryplatform.users;
 
 import com.deliveryplatform.cutomers.CustomerProfile;
 import com.deliveryplatform.drivers.DriverProfile;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 

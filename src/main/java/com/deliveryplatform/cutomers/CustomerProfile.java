@@ -1,6 +1,7 @@
 package com.deliveryplatform.cutomers;
 
 import com.deliveryplatform.users.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class CustomerProfile {
 
     @OneToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @Column(name = "avg_rating", precision = 2, scale = 1)
