@@ -1,4 +1,4 @@
-package com.deliveryplatform.entities;
+package com.deliveryplatform.drivers;
 
 public enum VehicleType {
     BICYCLE,

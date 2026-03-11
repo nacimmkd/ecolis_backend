@@ -1,5 +1,6 @@
-package com.deliveryplatform.entities;
+package com.deliveryplatform.cutomers;
 
+import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
 

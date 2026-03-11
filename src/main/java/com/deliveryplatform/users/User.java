@@ -1,5 +1,7 @@
-package com.deliveryplatform.entities;
+package com.deliveryplatform.users;
 
+import com.deliveryplatform.cutomers.CustomerProfile;
+import com.deliveryplatform.drivers.DriverProfile;
 import jakarta.persistence.*;
 import lombok.*;
 

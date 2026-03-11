@@ -1,4 +1,4 @@
-package com.deliveryplatform.entities;
+package com.deliveryplatform.users;
 
 public enum Role {
     CUSTOMER,
