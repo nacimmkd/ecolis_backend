@@ -1,4 +1,7 @@
 package com.deliveryplatform.common;
 
-public record ErrorDto() {
+
+public record ErrorDto(
+        String message
+) {
 }
