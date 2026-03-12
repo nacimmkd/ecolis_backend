@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -13,6 +14,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository  userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final UserMapper      userMapper;
 
 
@@ -39,11 +41,11 @@ public class UserService {
     public void changePassword(UUID id, ChangePasswordRequest request) {
         User user = getUserOrThrow(id);
 
-//        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
-//            throw new PasswordNotValidException();
-//        }
-//
-//        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new PasswordNotValidException();
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
     }
 
@@ -51,13 +53,6 @@ public class UserService {
     public void softDelete(UUID id) {
         User user = getUserOrThrow(id);
         user.setActive(false);
-        userRepository.save(user);
-    }
-
-    @Transactional
-    public void verifyUser(UUID id) {
-        User user = getUserOrThrow(id);
-        user.setVerified(true);
         userRepository.save(user);
     }
 

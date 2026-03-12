@@ -1,10 +1,12 @@
 package com.deliveryplatform.users;
 
+import com.deliveryplatform.common.ErrorDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -52,6 +54,16 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorDto> handleUserNotFoundException(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ex.getMessage()));
+    }
+
+    @ExceptionHandler(PasswordNotValidException.class)
+    public ResponseEntity<ErrorDto> handlePasswordNotValidException(PasswordNotValidException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ex.getMessage()));
+    }
+
     // ----------------------------------------------------------------
     // ADMIN
     // ----------------------------------------------------------------
@@ -74,4 +86,5 @@ public class UserController {
         userService.banUser(id);
         return ResponseEntity.noContent().build();
     }
+
 }
