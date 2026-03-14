@@ -26,12 +26,15 @@ public class User {
     private Role role;
 
     @Column(name = "is_verified")
+    @Builder.Default
     private boolean isVerified = false;
 
     @Column(name = "registered_at")
+    @Builder.Default
     private LocalDateTime registeredAt = LocalDateTime.now();
 
     @Column(name = "is_active")
+    @Builder.Default
     private boolean isActive = true;
 
     @OneToOne( mappedBy = "user", cascade = CascadeType.ALL)
