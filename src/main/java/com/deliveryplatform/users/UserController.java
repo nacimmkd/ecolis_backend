@@ -3,15 +3,12 @@ package com.deliveryplatform.users;
 import com.deliveryplatform.common.ErrorDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,20 +18,21 @@ public class UserController {
 
     private final UserService userService;
 
-
     @GetMapping("/me")
     public ResponseEntity<UserDto> getMe(
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return ResponseEntity.ok(userService.findById(principal.getId()));
+        var userDto = userService.findById(principal.getId());
+        return ResponseEntity.ok(userDto);
     }
 
     @PutMapping("/me")
     public ResponseEntity<UserDto> updateMe(
             @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody UpdateUserRequest request
+            @Valid @RequestBody UpdateProfileRequest request
     ) {
-        return ResponseEntity.ok(userService.updateUser(principal.getId(), request));
+        var updatedUserDto = userService.updateProfile(principal.getId(), request);
+        return ResponseEntity.ok(updatedUserDto);
     }
 
     @PutMapping("/me/password")
@@ -69,15 +67,15 @@ public class UserController {
     // ----------------------------------------------------------------
 
     @GetMapping
-    public ResponseEntity<Page<UserDto>> getAllUsers(
-            @PageableDefault(size = 20, sort = "registeredAt") Pageable pageable
-    ) {
-        return ResponseEntity.ok(userService.findAll(pageable));
+    public ResponseEntity<List<User>> getAllUsers() {
+        var users = userService.findAll();
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable UUID id) {
-        return ResponseEntity.ok(userService.findById(id));
+        var userDto = userService.findById(id);
+        return ResponseEntity.ok(userDto);
     }
 
 

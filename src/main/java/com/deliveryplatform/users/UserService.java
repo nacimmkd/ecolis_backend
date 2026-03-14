@@ -2,11 +2,10 @@ package com.deliveryplatform.users;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -19,22 +18,21 @@ public class UserService {
 
 
     public UserDto findById(UUID id) {
-        return userMapper.toResponse(getUserOrThrow(id));
+        var user = getUserOrThrow(id);
+        return userMapper.toDto(user);
     }
 
-    public Page<UserDto> findAll(Pageable pageable) {
-        return userRepository.findAll(pageable).map(userMapper::toResponse);
+
+    public List<User> findAll() {
+        return userRepository.findAllWithProfile();
     }
 
 
     @Transactional
-    public UserDto updateUser(UUID id, UpdateUserRequest request) {
+    public UserDto updateProfile(UUID id, UpdateProfileRequest request) {
         User user = getUserOrThrow(id);
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setPhone(request.phone());
-        user.setAvatarUrl(request.avatarUrl());
-        return userMapper.toResponse(userRepository.save(user));
+        updateProfileFields(user.getProfile(), request);
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @Transactional
@@ -66,8 +64,15 @@ public class UserService {
     // ----------------------------------------------------------------
 
     private User getUserOrThrow(UUID id) {
-        return userRepository.findById(id)
+        return userRepository.findWithProfileById(id)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    private void updateProfileFields(Profile profile, UpdateProfileRequest request) {
+        profile.setFirstName(request.firstName());
+        profile.setLastName(request.lastName());
+        profile.setPhone(request.phone());
+        profile.setIban(request.iban());
     }
 }
 

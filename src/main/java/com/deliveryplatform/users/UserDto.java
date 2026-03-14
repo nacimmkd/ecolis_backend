@@ -8,10 +8,9 @@ public record UserDto(
         String        firstName,
         String        lastName,
         String        email,
-        String        phone,
-        String        avatarUrl,
         Role          role,
         boolean       isVerified,
         boolean       isActive,
-        LocalDateTime registeredAt
+        LocalDateTime registeredAt,
+        ProfileDto profile
 ) {}

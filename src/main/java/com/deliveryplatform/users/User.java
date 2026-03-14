@@ -1,11 +1,8 @@
 package com.deliveryplatform.users;
 
-import com.deliveryplatform.cutomers.CustomerProfile;
-import com.deliveryplatform.drivers.DriverProfile;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,14 +15,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "users")
 public class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
 
     private String email;
 
@@ -33,11 +24,6 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    private String phone;
-
-    @Column(name = "avatar_url")
-    private String avatarUrl;
 
     @Column(name = "is_verified")
     private boolean isVerified = false;
@@ -48,9 +34,7 @@ public class User {
     @Column(name = "is_active")
     private boolean isActive = true;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private DriverProfile driverProfile;
+    @OneToOne( mappedBy = "user", cascade = CascadeType.ALL)
+    private Profile profile;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private CustomerProfile customerProfile;
 }
