@@ -14,21 +14,32 @@ public class UserPrincipal implements UserDetails {
 
     private final UUID id;
     private final String email;
-    private final String password;
     private final Role   role;
 
     public UserPrincipal(User user) {
-        this.id       = user.getId();
-        this.email    = user.getEmail();
-        this.password = user.getPassword();
-        this.role     = user.getRole();
+        this.id = user.getId();
+        this.email = user.getEmail();
+        this.role = user.getRole();
     }
+
+    public UserPrincipal(UUID id, String email, Role role) {
+        this.id = id;
+        this.email = email;
+        this.role = role;
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
-    @Override public String  getUsername()             { return email; }
+    @Override
+    public String  getUsername()  { return email; }
+
+    @Override
+    public String getPassword() {
+        return null;
+    }
 
 }

@@ -24,7 +24,7 @@ public class UserService {
 
 
     public List<User> findAll() {
-        return userRepository.findAllWithProfile();
+        return userRepository.findAll();
     }
 
 
@@ -64,7 +64,7 @@ public class UserService {
     // ----------------------------------------------------------------
 
     private User getUserOrThrow(UUID id) {
-        return userRepository.findWithProfileById(id)
+        return userRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
     }
 
