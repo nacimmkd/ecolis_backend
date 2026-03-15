@@ -1,5 +1,8 @@
 package com.deliveryplatform.auth;
 
+import com.deliveryplatform.users.UserPrincipal;
+import com.deliveryplatform.users.UserRepository;
+import com.deliveryplatform.users.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
