@@ -1,5 +1,6 @@
 package com.deliveryplatform.auth;
 
+import com.deliveryplatform.users.RegisterUserRequest;
 import com.deliveryplatform.users.UserDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -52,19 +53,6 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<UserDto> register(
-            @Valid @RequestBody RegisterRequest request,
-            UriComponentsBuilder uriBuilder
-    ) {
-        var user = authService.register(request);
-
-        var uri = uriBuilder
-                .path("/users/{id}")
-                .build(user.id());
-
-        return ResponseEntity.created(uri).body(user);
-    }
 
     @PostMapping("/validate")
     public boolean validateToken(

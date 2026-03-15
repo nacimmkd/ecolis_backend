@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,10 +27,24 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> register(
+            @Valid @RequestBody RegisterUserRequest request,
+            UriComponentsBuilder uriBuilder
+    ) {
+        var user = userService.register(request);
+
+        var uri = uriBuilder
+                .path("/users/{id}")
+                .build(user.id());
+
+        return ResponseEntity.created(uri).body(user);
+    }
+
     @PutMapping("/me")
     public ResponseEntity<UserDto> updateMe(
             @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody UpdateProfileRequest request
+            @Valid @RequestBody ProfileRequest request
     ) {
         var updatedUserDto = userService.updateProfile(principal.getId(), request);
         return ResponseEntity.ok(updatedUserDto);

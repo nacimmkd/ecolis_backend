@@ -64,20 +64,6 @@ public class AuthService {
         refreshTokenService.removeRefreshToken(userId);
     }
 
-    @Transactional
-    public UserDto register(RegisterRequest request) {
-
-        var user = User.builder()
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .role(Role.USER)
-                .build();
-
-        userRepository.save(user);
-
-        return userMapper.toDto(user);
-    }
-
     public boolean validateAccessToken(String header) {
         var token = header.replace("Bearer ", "");
         return jwtService.validateAccessToken(token);

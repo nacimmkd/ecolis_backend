@@ -29,7 +29,22 @@ public class UserService {
 
 
     @Transactional
-    public UserDto updateProfile(UUID id, UpdateProfileRequest request) {
+    public UserDto register(RegisterUserRequest request) {
+
+        var user = User.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .role(Role.USER)
+                .build();
+
+        userRepository.save(user);
+
+        return userMapper.toDto(user);
+    }
+
+
+    @Transactional
+    public UserDto updateProfile(UUID id, ProfileRequest request) {
         User user = getUserOrThrow(id);
         updateProfileFields(user.getProfile(), request);
         return userMapper.toDto(userRepository.save(user));
@@ -68,7 +83,7 @@ public class UserService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    private void updateProfileFields(Profile profile, UpdateProfileRequest request) {
+    private void updateProfileFields(Profile profile, ProfileRequest request) {
         profile.setFirstName(request.firstName());
         profile.setLastName(request.lastName());
         profile.setPhone(request.phone());
