@@ -14,7 +14,7 @@ CREATE TABLE profiles (
                                  first_name          VARCHAR(100)    NOT NULL,
                                  last_name           VARCHAR(100)    NOT NULL,
                                  phone               VARCHAR(20),
-                                 avg_rating          NUMERIC(2,1)    DEFAULT 0,
+                                 avg_rating          NUMERIC(2,1),
                                  total_deliveries    INT             NOT NULL DEFAULT 0,
                                  iban                VARCHAR(34),
                                  total_orders        INT             NOT NULL DEFAULT 0,

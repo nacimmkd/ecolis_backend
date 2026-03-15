@@ -2,6 +2,7 @@ package com.deliveryplatform.users;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,14 +19,18 @@ public class UserService {
     private final ProfileMapper   profileMapper;
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto findById(UUID id) {
         var user = getUserOrThrow(id);
         return userMapper.toDto(user);
     }
 
-
-    public List<User> findAll() {
-        return userRepository.findAll();
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserDto> findAll() {
+        return userRepository.findAll().stream()
+                .filter(user -> !user.getRole().equals(Role.ADMIN))
+                .map(userMapper::toDto)
+                .toList();
     }
 
 
@@ -68,6 +73,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void banUser(UUID id) {
         User user = getUserOrThrow(id);
         user.setActive(false);

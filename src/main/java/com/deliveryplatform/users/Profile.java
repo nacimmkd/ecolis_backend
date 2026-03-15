@@ -29,7 +29,7 @@ public class Profile {
     private String phone;
 
     @Column(name = "avg_rating", precision = 2, scale = 1)
-    private BigDecimal avgRating = BigDecimal.valueOf(0.0);
+    private BigDecimal avgRating = null;
 
     @Column(name = "total_deliveries")
     private int totalDeliveries = 0;
