@@ -1,5 +1,6 @@
 package com.deliveryplatform.auth;
 
+import com.deliveryplatform.auth.tokens.RefreshTokenService;
 import com.deliveryplatform.users.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,23 +17,19 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final JwtConfig jwtConfig;
 
-    public LoginResponse login(LoginRequest request) {
 
+    public LoginResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
-
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(UserNotFoundException::new);
-
         var accessToken = jwtService.generateAccessToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
-
-        refreshTokenService.saveRefreshToken(user.getId(), refreshToken);
-
+        refreshTokenService.save(user.getId(), refreshToken);
         return new LoginResponse(
                 accessToken,
                 refreshToken,
@@ -40,10 +37,10 @@ public class AuthService {
         );
     }
 
-    public String refreshToken(String refreshToken) {
+    public String refresh(String refreshToken) {
 
         if (!jwtService.validateRefreshToken(refreshToken)) {
-            throw new RuntimeException("Invalid refresh token");
+            throw new InvalidRefreshTokenException();
         }
 
         var userId = jwtService.getUserIdFromToken(refreshToken);
@@ -55,13 +52,11 @@ public class AuthService {
     }
 
     public void logout(String refreshToken) {
-
         var userId = jwtService.getUserIdFromToken(refreshToken);
-        refreshTokenService.removeRefreshToken(userId);
+        refreshTokenService.remove(userId);
     }
 
-    public boolean validateAccessToken(String header) {
-        var token = header.replace("Bearer ", "");
+    public boolean validateAccessToken(String token) {
         return jwtService.validateAccessToken(token);
     }
 }

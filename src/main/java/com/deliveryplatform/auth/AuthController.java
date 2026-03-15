@@ -39,7 +39,7 @@ public class AuthController {
     public ResponseEntity<JwtResponse> refresh(
             @CookieValue("refreshToken") String refreshToken
     ) {
-        var accessToken = authService.refreshToken(refreshToken);
+        var accessToken = authService.refresh(refreshToken);
         return ResponseEntity.ok(new JwtResponse(accessToken));
     }
 
@@ -56,7 +56,14 @@ public class AuthController {
     public boolean validateToken(
             @RequestHeader("Authorization") String header
     ) {
-        return authService.validateAccessToken(header);
+        var token = header.replace("Bearer ", "");
+        return authService.validateAccessToken(token);
+    }
+
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<Void> handleInvalidRefreshTokenException() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @ExceptionHandler(BadCredentialsException.class)

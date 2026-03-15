@@ -82,7 +82,7 @@ public class UserService {
 
     // ----------------------------------------------------------------
 
-    private User getUserOrThrow(UUID id) {
+    public User getUserOrThrow(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
     }
