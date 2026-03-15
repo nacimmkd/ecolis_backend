@@ -77,6 +77,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ex.getMessage()));
     }
 
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ErrorDto> handleEmailAlreadyExistsException(EmailAlreadyExistsException    ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ex.getMessage()));
+    }
+
     // ----------------------------------------------------------------
     // ADMIN
     // ----------------------------------------------------------------

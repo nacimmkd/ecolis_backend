@@ -1,7 +1,7 @@
 package com.deliveryplatform.users;
 
 public class EmailAlreadyExistsException extends RuntimeException {
-    public EmailAlreadyExistsException(String message) {
-        super(message);
+    public EmailAlreadyExistsException() {
+        super("Account with email already exists");
     }
 }

@@ -15,6 +15,7 @@ public class UserService {
     private final UserRepository  userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper      userMapper;
+    private final ProfileMapper   profileMapper;
 
 
     public UserDto findById(UUID id) {
@@ -30,15 +31,12 @@ public class UserService {
 
     @Transactional
     public UserDto register(RegisterUserRequest request) {
-
-        var user = User.builder()
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .role(Role.USER)
-                .build();
-
+        checkEmailUniquenessOrThrow(request.email());
+        var user = userMapper.toEntity(request);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(Role.USER);
+        user.setProfile(profileMapper.toEntity(request.profile()));
         userRepository.save(user);
-
         return userMapper.toDto(user);
     }
 
@@ -81,6 +79,13 @@ public class UserService {
     private User getUserOrThrow(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    private void checkEmailUniquenessOrThrow(String email) {
+        userRepository.findByEmail(email)
+                .ifPresent(user -> {
+                    throw new EmailAlreadyExistsException();
+                });
     }
 
     private void updateProfileFields(Profile profile, ProfileRequest request) {

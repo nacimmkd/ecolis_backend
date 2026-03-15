@@ -14,11 +14,13 @@ public class UserPrincipal implements UserDetails {
 
     private final UUID id;
     private final String email;
+    private final String password;
     private final Role   role;
 
     public UserPrincipal(User user) {
         this.id = user.getId();
         this.email = user.getEmail();
+        this.password = user.getPassword();
         this.role = user.getRole();
     }
 
@@ -26,6 +28,7 @@ public class UserPrincipal implements UserDetails {
         this.id = id;
         this.email = email;
         this.role = role;
+        this.password = null;
     }
 
 
@@ -39,7 +42,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return password;
     }
 
 }
