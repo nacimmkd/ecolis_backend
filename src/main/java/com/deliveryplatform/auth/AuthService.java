@@ -4,9 +4,7 @@ import com.deliveryplatform.users.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @AllArgsConstructor
 @Service
@@ -16,8 +14,6 @@ public class AuthService {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
-    private final PasswordEncoder passwordEncoder;
-    private final UserMapper userMapper;
     private final JwtConfig jwtConfig;
 
     public LoginResponse login(LoginRequest request) {
