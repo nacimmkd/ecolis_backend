@@ -1,6 +1,6 @@
 package com.deliveryplatform.auth;
 
-public record Login(
+public record AuthResponse(
         String accessToken,
         String refreshToken,
         int refreshExpiration

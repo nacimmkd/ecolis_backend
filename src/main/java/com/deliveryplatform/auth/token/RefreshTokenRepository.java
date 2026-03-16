@@ -1,4 +1,4 @@
-package com.deliveryplatform.auth;
+package com.deliveryplatform.auth.token;
 
 import org.springframework.data.repository.CrudRepository;
 

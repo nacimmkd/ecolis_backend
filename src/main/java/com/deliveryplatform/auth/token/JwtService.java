@@ -1,4 +1,4 @@
-package com.deliveryplatform.auth;
+package com.deliveryplatform.auth.token;
 
 import com.deliveryplatform.users.Role;
 import com.deliveryplatform.users.User;

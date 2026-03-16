@@ -1,5 +1,8 @@
 package com.deliveryplatform.auth;
 
+import com.deliveryplatform.auth.token.JwtConfig;
+import com.deliveryplatform.auth.token.JwtService;
+import com.deliveryplatform.auth.token.RefreshTokenService;
 import com.deliveryplatform.users.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +21,7 @@ public class AuthService {
     private final JwtConfig jwtConfig;
 
 
-    public Login login(LoginRequest request) {
+    public AuthResponse login(AuthRequest request) {
 
         authenticate(request.getEmail(), request.getPassword());
 
@@ -29,7 +32,7 @@ public class AuthService {
 
         refreshTokenService.save(user.getId(), refreshToken);
 
-        return new Login(
+        return new AuthResponse(
                 accessToken,
                 refreshToken,
                 jwtConfig.getRefreshTokenExpiration()

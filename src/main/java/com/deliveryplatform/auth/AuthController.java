@@ -1,5 +1,6 @@
 package com.deliveryplatform.auth;
 
+import com.deliveryplatform.auth.token.JwtResponse;
 import com.deliveryplatform.common.ErrorDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +22,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(
-            @Valid @RequestBody LoginRequest request,
+            @Valid @RequestBody AuthRequest request,
             HttpServletResponse response
     ) {
         var login = authService.login(request);
