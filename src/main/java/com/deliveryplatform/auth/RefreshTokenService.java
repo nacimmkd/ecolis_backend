@@ -1,6 +1,5 @@
-package com.deliveryplatform.auth.tokens;
+package com.deliveryplatform.auth;
 
-import com.deliveryplatform.auth.JwtConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +15,15 @@ public class RefreshTokenService {
     private final JwtConfig jwtConfig;
 
     public void save(UUID userId, String token) {
-        var RefreshToken = Token.builder()
+        var RefreshToken = com.deliveryplatform.auth.RefreshToken.builder()
                 .userId(userId)
                 .token(token)
-                .expiryDate(LocalDateTime.now().plusSeconds(jwtConfig.getRefreshTokenExpiration()))
+                .ttl(jwtConfig.getRefreshTokenExpiration())
                 .build();
         refreshTokenRepository.save(RefreshToken);
     }
 
-    public Optional<Token> findByToken(String token) {
+    public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
     }
 

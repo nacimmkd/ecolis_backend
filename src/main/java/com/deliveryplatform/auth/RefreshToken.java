@@ -1,8 +1,10 @@
-package com.deliveryplatform.auth.tokens;
+package com.deliveryplatform.auth;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,12 +15,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @RedisHash("refresh_token")
-public class Token {
+public class RefreshToken {
 
     @Id
     private UUID userId;
 
+    @Indexed
     private String token;
 
-    private LocalDateTime expiryDate;
+    @TimeToLive
+    private int ttl;
 }

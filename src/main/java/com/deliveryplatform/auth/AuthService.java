@@ -1,9 +1,9 @@
 package com.deliveryplatform.auth;
 
-import com.deliveryplatform.auth.tokens.RefreshTokenService;
 import com.deliveryplatform.users.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
@@ -18,36 +18,28 @@ public class AuthService {
     private final JwtConfig jwtConfig;
 
 
-    public LoginResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(UserNotFoundException::new);
+    public Login login(LoginRequest request) {
+
+        authenticate(request.getEmail(), request.getPassword());
+
+        var user = findUserByEmail(request.getEmail());
+
         var accessToken = jwtService.generateAccessToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
+
         refreshTokenService.save(user.getId(), refreshToken);
-        return new LoginResponse(
+
+        return new Login(
                 accessToken,
                 refreshToken,
                 jwtConfig.getRefreshTokenExpiration()
         );
     }
 
+
     public String refresh(String refreshToken) {
-
-        if (!jwtService.validateRefreshToken(refreshToken)) {
-            throw new InvalidRefreshTokenException();
-        }
-
-        var userId = jwtService.getUserIdFromToken(refreshToken);
-
-        var user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
-
+        validateRefreshToken(refreshToken);
+        var user = getUserFromRefreshToken(refreshToken);
         return jwtService.generateAccessToken(user);
     }
 
@@ -58,5 +50,30 @@ public class AuthService {
 
     public boolean validateAccessToken(String token) {
         return jwtService.validateAccessToken(token);
+    }
+
+    // --------------------------------------------------------------------
+
+    private void authenticate(String email, String password) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password)
+        );
+    }
+
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(UserNotFoundException::new);
+    }
+
+    private User getUserFromRefreshToken(String refreshToken) {
+        var userId = jwtService.getUserIdFromToken(refreshToken);
+        return userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+    }
+
+    private void validateRefreshToken(String refreshToken) {
+        if (!jwtService.validateRefreshToken(refreshToken)) {
+            throw new BadCredentialsException("Invalid refresh token");
+        }
     }
 }

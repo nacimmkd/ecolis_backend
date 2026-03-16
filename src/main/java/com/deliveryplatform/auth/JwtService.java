@@ -1,6 +1,5 @@
 package com.deliveryplatform.auth;
 
-import com.deliveryplatform.auth.tokens.RefreshTokenService;
 import com.deliveryplatform.users.Role;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserPrincipal;
@@ -31,15 +30,9 @@ public class JwtService {
     }
 
     public boolean validateRefreshToken(String refreshToken) {
-        var userId = getUserIdFromToken(refreshToken);
-        var tokenInCache = refreshTokenService.getRefreshToken(userId);
-        if (tokenInCache == null) {
-            return false;
-        }
-        if (!tokenInCache.equals(refreshToken)) {
-            return false;
-        }
-        return validateToken(tokenInCache);
+        return refreshTokenService.findByToken(refreshToken)
+                .map(token -> validateToken(token.getToken()))
+                .orElse(false);
     }
 
     public boolean validateAccessToken(String accessToken) {

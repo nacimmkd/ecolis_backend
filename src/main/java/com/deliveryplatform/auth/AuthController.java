@@ -1,5 +1,6 @@
 package com.deliveryplatform.auth;
 
+import com.deliveryplatform.common.ErrorDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -7,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -22,22 +24,21 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response
     ) {
-        var result = authService.login(request);
+        var login = authService.login(request);
 
-        var cookie = new Cookie("refreshToken", result.refreshToken());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/auth");
-        cookie.setMaxAge(result.refreshExpiration());
+        var cookie = generateCookie(
+                login.refreshToken(),
+                login.refreshExpiration()
+        );
 
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(new JwtResponse(result.accessToken()));
+        return ResponseEntity.ok(new JwtResponse(login.accessToken()));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<JwtResponse> refresh(
-            @CookieValue("refreshToken") String refreshToken
+            @CookieValue("refresh_token") String refreshToken
     ) {
         var accessToken = authService.refresh(refreshToken);
         return ResponseEntity.ok(new JwtResponse(accessToken));
@@ -45,29 +46,48 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-            @CookieValue("refreshToken") String refreshToken
+            @CookieValue("refresh_token") String refreshToken,
+            HttpServletResponse response
     ) {
         authService.logout(refreshToken);
-        return ResponseEntity.ok().build();
+        var cookie = generateCookie(null,0);
+        response.addCookie(cookie);
+        return ResponseEntity.noContent().build();
     }
 
 
     @PostMapping("/validate")
-    public boolean validateToken(
+    public ResponseEntity<Void> validateToken(
             @RequestHeader("Authorization") String header
     ) {
         var token = header.replace("Bearer ", "");
-        return authService.validateAccessToken(token);
+        var isValid = authService.validateAccessToken(token);
+        if (!isValid) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok().build();
     }
 
-
-    @ExceptionHandler(InvalidRefreshTokenException.class)
-    public ResponseEntity<Void> handleInvalidRefreshTokenException() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Void> handleBadCredentialsException() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<ErrorDto> handleBadCredentialsException(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ex.getMessage()));
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ErrorDto> handleMissingRequestCookieException(MissingRequestCookieException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                new ErrorDto(ex.getMessage()));
+    }
+
+    //-------------------------------------------------------------------
+
+    private Cookie generateCookie(String refreshToken, int expiration) {
+        var cookie = new Cookie("refresh_token", refreshToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/api/v1/refresh");
+        cookie.setMaxAge(expiration);
+        return cookie;
     }
 }
