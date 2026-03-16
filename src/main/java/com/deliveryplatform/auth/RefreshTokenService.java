@@ -3,7 +3,6 @@ package com.deliveryplatform.auth;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,11 +14,11 @@ public class RefreshTokenService {
     private final JwtConfig jwtConfig;
 
     public void save(UUID userId, String token) {
-        var RefreshToken = com.deliveryplatform.auth.RefreshToken.builder()
-                .userId(userId)
-                .token(token)
-                .ttl(jwtConfig.getRefreshTokenExpiration())
-                .build();
+        var RefreshToken = new RefreshToken(
+                userId,
+                token,
+                jwtConfig.getRefreshTokenExpiration()
+        );
         refreshTokenRepository.save(RefreshToken);
     }
 
