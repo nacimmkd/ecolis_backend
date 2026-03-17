@@ -1,4 +1,4 @@
-package com.deliveryplatform.users;
+package com.deliveryplatform.profiles;
 
 import java.math.BigDecimal;
 

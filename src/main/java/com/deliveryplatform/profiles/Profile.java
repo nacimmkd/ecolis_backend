@@ -1,6 +1,7 @@
-package com.deliveryplatform.users;
+package com.deliveryplatform.profiles;
 
 
+import com.deliveryplatform.users.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;

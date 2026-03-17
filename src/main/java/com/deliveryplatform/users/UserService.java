@@ -1,5 +1,8 @@
 package com.deliveryplatform.users;
 
+import com.deliveryplatform.profiles.Profile;
+import com.deliveryplatform.profiles.ProfileMapper;
+import com.deliveryplatform.profiles.ProfileRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +19,7 @@ public class UserService {
     private final UserRepository  userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper      userMapper;
-    private final ProfileMapper   profileMapper;
+    private final ProfileMapper profileMapper;
 
 
     @PreAuthorize("hasRole('ADMIN')")

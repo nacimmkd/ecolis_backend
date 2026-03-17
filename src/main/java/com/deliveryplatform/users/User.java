@@ -1,6 +1,7 @@
 package com.deliveryplatform.users;
 
 
+import com.deliveryplatform.profiles.Profile;
 import jakarta.persistence.*;
 import lombok.*;
 

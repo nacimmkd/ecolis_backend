@@ -6,8 +6,8 @@ import com.deliveryplatform.auth.token.RefreshTokenService;
 import com.deliveryplatform.users.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
@@ -23,9 +23,8 @@ public class AuthService {
 
     public AuthResponse login(AuthRequest request) {
 
-        authenticate(request.getEmail(), request.getPassword());
-
-        var user = findUserByEmail(request.getEmail());
+        var auth = authenticate(request.getEmail(), request.getPassword());
+        var user = (UserPrincipal) auth.getPrincipal();
 
         var accessToken = jwtService.generateAccessToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
@@ -41,7 +40,7 @@ public class AuthService {
 
 
     public String refresh(String refreshToken) {
-        validateRefreshToken(refreshToken);
+        validateRefreshTokenOrThrow(refreshToken);
         var user = getUserFromRefreshToken(refreshToken);
         return jwtService.generateAccessToken(user);
     }
@@ -57,15 +56,10 @@ public class AuthService {
 
     // --------------------------------------------------------------------
 
-    private void authenticate(String email, String password) {
-        authenticationManager.authenticate(
+    private Authentication authenticate(String email, String password) {
+        return authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
         );
-    }
-
-    private User findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(UserNotFoundException::new);
     }
 
     private User getUserFromRefreshToken(String refreshToken) {
@@ -74,9 +68,9 @@ public class AuthService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    private void validateRefreshToken(String refreshToken) {
+    private void validateRefreshTokenOrThrow(String refreshToken) {
         if (!jwtService.validateRefreshToken(refreshToken)) {
-            throw new BadCredentialsException("Invalid refresh token");
+            throw new AuthenticationSessionException("User not logged in");
         }
     }
 }

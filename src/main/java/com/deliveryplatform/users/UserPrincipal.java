@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class UserPrincipal implements UserDetails {
+public class UserPrincipal extends User implements UserDetails {
 
     private final UUID id;
     private final String email;

@@ -1,5 +1,7 @@
 package com.deliveryplatform.users;
 
+import com.deliveryplatform.profiles.ProfileDto;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 

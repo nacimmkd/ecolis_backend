@@ -1,4 +1,4 @@
-package com.deliveryplatform.users;
+package com.deliveryplatform.profiles;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

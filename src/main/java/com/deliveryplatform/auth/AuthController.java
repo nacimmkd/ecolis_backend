@@ -37,6 +37,7 @@ public class AuthController {
         return ResponseEntity.ok(new JwtResponse(login.accessToken()));
     }
 
+
     @PostMapping("/refresh")
     public ResponseEntity<JwtResponse> refresh(
             @CookieValue("refresh_token") String refreshToken
@@ -44,6 +45,7 @@ public class AuthController {
         var accessToken = authService.refresh(refreshToken);
         return ResponseEntity.ok(new JwtResponse(accessToken));
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
@@ -76,7 +78,13 @@ public class AuthController {
     }
 
     @ExceptionHandler(MissingRequestCookieException.class)
-    public ResponseEntity<ErrorDto> handleMissingRequestCookieException(MissingRequestCookieException ex) {
+    public ResponseEntity<ErrorDto> handleMissingRequestCookieException() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                new ErrorDto("User not logged in"));
+    }
+
+    @ExceptionHandler(AuthenticationSessionException.class)
+    public ResponseEntity<ErrorDto> handleAuthenticationSessionException(AuthenticationSessionException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 new ErrorDto(ex.getMessage()));
     }
@@ -87,7 +95,7 @@ public class AuthController {
         var cookie = new Cookie("refresh_token", refreshToken);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
-        cookie.setPath("/api/v1/refresh");
+        cookie.setPath("/");
         cookie.setMaxAge(expiration);
         return cookie;
     }
