@@ -1,6 +1,6 @@
 package com.deliveryplatform.auth;
 
-import com.deliveryplatform.auth.token.JwtConfig;
+import com.deliveryplatform.config.JwtConfig;
 import com.deliveryplatform.auth.token.JwtService;
 import com.deliveryplatform.auth.token.RefreshTokenService;
 import com.deliveryplatform.users.*;

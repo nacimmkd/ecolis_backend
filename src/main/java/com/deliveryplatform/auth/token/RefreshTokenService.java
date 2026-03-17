@@ -1,5 +1,6 @@
 package com.deliveryplatform.auth.token;
 
+import com.deliveryplatform.config.JwtConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

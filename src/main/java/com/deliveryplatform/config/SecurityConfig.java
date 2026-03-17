@@ -1,4 +1,4 @@
-package com.deliveryplatform.auth;
+package com.deliveryplatform.config;
 
 import com.deliveryplatform.auth.token.JwtAuthenticationFilter;
 import com.deliveryplatform.users.UserPrincipal;
