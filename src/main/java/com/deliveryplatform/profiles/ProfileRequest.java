@@ -1,7 +1,7 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.common.validations.Iban;
-import com.deliveryplatform.common.validations.Phone;
+import com.deliveryplatform.validations.Iban;
+import com.deliveryplatform.validations.Phone;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
