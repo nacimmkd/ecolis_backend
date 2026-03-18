@@ -1,4 +1,4 @@
-package com.deliveryplatform.common;
+package com.deliveryplatform.validations;
 
 import lombok.Builder;
 
