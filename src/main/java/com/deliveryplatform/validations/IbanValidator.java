@@ -7,6 +7,7 @@ public class IbanValidator implements ConstraintValidator<Iban, String> {
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+
         if (value == null) return true;
 
         // remove spaces

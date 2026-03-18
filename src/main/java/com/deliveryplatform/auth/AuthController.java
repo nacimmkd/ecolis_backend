@@ -1,7 +1,7 @@
 package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.token.JwtResponse;
-import com.deliveryplatform.common.ErrorDto;
+import com.deliveryplatform.common.Error;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -73,20 +73,20 @@ public class AuthController {
 
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorDto> handleBadCredentialsException(BadCredentialsException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ex.getMessage()));
+    public ResponseEntity<Error> handleBadCredentialsException(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Error(ex.getMessage()));
     }
 
     @ExceptionHandler(MissingRequestCookieException.class)
-    public ResponseEntity<ErrorDto> handleMissingRequestCookieException() {
+    public ResponseEntity<Error> handleMissingRequestCookieException() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                new ErrorDto("User not logged in"));
+                new Error("User not logged in"));
     }
 
     @ExceptionHandler(AuthenticationSessionException.class)
-    public ResponseEntity<ErrorDto> handleAuthenticationSessionException(AuthenticationSessionException ex) {
+    public ResponseEntity<Error> handleAuthenticationSessionException(AuthenticationSessionException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                new ErrorDto(ex.getMessage()));
+                new Error(ex.getMessage()));
     }
 
     //-------------------------------------------------------------------

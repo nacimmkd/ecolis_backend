@@ -1,6 +1,6 @@
 package com.deliveryplatform.users;
 
-import com.deliveryplatform.common.ErrorDto;
+import com.deliveryplatform.common.Error;
 import com.deliveryplatform.profiles.ProfileRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -69,18 +69,18 @@ public class UserController {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorDto> handleUserNotFoundException(UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ex.getMessage()));
+    public ResponseEntity<Error> handleUserNotFoundException(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Error(ex.getMessage()));
     }
 
     @ExceptionHandler(PasswordNotValidException.class)
-    public ResponseEntity<ErrorDto> handlePasswordNotValidException(PasswordNotValidException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ex.getMessage()));
+    public ResponseEntity<Error> handlePasswordNotValidException(PasswordNotValidException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Error(ex.getMessage()));
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<ErrorDto> handleEmailAlreadyExistsException(EmailAlreadyExistsException    ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ex.getMessage()));
+    public ResponseEntity<Error> handleEmailAlreadyExistsException(EmailAlreadyExistsException    ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Error(ex.getMessage()));
     }
 
     // ----------------------------------------------------------------

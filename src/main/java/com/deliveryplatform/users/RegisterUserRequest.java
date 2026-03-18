@@ -1,6 +1,7 @@
 package com.deliveryplatform.users;
 
 import com.deliveryplatform.profiles.ProfileRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -13,6 +14,7 @@ public record RegisterUserRequest(
         @NotBlank(message = "Must not be blank")
         String password,
 
+        @Valid
         ProfileRequest profile
 ) {
 }

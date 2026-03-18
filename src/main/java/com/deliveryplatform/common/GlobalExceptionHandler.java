@@ -5,17 +5,31 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<HashMap<String,String>> handleValidationErrors(
+    public ResponseEntity<Map<String,Object>> handleValidationErrors(
             MethodArgumentNotValidException ex
     ){
-        var errors = new HashMap<String, String>();
-        var feildsResults = ex.getBindingResult().getFieldErrors();
-        feildsResults.forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
-        return ResponseEntity.badRequest().body(errors);
+
+        List<ValidationError> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> new ValidationError(
+                        error.getField(),
+                        error.getDefaultMessage()
+                ))
+                .toList();
+
+        Map<String, Object> response = Map.of(
+                "status", 400,
+                "errors", errors
+        );
+
+        return ResponseEntity.badRequest().body(response);
     }
 }

@@ -1,7 +1,7 @@
 package com.deliveryplatform.common;
 
 
-public record ErrorDto(
+public record Error(
         String message
 ) {
 }
