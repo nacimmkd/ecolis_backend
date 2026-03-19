@@ -2,12 +2,16 @@ package com.deliveryplatform.users;
 
 import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.profiles.ProfileMapper;
-import com.deliveryplatform.profiles.ProfileRequest;
+import com.deliveryplatform.users.exceptions.EmailAlreadyExistsException;
+import com.deliveryplatform.users.exceptions.PasswordNotValidException;
+import com.deliveryplatform.users.exceptions.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.deliveryplatform.users.UserDto.*;
+import com.deliveryplatform.profiles.ProfileDto.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,14 +26,13 @@ public class UserService {
     private final ProfileMapper profileMapper;
 
 
-    @PreAuthorize("hasRole('ADMIN')")
-    public UserDto findById(UUID id) {
+
+    public UserResponse findById(UUID id) {
         var user = getUserOrThrow(id);
         return userMapper.toDto(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    public List<UserDto> findAll() {
+    public List<UserResponse> findAll() {
         return userRepository.findAll().stream()
                 .filter(user -> !user.getRole().equals(Role.ADMIN))
                 .map(userMapper::toDto)
@@ -38,7 +41,7 @@ public class UserService {
 
 
     @Transactional
-    public UserDto register(RegisterUserRequest request) {
+    public UserResponse register(UserRequest request) {
         checkEmailUniquenessOrThrow(request.email());
         var user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -50,7 +53,7 @@ public class UserService {
 
 
     @Transactional
-    public UserDto updateProfile(UUID id, ProfileRequest request) {
+    public UserResponse updateProfile(UUID id, ProfileRequest request) {
         User user = getUserOrThrow(id);
         updateProfileFields(user.getProfile(), request);
         return userMapper.toDto(userRepository.save(user));

@@ -1,14 +1,20 @@
 package com.deliveryplatform.users;
 
 import com.deliveryplatform.common.Error;
-import com.deliveryplatform.profiles.ProfileRequest;
+import com.deliveryplatform.users.exceptions.EmailAlreadyExistsException;
+import com.deliveryplatform.users.exceptions.PasswordNotValidException;
+import com.deliveryplatform.users.exceptions.UserNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import com.deliveryplatform.users.UserDto.*;
+import com.deliveryplatform.profiles.ProfileDto.*;
+
 
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +27,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<UserDto> getMe(
+    public ResponseEntity<UserResponse> getMe(
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         var userDto = userService.findById(principal.getId());
@@ -29,8 +35,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(
-            @Valid @RequestBody RegisterUserRequest request,
+    public ResponseEntity<UserResponse> register(
+            @Valid @RequestBody UserRequest request,
             UriComponentsBuilder uriBuilder
     ) {
         var user = userService.register(request);
@@ -43,7 +49,7 @@ public class UserController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<UserDto> updateMe(
+    public ResponseEntity<UserResponse> updateMe(
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody ProfileRequest request
     ) {
@@ -88,13 +94,15 @@ public class UserController {
     // ----------------------------------------------------------------
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers() {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         var users = userService.findAll();
         return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable UUID id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         var userDto = userService.findById(id);
         return ResponseEntity.ok(userDto);
     }

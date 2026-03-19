@@ -1,4 +1,4 @@
-package com.deliveryplatform.users;
+package com.deliveryplatform.users.exceptions;
 
 public class EmailAlreadyExistsException extends RuntimeException {
     public EmailAlreadyExistsException() {

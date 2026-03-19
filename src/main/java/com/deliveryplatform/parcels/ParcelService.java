@@ -1,5 +1,6 @@
 package com.deliveryplatform.parcels;
 
+import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.deliveryplatform.parcels.ParcelDto.*;

@@ -1,5 +1,6 @@
 package com.deliveryplatform.parcels;
 
+import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -7,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.deliveryplatform.parcels.ParcelDto.*;
-import org.springframework.web.util.UriBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;

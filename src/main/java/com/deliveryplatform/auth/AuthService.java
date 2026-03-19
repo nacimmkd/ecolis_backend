@@ -4,6 +4,7 @@ import com.deliveryplatform.config.JwtConfig;
 import com.deliveryplatform.auth.token.JwtService;
 import com.deliveryplatform.auth.token.RefreshTokenService;
 import com.deliveryplatform.users.*;
+import com.deliveryplatform.users.exceptions.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
