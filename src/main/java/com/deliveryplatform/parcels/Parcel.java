@@ -76,4 +76,13 @@ public class Parcel {
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
+
+
+    public boolean isAvailable() {
+        return this.status == ParcelStatus.AVAILABLE;
+    }
+
+    public boolean isOwner(UUID userId) {
+        return this.userId.equals(userId);
+    }
 }

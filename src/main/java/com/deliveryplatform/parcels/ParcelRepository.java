@@ -12,5 +12,6 @@ import java.util.UUID;
 public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
 
     List<Parcel> findByUserId(UUID userId);
+    List<Parcel> findByStatus(ParcelStatus status);
 
 }

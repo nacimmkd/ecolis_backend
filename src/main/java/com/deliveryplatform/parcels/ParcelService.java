@@ -1,6 +1,8 @@
 package com.deliveryplatform.parcels;
 
+import com.deliveryplatform.parcels.exceptions.IllegalParcelStateException;
 import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
+import com.deliveryplatform.parcels.exceptions.UnauthorizedActionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.deliveryplatform.parcels.ParcelDto.*;
@@ -34,10 +36,64 @@ public class ParcelService {
     }
 
 
+    public List<ParcelResponse> getAvailableParcels(){
+        return parcelRepository.findByStatus(ParcelStatus.AVAILABLE).stream()
+                .map(parcelMapper::toDto)
+                .toList();
+    }
+
+
     public ParcelResponse createParcel(UUID userId,ParcelRequest request) {
         var parcel = parcelMapper.toEntity(request);
         parcel.setUserId(userId);
         parcelRepository.save(parcel);
         return parcelMapper.toDto(parcel);
+    }
+
+    public ParcelResponse updateParcel(UUID parcelId, UUID userId, ParcelRequest request) {
+        Parcel parcel = getParcelByIdOrThrow(parcelId);
+        assertOwnership(parcel, userId);
+        assertParcelIsAvailable(parcel);
+        updateParcelFields(parcel, request);
+        return parcelMapper.toDto(parcelRepository.save(parcel));
+    }
+
+
+    public void deleteParcel(UUID parcelId, UUID userId) {
+        var parcel = getParcelByIdOrThrow(parcelId);
+        assertOwnership(parcel, userId);
+        assertParcelIsAvailable(parcel);
+        parcelRepository.delete(parcel);
+    }
+
+
+
+    //----------------- private methods-----------------------------
+
+    private Parcel getParcelByIdOrThrow(UUID parcelId){
+        return parcelRepository.findById(parcelId)
+                .orElseThrow(ParcelNotFoundException::new);
+    }
+
+    private void assertOwnership(Parcel parcel, UUID userId) {
+        if (!parcel.isOwner(userId)) {
+            throw new UnauthorizedActionException();
+        }
+    }
+
+    private void assertParcelIsAvailable(Parcel parcel){
+        if (!parcel.isAvailable()) {
+            throw new IllegalParcelStateException();
+        }
+    }
+
+    private void updateParcelFields(Parcel parcel, ParcelRequest request) {
+        parcel.setDescription(request.description());
+        parcel.setWeightKg(request.weightKg());
+        parcel.setLengthCm(request.lengthCm());
+        parcel.setWidthCm(request.widthCm());
+        parcel.setHeightCm(request.heightCm());
+        parcel.setFragile(request.isFragile());
+        parcel.setDeadlineDate(request.deadlineDate());
     }
 }
