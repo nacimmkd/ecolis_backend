@@ -36,7 +36,7 @@ public class UserController {
         var user = userService.register(request);
 
         var uri = uriBuilder
-                .path("/users/{id}")
+                .path("/api/v1/users/{id}")
                 .build(user.id());
 
         return ResponseEntity.created(uri).body(user);

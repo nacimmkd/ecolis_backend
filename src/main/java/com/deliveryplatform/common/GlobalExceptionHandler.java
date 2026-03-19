@@ -16,7 +16,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String,Object>> handleValidationErrors(
             MethodArgumentNotValidException ex
     ){
-
         List<ValidationError> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()

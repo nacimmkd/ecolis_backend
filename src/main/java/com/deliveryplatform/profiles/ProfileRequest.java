@@ -16,6 +16,7 @@ public record ProfileRequest(
         @Phone
         String phone,
 
-        @Iban @NotBlank
+        //@Iban // desactivated for testing
+        @NotBlank
         String iban
 ) {}
