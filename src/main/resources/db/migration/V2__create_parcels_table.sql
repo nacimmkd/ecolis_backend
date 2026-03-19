@@ -1,14 +1,33 @@
 CREATE TABLE parcels (
-                           "id"              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                           "user_id"     UUID NOT NULL,
-                           "description"     VARCHAR(255),
-                           "weight_kg"       NUMERIC(8,2) NOT NULL,
-                           "length_cm"       NUMERIC(6,1),
-                           "width_cm"        NUMERIC(6,1),
-                           "height_cm"       NUMERIC(6,1),
-                           "declared_value"  NUMERIC(10,2),
-                           "is_fragile"      BOOLEAN NOT NULL DEFAULT FALSE,
-                           "content_type"    VARCHAR(50),
-                           "created_at"      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                            CONSTRAINT fk_parcels_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
+                         id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                         user_id         UUID NOT NULL,
+                         description     TEXT,
+                         weight_kg       NUMERIC(8,2)  NOT NULL,
+                         length_cm       NUMERIC(6,1),
+                         width_cm        NUMERIC(6,1),
+                         height_cm       NUMERIC(6,1),
+                         is_fragile      BOOLEAN NOT NULL DEFAULT FALSE,
+
+                         -- pickup address
+                         pickup_street       TEXT         NOT NULL,
+                         pickup_city         VARCHAR(100) NOT NULL,
+                         pickup_postal_code  VARCHAR(20)  NOT NULL,
+                         pickup_country      VARCHAR(60)  NOT NULL,
+                         pickup_lat          NUMERIC(10,7),
+                         pickup_lng          NUMERIC(10,7),
+
+                         -- dropoff address
+                         dropoff_street      TEXT         NOT NULL,
+                         dropoff_city        VARCHAR(100) NOT NULL,
+                         dropoff_postal_code VARCHAR(20)  NOT NULL,
+                         dropoff_country     VARCHAR(60)  NOT NULL,
+                         dropoff_lat         NUMERIC(10,7),
+                         dropoff_lng         NUMERIC(10,7),
+
+                         status          VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE'
+                             CHECK (status IN ('AVAILABLE','BOOKED','IN_TRANSIT','DELIVERED','CANCELLED')),
+                         deadline_date   DATE,
+                         created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+                         CONSTRAINT fk_parcels_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 );
