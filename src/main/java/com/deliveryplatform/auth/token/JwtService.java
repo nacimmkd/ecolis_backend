@@ -1,6 +1,5 @@
 package com.deliveryplatform.auth.token;
 
-import com.deliveryplatform.config.JwtConfig;
 import com.deliveryplatform.users.Role;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserPrincipal;

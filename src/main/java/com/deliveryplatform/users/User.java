@@ -2,10 +2,13 @@ package com.deliveryplatform.users;
 
 
 import com.deliveryplatform.profiles.Profile;
+import com.deliveryplatform.trips.Trip;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -41,6 +44,13 @@ public class User {
     @OneToOne( mappedBy = "user", cascade = CascadeType.ALL)
     private Profile profile;
 
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @Builder.Default
+    private List<Trip> parcels = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @Builder.Default
+    private List<Trip> trips = new ArrayList<>();
 
     public void setProfile(Profile profile) {
         this.profile = profile;
