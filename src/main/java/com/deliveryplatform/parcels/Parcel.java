@@ -4,6 +4,8 @@ import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -75,7 +77,8 @@ public class Parcel {
     })
     private Address dropoffAddress;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreationTimestamp
+    @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
