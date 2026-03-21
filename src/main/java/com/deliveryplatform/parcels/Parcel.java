@@ -1,6 +1,7 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.addresses.Address;
+import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -21,8 +22,9 @@ public class Parcel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private String description;
 
@@ -83,6 +85,6 @@ public class Parcel {
     }
 
     public boolean isOwner(UUID userId) {
-        return this.userId.equals(userId);
+        return this.user.getId().equals(userId);
     }
 }
