@@ -18,7 +18,7 @@ public class TripDto {
             @Valid @NotNull AddressRequest arrival,
 
             @NotNull @FutureOrPresent LocalDate departureDate,
-            @NotNull @Future LocalDate arrivalDate,
+            @NotNull @FutureOrPresent LocalDate arrivalDate,
             @DecimalMin("0.0") BigDecimal maxVolumeM3,
             @DecimalMin("0.0") BigDecimal maxWeightKg,
             @DecimalMin("0.0") BigDecimal price,
