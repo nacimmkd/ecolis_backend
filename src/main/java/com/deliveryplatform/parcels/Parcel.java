@@ -33,21 +33,16 @@ public class Parcel {
     @Column(name = "weight_kg", nullable = false, precision = 8, scale = 2)
     private BigDecimal weightKg;
 
-    @Column(name = "length_cm", precision = 6, scale = 1)
-    private BigDecimal lengthCm;
-
-    @Column(name = "width_cm", precision = 6, scale = 1)
-    private BigDecimal widthCm;
-
-    @Column(name = "height_cm", precision = 6, scale = 1)
-    private BigDecimal heightCm;
-
-    @Column(name = "is_fragile", nullable = false)
-    private boolean isFragile;
-
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private ParcelSize size;
+
+    @Column(name = "is_fragile", nullable = false)
+    private boolean fragile;
+
+    private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private ParcelStatus status = ParcelStatus.AVAILABLE;
 

@@ -19,11 +19,11 @@ public class ParcelDto {
             @NotNull @DecimalMin("0.01")
             BigDecimal weightKg,
 
-            @DecimalMin("0.0") BigDecimal lengthCm,
-            @DecimalMin("0.0") BigDecimal widthCm,
-            @DecimalMin("0.0") BigDecimal heightCm,
+            @NotNull ParcelSize size,
 
-            boolean isFragile,
+            @NotNull @DecimalMin("0.0") BigDecimal price,
+
+            boolean fragile,
 
             @NotNull @Valid
             AddressRequest pickupAddress,
@@ -38,15 +38,13 @@ public class ParcelDto {
 
     public record ParcelResponse(
             UUID            id,
-            UUID            userId,
             String          description,
             BigDecimal      weightKg,
-            BigDecimal      lengthCm,
-            BigDecimal      widthCm,
-            BigDecimal      heightCm,
-            boolean         isFragile,
-            Address pickupAddress,
-            Address dropoffAddress,
+            ParcelSize      size,
+            BigDecimal      price,
+            boolean         fragile,
+            Address         pickupAddress,
+            Address         dropoffAddress,
             ParcelStatus    status,
             LocalDate       deadlineDate,
             OffsetDateTime  createdAt

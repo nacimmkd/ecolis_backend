@@ -57,7 +57,7 @@ public class ParcelService {
         Parcel parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
         assertParcelIsAvailable(parcel);
-        updateParcelFields(parcel, request);
+        parcelMapper.updateEntity(parcel, request);
         return parcelMapper.toDto(parcelRepository.save(parcel));
     }
 
@@ -89,15 +89,5 @@ public class ParcelService {
         if (!parcel.isAvailable()) {
             throw new IllegalParcelStateException();
         }
-    }
-
-    private void updateParcelFields(Parcel parcel, ParcelRequest request) {
-        parcel.setDescription(request.description());
-        parcel.setWeightKg(request.weightKg());
-        parcel.setLengthCm(request.lengthCm());
-        parcel.setWidthCm(request.widthCm());
-        parcel.setHeightCm(request.heightCm());
-        parcel.setFragile(request.isFragile());
-        parcel.setDeadlineDate(request.deadlineDate());
     }
 }
