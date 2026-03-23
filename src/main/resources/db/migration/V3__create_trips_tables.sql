@@ -18,21 +18,19 @@ CREATE TABLE "trips" (
                          "arrival_lat"           NUMERIC(10,7),
                          "arrival_lng"           NUMERIC(10,7),
 
-                         "estimated_arrival_at"  TIMESTAMPTZ,
-                         "is_recurring"          BOOLEAN       NOT NULL DEFAULT FALSE,
-                         "recurrence_days"       INTEGER,
-                         "available_volume_m3"   NUMERIC(8,3),
-                         "max_parcels"           INTEGER,
+                         "departure_date"        DATE,
+                         "arrival_date"          DATE,
+                         "max_volume_m3"         NUMERIC(8,2)  NOT NULL,
+                         "max_weight_kg"         NUMERIC(8,2)  NOT NULL,
                          "flat_price"            NUMERIC(10,2),
                          "max_detour_km"         NUMERIC(6,2)  NOT NULL DEFAULT 1,
                          "status"                VARCHAR(30)   NOT NULL DEFAULT 'PUBLISHED'
                              CHECK ("status" IN ('PUBLISHED', 'FULL', 'CANCELED')),
                          "notes"                 TEXT,
                          "created_at"            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
-                         "updated_at"            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
 
                          PRIMARY KEY ("id"),
-                         FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
+                         FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
 );
 
 
@@ -50,5 +48,6 @@ CREATE TABLE "trip_stops" (
                               "longitude"    NUMERIC(10,7),
 
                               PRIMARY KEY ("id"),
-                              FOREIGN KEY ("trip_id") REFERENCES "trips"("id") ON DELETE CASCADE ON UPDATE CASCADE
+                              FOREIGN KEY ("trip_id") REFERENCES "trips"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+                              UNIQUE (trip_id, stop_order)
 );
