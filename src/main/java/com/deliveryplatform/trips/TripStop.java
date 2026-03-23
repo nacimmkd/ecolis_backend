@@ -1,15 +1,16 @@
 package com.deliveryplatform.trips;
 
+import com.deliveryplatform.common.addresses.Address;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "trip_stops")
+@Table(
+        name = "trip_stops",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"trip_id", "stop_order"})
+)
 @Getter
 @Setter
 @Builder
@@ -29,17 +30,7 @@ public class TripStop {
     @Column(name = "stop_order")
     private int stopOrder;
 
-    private String street;
-
-    private String city;
-
-    @Column(name = "postal_code")
-    private String postalCode;
-
-    private String country;
-
-    private BigDecimal latitude;
-
-    private BigDecimal longitude;
+    @Embedded
+    private Address address;;
 
 }
