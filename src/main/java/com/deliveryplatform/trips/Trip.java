@@ -64,8 +64,8 @@ public class Trip {
     @Column(name = "max_weight_kg", precision = 8, scale = 2)
     private BigDecimal maxWeightKg;
 
-    @Column(name = "flat_price", precision = 10, scale = 2)
-    private BigDecimal flatPrice;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal price;
 
     @Column(name = "max_detour_km", nullable = false, precision = 6, scale = 2)
     @Builder.Default

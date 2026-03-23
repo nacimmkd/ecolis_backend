@@ -21,7 +21,7 @@ public class TripDto {
             @NotNull @Future LocalDate arrivalDate,
             @DecimalMin("0.0") BigDecimal maxVolumeM3,
             @DecimalMin("0.0") BigDecimal maxWeightKg,
-            @DecimalMin("0.0") BigDecimal flatPrice,
+            @DecimalMin("0.0") BigDecimal price,
             @DecimalMin("0.0") BigDecimal maxDetourKm,
 
             String notes,
@@ -38,7 +38,7 @@ public class TripDto {
             LocalDate arrivalDate,
             BigDecimal maxVolumeM3,
             BigDecimal maxWeightKg,
-            BigDecimal flatPrice,
+            BigDecimal price,
             TripStatus status,
             String notes,
             List<TripStopResponse> stops
