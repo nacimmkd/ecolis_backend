@@ -38,6 +38,7 @@ public class ParcelDto {
 
     public record ParcelResponse(
             UUID            id,
+            UUID            userId,
             String          description,
             BigDecimal      weightKg,
             ParcelSize      size,
