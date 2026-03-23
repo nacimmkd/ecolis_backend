@@ -1,6 +1,6 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.addresses.Address;
+import com.deliveryplatform.common.addresses.Address;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -61,8 +61,8 @@ public class Parcel {
             @AttributeOverride(name = "city",       column = @Column(name = "pickup_city",        nullable = false)),
             @AttributeOverride(name = "postalCode", column = @Column(name = "pickup_postal_code", nullable = false)),
             @AttributeOverride(name = "country",    column = @Column(name = "pickup_country",     nullable = false)),
-            @AttributeOverride(name = "lat",        column = @Column(name = "pickup_lat")),
-            @AttributeOverride(name = "lng",        column = @Column(name = "pickup_lng"))
+            @AttributeOverride(name = "latitude",        column = @Column(name = "pickup_lat")),
+            @AttributeOverride(name = "longitude",        column = @Column(name = "pickup_lng"))
     })
     private Address pickupAddress;
 
@@ -72,8 +72,8 @@ public class Parcel {
             @AttributeOverride(name = "city",       column = @Column(name = "dropoff_city",        nullable = false)),
             @AttributeOverride(name = "postalCode", column = @Column(name = "dropoff_postal_code", nullable = false)),
             @AttributeOverride(name = "country",    column = @Column(name = "dropoff_country",     nullable = false)),
-            @AttributeOverride(name = "lat",        column = @Column(name = "dropoff_lat")),
-            @AttributeOverride(name = "lng",        column = @Column(name = "dropoff_lng"))
+            @AttributeOverride(name = "latitude",        column = @Column(name = "dropoff_lat")),
+            @AttributeOverride(name = "longitude",        column = @Column(name = "dropoff_lng"))
     })
     private Address dropoffAddress;
 
@@ -90,4 +90,5 @@ public class Parcel {
     public boolean isOwner(UUID userId) {
         return this.user.getId().equals(userId);
     }
+
 }

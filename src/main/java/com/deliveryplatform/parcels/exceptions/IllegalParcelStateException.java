@@ -4,6 +4,6 @@ import com.deliveryplatform.parcels.ParcelStatus;
 
 public class IllegalParcelStateException extends RuntimeException {
     public IllegalParcelStateException() {
-        super("Cannot update a parcel with status : " + ParcelStatus.AVAILABLE);
+        super("Cannot update a parcel with this status");
     }
 }

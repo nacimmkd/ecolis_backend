@@ -1,7 +1,7 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.addresses.AddressDto.AddressRequest;
-import com.deliveryplatform.addresses.AddressDto.AddressResponse;
+import com.deliveryplatform.common.addresses.Address;
+import com.deliveryplatform.common.addresses.AddressRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
@@ -45,8 +45,8 @@ public class ParcelDto {
             BigDecimal      widthCm,
             BigDecimal      heightCm,
             boolean         isFragile,
-            AddressResponse pickupAddress,
-            AddressResponse dropoffAddress,
+            Address pickupAddress,
+            Address dropoffAddress,
             ParcelStatus    status,
             LocalDate       deadlineDate,
             OffsetDateTime  createdAt

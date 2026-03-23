@@ -1,12 +1,8 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.parcels.exceptions.IllegalParcelStateException;
-import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
-import com.deliveryplatform.parcels.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -72,22 +68,6 @@ public class ParcelController {
 
         parcelService.deleteParcel(id, userPrincipal.getId());
         return ResponseEntity.noContent().build();
-    }
-
-
-    @ExceptionHandler(ParcelNotFoundException.class)
-    public ResponseEntity<Error> handleParcelNotFoundException(ParcelNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(UnauthorizedActionException.class)
-    public ResponseEntity<Error> handleUnauthorizedActionException(UnauthorizedActionException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(IllegalParcelStateException.class)
-    public ResponseEntity<Error> handleIllegalParcelStateException(IllegalParcelStateException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error(ex.getMessage()));
     }
 
 

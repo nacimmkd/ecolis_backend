@@ -2,7 +2,8 @@ package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.parcels.exceptions.IllegalParcelStateException;
 import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
-import com.deliveryplatform.parcels.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.parcels.exceptions.UnauthorizedParcelActionException;
+import com.deliveryplatform.users.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.deliveryplatform.parcels.ParcelDto.*;
@@ -15,6 +16,7 @@ import java.util.UUID;
 public class ParcelService {
 
     private final ParcelRepository parcelRepository;
+    private final UserService userService;
     private final ParcelMapper parcelMapper;
 
     public ParcelResponse getParcel(UUID id) {
@@ -45,7 +47,8 @@ public class ParcelService {
 
     public ParcelResponse createParcel(UUID userId,ParcelRequest request) {
         var parcel = parcelMapper.toEntity(request);
-        parcel.setUserId(userId);
+        var user = userService.getUserByIdOrThrow(userId);
+        parcel.setUser(user);
         parcelRepository.save(parcel);
         return parcelMapper.toDto(parcel);
     }
@@ -75,9 +78,10 @@ public class ParcelService {
                 .orElseThrow(ParcelNotFoundException::new);
     }
 
+
     private void assertOwnership(Parcel parcel, UUID userId) {
         if (!parcel.isOwner(userId)) {
-            throw new UnauthorizedActionException();
+            throw new UnauthorizedParcelActionException();
         }
     }
 
