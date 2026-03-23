@@ -1,7 +1,6 @@
 package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.token.JwtResponse;
-import com.deliveryplatform.common.Error;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

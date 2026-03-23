@@ -1,4 +1,4 @@
-package com.deliveryplatform.validations;
+package com.deliveryplatform.common.validations;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

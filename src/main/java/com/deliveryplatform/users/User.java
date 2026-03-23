@@ -44,14 +44,6 @@ public class User {
     @OneToOne( mappedBy = "user", cascade = CascadeType.ALL)
     private Profile profile;
 
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @Builder.Default
-    private List<Trip> parcels = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @Builder.Default
-    private List<Trip> trips = new ArrayList<>();
-
     public void setProfile(Profile profile) {
         this.profile = profile;
         profile.setUser(this);

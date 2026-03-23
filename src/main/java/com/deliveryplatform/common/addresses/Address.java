@@ -1,4 +1,4 @@
-package com.deliveryplatform.addresses;
+package com.deliveryplatform.common.addresses;
 
 import jakarta.persistence.Embeddable;
 import lombok.*;

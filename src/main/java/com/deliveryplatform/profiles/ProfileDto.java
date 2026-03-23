@@ -1,6 +1,6 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.validations.Phone;
+import com.deliveryplatform.common.validations.Phone;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

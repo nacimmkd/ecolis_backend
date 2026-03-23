@@ -1,12 +1,8 @@
 package com.deliveryplatform.users;
 
-import com.deliveryplatform.common.Error;
-import com.deliveryplatform.users.exceptions.EmailAlreadyExistsException;
-import com.deliveryplatform.users.exceptions.PasswordNotValidException;
-import com.deliveryplatform.users.exceptions.UserNotFoundException;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -74,20 +70,6 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Error> handleUserNotFoundException(UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(PasswordNotValidException.class)
-    public ResponseEntity<Error> handlePasswordNotValidException(PasswordNotValidException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<Error> handleEmailAlreadyExistsException(EmailAlreadyExistsException    ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Error(ex.getMessage()));
-    }
 
     // ----------------------------------------------------------------
     // ADMIN
@@ -109,6 +91,7 @@ public class UserController {
 
 
     @PutMapping("/{id}/ban")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> banUser(@PathVariable UUID id) {
         userService.banUser(id);
         return ResponseEntity.noContent().build();

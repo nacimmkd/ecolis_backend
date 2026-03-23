@@ -28,7 +28,7 @@ public class UserService {
 
 
     public UserResponse findById(UUID id) {
-        var user = getUserOrThrow(id);
+        var user = getUserByIdOrThrow(id);
         return userMapper.toDto(user);
     }
 
@@ -54,14 +54,14 @@ public class UserService {
 
     @Transactional
     public UserResponse updateProfile(UUID id, ProfileRequest request) {
-        User user = getUserOrThrow(id);
+        User user = getUserByIdOrThrow(id);
         updateProfileFields(user.getProfile(), request);
         return userMapper.toDto(userRepository.save(user));
     }
 
     @Transactional
     public void changePassword(UUID id, ChangePasswordRequest request) {
-        User user = getUserOrThrow(id);
+        User user = getUserByIdOrThrow(id);
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
             throw new PasswordNotValidException();
@@ -73,22 +73,21 @@ public class UserService {
 
     @Transactional
     public void softDelete(UUID id) {
-        User user = getUserOrThrow(id);
+        User user = getUserByIdOrThrow(id);
         user.setActive(false);
         userRepository.save(user);
     }
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public void banUser(UUID id) {
-        User user = getUserOrThrow(id);
+        User user = getUserByIdOrThrow(id);
         user.setActive(false);
         userRepository.save(user);
     }
 
     // ----------------------------------------------------------------
 
-    public User getUserOrThrow(UUID id) {
+    public User getUserByIdOrThrow(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
     }

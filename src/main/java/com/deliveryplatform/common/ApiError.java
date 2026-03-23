@@ -1,4 +1,6 @@
 package com.deliveryplatform.common;
 
-public record ApiError() {
+public record ApiError(
+        String message
+) {
 }
