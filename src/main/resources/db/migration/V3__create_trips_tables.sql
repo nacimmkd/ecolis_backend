@@ -22,7 +22,7 @@ CREATE TABLE "trips" (
                          "arrival_date"          DATE,
                          "max_volume_m3"         NUMERIC(8,2)  NOT NULL,
                          "max_weight_kg"         NUMERIC(8,2)  NOT NULL,
-                         "flat_price"            NUMERIC(10,2),
+                         "price"                 NUMERIC(10,2),
                          "max_detour_km"         NUMERIC(6,2)  NOT NULL DEFAULT 1,
                          "status"                VARCHAR(30)   NOT NULL DEFAULT 'PUBLISHED'
                              CHECK ("status" IN ('PUBLISHED', 'FULL', 'CANCELED')),
