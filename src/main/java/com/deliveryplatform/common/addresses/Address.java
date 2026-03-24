@@ -1,20 +1,11 @@
 package com.deliveryplatform.common.addresses;
 
-import jakarta.persistence.Embeddable;
-import lombok.*;
-import java.math.BigDecimal;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-@Embeddable
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class Address {
-    private String     street;
-    private String     city;
-    private String     postalCode;
-    private String     country;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
-}
+public record Address(
+        @NotBlank @Size(max = 255) String street,
+        @NotBlank @Size(max = 100) String city,
+        @NotBlank @Size(max = 20)  String postalCode,
+        @NotBlank @Size(max = 60)  String country
+) {}

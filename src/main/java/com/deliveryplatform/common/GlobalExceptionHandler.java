@@ -5,6 +5,7 @@ import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
 import com.deliveryplatform.parcels.exceptions.UnauthorizedParcelActionException;
 import com.deliveryplatform.trips.exceptions.IllegalTripStateException;
 import com.deliveryplatform.trips.exceptions.TripNotFoundException;
+import com.deliveryplatform.trips.exceptions.TripStopNotFoundException;
 import com.deliveryplatform.trips.exceptions.UnauthorizedTripActionException;
 import com.deliveryplatform.users.exceptions.EmailAlreadyExistsException;
 import com.deliveryplatform.users.exceptions.PasswordNotValidException;
@@ -69,6 +70,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalTripStateException.class)
     public ResponseEntity<ApiError> handleIllegalTripStateException(IllegalTripStateException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(ex.getMessage()));
+    }
+
+    @ExceptionHandler(TripStopNotFoundException.class)
+    public ResponseEntity<ApiError> handleTripStopNotFoundException(TripStopNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiError(ex.getMessage()));
     }
 
     // VALIDATIONS
