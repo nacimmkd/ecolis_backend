@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.common.addresses.Address;
+import com.deliveryplatform.common.addresses.GeoAddress;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -39,7 +39,7 @@ public class Trip {
             @AttributeOverride(name = "latitude",   column = @Column(name = "departure_lat",         precision = 10, scale = 7)),
             @AttributeOverride(name = "longitude",  column = @Column(name = "departure_lng",         precision = 10, scale = 7))
     })
-    private Address departure;
+    private GeoAddress departure;
 
     @Embedded
     @AttributeOverrides({
@@ -50,7 +50,7 @@ public class Trip {
             @AttributeOverride(name = "latitude",   column = @Column(name = "arrival_lat",         precision = 10, scale = 7)),
             @AttributeOverride(name = "longitude",  column = @Column(name = "arrival_lng",         precision = 10, scale = 7))
     })
-    private Address arrival;
+    private GeoAddress arrival;
 
     @Column(name = "departure_date")
     private LocalDate departureDate;
@@ -87,4 +87,15 @@ public class Trip {
     @OrderBy("stopOrder ASC")
     @Builder.Default
     private List<TripStop> stops = new ArrayList<>();
+
+
+    public void addStop(TripStop stop) {
+        stops.add(stop);
+        stop.setTrip(this);
+    }
+
+    public void removeStop(TripStop stop) {
+        stops.remove(stop);
+        stop.setTrip(null);
+    }
 }

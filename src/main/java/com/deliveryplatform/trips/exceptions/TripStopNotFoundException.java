@@ -1,7 +1,7 @@
 package com.deliveryplatform.trips.exceptions;
 
-public class TripStopNotFound extends RuntimeException {
-    public TripStopNotFound(String message) {
-        super(message);
+public class TripStopNotFoundException extends RuntimeException {
+    public TripStopNotFoundException() {
+        super("Trip stop not found");
     }
 }

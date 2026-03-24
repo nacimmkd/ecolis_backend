@@ -1,5 +1,6 @@
 package com.deliveryplatform.trips;
 
+import com.deliveryplatform.common.addresses.Address;
 import com.deliveryplatform.trips.TripDto.*;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
@@ -9,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import com.deliveryplatform.trips.TripStopDto.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -73,6 +75,43 @@ public class TripController {
         tripService.deleteTrip(id, principal.getId());
         return ResponseEntity.noContent().build();
     }
+
+
+    // ----------------------------------------------------------------
+    // STOPS
+    // ----------------------------------------------------------------
+
+
+    @PostMapping("/{tripId}/stops")
+    public StopResponse addStop(
+            @PathVariable UUID tripId,
+            @RequestBody Address address,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return tripService.addStop(tripId, principal.getId(), address);
+    }
+
+
+    @DeleteMapping("/{tripId}/stops/{stopId}")
+    public ResponseEntity<Void> deleteTripStop(
+            @PathVariable UUID tripId,
+            @PathVariable UUID stopId,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        tripService.deleteStop(stopId,tripId, principal.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @PutMapping("/{tripId}/stops/{stopId}")
+    public ResponseEntity<StopResponse> updateTripStop(
+            @PathVariable UUID tripId,
+            @PathVariable UUID stopId,
+            @RequestBody Address address,
+            @AuthenticationPrincipal UUID userId) {
+        return ResponseEntity.ok(tripService.updateStop(stopId, tripId, userId, address));
+    }
+
 
 
     // ----------------------------------------------------------------

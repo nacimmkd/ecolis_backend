@@ -1,7 +1,7 @@
 package com.deliveryplatform.trips;
 
+import com.deliveryplatform.common.addresses.GeoAddress;
 import com.deliveryplatform.common.addresses.Address;
-import com.deliveryplatform.common.addresses.AddressRequest;
 import com.deliveryplatform.trips.TripStopDto.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -14,8 +14,8 @@ import java.util.UUID;
 public class TripDto {
 
     public record TripRequest(
-            @Valid @NotNull AddressRequest departure,
-            @Valid @NotNull AddressRequest arrival,
+            @Valid @NotNull Address departure,
+            @Valid @NotNull Address arrival,
 
             @NotNull @FutureOrPresent LocalDate departureDate,
             @NotNull @FutureOrPresent LocalDate arrivalDate,
@@ -26,14 +26,14 @@ public class TripDto {
 
             String notes,
 
-            @Valid List<TripStopRequest> stops
+            @Valid List<StopRequest> stops
     ) {}
 
     public record TripResponse(
             UUID id,
             UUID userId,
-            Address departure,
-            Address arrival,
+            GeoAddress departure,
+            GeoAddress arrival,
             LocalDate departureDate,
             LocalDate arrivalDate,
             BigDecimal maxVolumeM3,
@@ -41,7 +41,7 @@ public class TripDto {
             BigDecimal price,
             TripStatus status,
             String notes,
-            List<TripStopResponse> stops
+            List<StopResponse> stops
     ) {}
 
 }

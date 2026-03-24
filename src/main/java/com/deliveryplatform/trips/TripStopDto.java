@@ -1,8 +1,8 @@
 package com.deliveryplatform.trips;
 
 
-import com.deliveryplatform.common.addresses.AddressRequest;
 import com.deliveryplatform.common.addresses.Address;
+import com.deliveryplatform.common.addresses.GeoAddress;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -11,14 +11,14 @@ import java.util.UUID;
 
 public class TripStopDto {
 
-    public record TripStopRequest(
+    public record StopRequest(
             @NotNull @Min(1) Integer stopOrder,
-            @Valid @NotNull  AddressRequest address
+            @Valid @NotNull Address address
     ) {}
 
-    public record TripStopResponse(
+    public record StopResponse(
             UUID          id,
             Integer       stopOrder,
-            Address address
+            GeoAddress address
     ) {}
 }

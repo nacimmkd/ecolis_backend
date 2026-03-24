@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.common.addresses.Address;
+import com.deliveryplatform.common.addresses.GeoAddress;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,6 +31,6 @@ public class TripStop {
     private int stopOrder;
 
     @Embedded
-    private Address address;;
+    private GeoAddress address;;
 
 }
