@@ -1,6 +1,6 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.common.addresses.Address;
+import com.deliveryplatform.common.addresses.GeoAddress;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -59,7 +59,7 @@ public class Parcel {
             @AttributeOverride(name = "latitude",        column = @Column(name = "pickup_lat")),
             @AttributeOverride(name = "longitude",        column = @Column(name = "pickup_lng"))
     })
-    private Address pickupAddress;
+    private GeoAddress pickupAddress;
 
     @Embedded
     @AttributeOverrides({
@@ -70,7 +70,7 @@ public class Parcel {
             @AttributeOverride(name = "latitude",        column = @Column(name = "dropoff_lat")),
             @AttributeOverride(name = "longitude",        column = @Column(name = "dropoff_lng"))
     })
-    private Address dropoffAddress;
+    private GeoAddress dropoffAddress;
 
     @CreationTimestamp
     @Column(name = "created_at")

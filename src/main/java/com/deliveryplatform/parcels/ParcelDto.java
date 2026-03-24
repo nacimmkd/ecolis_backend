@@ -1,7 +1,7 @@
 package com.deliveryplatform.parcels;
 
+import com.deliveryplatform.common.addresses.GeoAddress;
 import com.deliveryplatform.common.addresses.Address;
-import com.deliveryplatform.common.addresses.AddressRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
@@ -26,10 +26,10 @@ public class ParcelDto {
             boolean fragile,
 
             @NotNull @Valid
-            AddressRequest pickupAddress,
+            Address pickupAddress,
 
             @NotNull @Valid
-            AddressRequest dropoffAddress,
+            Address dropoffAddress,
 
             @Future
             LocalDate deadlineDate
@@ -44,8 +44,8 @@ public class ParcelDto {
             ParcelSize      size,
             BigDecimal      price,
             boolean         fragile,
-            Address         pickupAddress,
-            Address         dropoffAddress,
+            GeoAddress pickupAddress,
+            GeoAddress dropoffAddress,
             ParcelStatus    status,
             LocalDate       deadlineDate,
             OffsetDateTime  createdAt
