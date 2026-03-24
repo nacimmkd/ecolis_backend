@@ -74,14 +74,6 @@ public class TripController {
         return ResponseEntity.noContent().build();
     }
 
-//    @PutMapping("/{id}/cancel")
-//    public ResponseEntity<Void> cancelTrip(
-//            @PathVariable UUID id,
-//            @AuthenticationPrincipal UserPrincipal principal
-//    ) {
-//        tripService.cancelTrip(id, principal.getId());
-//        return ResponseEntity.noContent().build();
-//    }
 
     // ----------------------------------------------------------------
     // ADMIN

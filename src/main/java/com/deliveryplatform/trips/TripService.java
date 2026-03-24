@@ -77,15 +77,6 @@ public class TripService {
         tripRepository.delete(trip);
     }
 
-//    @Transactional
-//    public void cancelTrip(UUID tripId, UUID userId) {
-//        var trip = getTripOrThrow(tripId);
-//        assertOwnership(trip, userId);
-//        assertTripIsPublished(trip);
-//        trip.setStatus(TripStatus.CANCELED);
-//        tripRepository.save(trip);
-//    }
-
     @Transactional
     public void updateStatus(UUID tripId, TripStatus status) {
         var trip = getTripOrThrow(tripId);
