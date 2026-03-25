@@ -42,7 +42,6 @@ public class ParcelDto {
             String          description,
             BigDecimal      weightKg,
             ParcelSize      size,
-            BigDecimal      price,
             boolean         fragile,
             GeoAddress pickupAddress,
             GeoAddress dropoffAddress,

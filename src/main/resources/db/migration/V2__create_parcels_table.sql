@@ -5,7 +5,6 @@ CREATE TABLE parcels (
                          weight_kg       NUMERIC(8,2)  NOT NULL,
                          size            VARCHAR(10) NOT NULL
                             CHECK ( size IN ('S','M','L','XL','XXL')),
-                         "price"         NUMERIC(10,2),
                          is_fragile      BOOLEAN NOT NULL DEFAULT FALSE,
 
                          -- pickup address

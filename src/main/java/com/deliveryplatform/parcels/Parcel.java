@@ -40,8 +40,6 @@ public class Parcel {
     @Column(name = "is_fragile", nullable = false)
     private boolean fragile;
 
-    private BigDecimal price;
-
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ParcelStatus status = ParcelStatus.AVAILABLE;
