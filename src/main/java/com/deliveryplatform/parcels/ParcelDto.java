@@ -21,8 +21,6 @@ public class ParcelDto {
 
             @NotNull ParcelSize size,
 
-            @NotNull @DecimalMin("0.0") BigDecimal price,
-
             boolean fragile,
 
             @NotNull @Valid
