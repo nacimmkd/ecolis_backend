@@ -1,8 +1,10 @@
 package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.token.JwtAuthenticationFilter;
+import com.deliveryplatform.common.ApiError;
 import com.deliveryplatform.users.UserPrincipal;
 import com.deliveryplatform.users.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,17 +50,25 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-resources/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
                         .requestMatchers("/api/v1/parcels").permitAll()
                         .anyRequest().authenticated() // to be changed
                 )
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
                 // pour renvoyer les bon HttpStatus entre 401 et 403
-                .exceptionHandling(c -> {
-                    c.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
-                    c.accessDeniedHandler((request, response, exception) -> {
+                .exceptionHandling(ex -> {
+                    ex.authenticationEntryPoint((request, response, e) -> {
+                        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"message\": \"Authentication required\"}");
+                    });
+                    ex.accessDeniedHandler((request, response, e) -> {
                         response.setStatus(HttpStatus.FORBIDDEN.value());
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"message\": \"Access denied\"}");
                     });
                 });
         return http.build();

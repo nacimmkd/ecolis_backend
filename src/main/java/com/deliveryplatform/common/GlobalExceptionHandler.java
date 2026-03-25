@@ -1,5 +1,6 @@
 package com.deliveryplatform.common;
 
+import com.deliveryplatform.auth.AuthenticationSessionException;
 import com.deliveryplatform.parcels.exceptions.IllegalParcelStateException;
 import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
 import com.deliveryplatform.parcels.exceptions.UnauthorizedParcelActionException;
@@ -13,7 +14,9 @@ import com.deliveryplatform.users.exceptions.UserNotFoundException;
 import com.deliveryplatform.common.validations.ValidationError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -75,6 +78,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TripStopNotFoundException.class)
     public ResponseEntity<ApiError> handleTripStopNotFoundException(TripStopNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiError(ex.getMessage()));
+    }
+
+    // AUTH
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiError> handleBadCredentialsException(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError("Email or password is invalid"));
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ApiError> handleMissingRequestCookieException() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                new ApiError("Authentication token is missing"));
+    }
+
+    @ExceptionHandler(AuthenticationSessionException.class)
+    public ResponseEntity<ApiError> handleAuthenticationSessionException(AuthenticationSessionException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                new ApiError(ex.getMessage()));
     }
 
     // VALIDATIONS

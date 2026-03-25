@@ -43,10 +43,15 @@ public class AuthService {
     public String refresh(String refreshToken) {
         validateRefreshTokenOrThrow(refreshToken);
         var user = getUserFromRefreshToken(refreshToken);
+
+        var newRefreshToken = jwtService.generateRefreshToken(user);
+        refreshTokenService.save(user.getId(), newRefreshToken);
+
         return jwtService.generateAccessToken(user);
     }
 
     public void logout(String refreshToken) {
+        validateRefreshTokenOrThrow(refreshToken);
         var userId = jwtService.getUserIdFromToken(refreshToken);
         refreshTokenService.remove(userId);
     }
@@ -71,7 +76,7 @@ public class AuthService {
 
     private void validateRefreshTokenOrThrow(String refreshToken) {
         if (!jwtService.validateRefreshToken(refreshToken)) {
-            throw new AuthenticationSessionException("User not logged in");
+            throw new AuthenticationSessionException("Session expired");
         }
     }
 }

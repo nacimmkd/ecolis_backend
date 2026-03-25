@@ -70,24 +70,6 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Error> handleBadCredentialsException(BadCredentialsException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(MissingRequestCookieException.class)
-    public ResponseEntity<Error> handleMissingRequestCookieException() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                new Error("User not logged in"));
-    }
-
-    @ExceptionHandler(AuthenticationSessionException.class)
-    public ResponseEntity<Error> handleAuthenticationSessionException(AuthenticationSessionException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                new Error(ex.getMessage()));
-    }
-
     //-------------------------------------------------------------------
 
     private Cookie generateCookie(String refreshToken, int expiration) {
