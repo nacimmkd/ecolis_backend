@@ -1,5 +1,6 @@
 package com.deliveryplatform.parcels;
 
+import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +26,16 @@ public class ParcelController {
         return ResponseEntity.ok(parcelService.getParcel(id));
     }
 
+    @GetMapping("/{id}/secure") // private
+    public ResponseEntity<ParcelWithCodeResponse> getParcelWithCode(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal user
+    ) {
+        return ResponseEntity.ok(parcelService.getParcelWithCode(id, user.getId()));
+    }
+
     @GetMapping("/me")
-    public ResponseEntity<List<ParcelResponse>> getMyParcels(
+    public ResponseEntity<List<ParcelWithCodeResponse>> getMyParcels(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId()));
     }
@@ -38,7 +47,7 @@ public class ParcelController {
 
 
     @PostMapping
-    public ResponseEntity<ParcelResponse> createParcel(
+    public ResponseEntity<ParcelWithCodeResponse> createParcel(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelRequest request,
             UriComponentsBuilder uriBuilder) {
@@ -53,7 +62,7 @@ public class ParcelController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<ParcelResponse> updateParcel(
+    public ResponseEntity<ParcelWithCodeResponse> updateParcel(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelRequest request) {

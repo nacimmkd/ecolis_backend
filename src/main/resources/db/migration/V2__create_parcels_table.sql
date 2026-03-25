@@ -23,8 +23,10 @@ CREATE TABLE parcels (
                          dropoff_lat         NUMERIC(10,7),
                          dropoff_lng         NUMERIC(10,7),
 
-                         status          VARCHAR(20) NOT NULL DEFAULT 'PUBLISHED'
+                         status              VARCHAR(20) NOT NULL DEFAULT 'PUBLISHED'
                              CHECK (status IN ('PUBLISHED','BOOKED','PICKED_UP','IN_TRANSIT','DELIVERED','CANCELLED')),
+
+                         code_otp                VARCHAR(20),
                          deadline_date   DATE,
                          created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 

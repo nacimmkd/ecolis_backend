@@ -9,7 +9,8 @@ import org.mapstruct.MappingTarget;
 public interface ParcelMapper {
 
     @Mapping(source = "user.id",target = "userId")
-    ParcelResponse toDto(Parcel parcel);
+    ParcelResponse toPublicDto(Parcel parcel);
+    ParcelWithCodeResponse toDto(Parcel parcel);
     Parcel toEntity(ParcelRequest parcelRequest);
     void updateEntity(@MappingTarget Parcel parcel, ParcelRequest request);
 }

@@ -40,6 +40,9 @@ public class Parcel {
     @Column(name = "is_fragile", nullable = false)
     private boolean fragile;
 
+    @Column(name = "code_otp")
+    private String codeOTP;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ParcelStatus status = ParcelStatus.PUBLISHED;

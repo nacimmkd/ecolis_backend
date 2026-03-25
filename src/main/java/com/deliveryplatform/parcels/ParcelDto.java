@@ -23,6 +23,8 @@ public class ParcelDto {
 
             boolean fragile,
 
+            Boolean requireCode,
+
             @NotNull @Valid
             Address pickupAddress,
 
@@ -41,8 +43,23 @@ public class ParcelDto {
             BigDecimal      weightKg,
             ParcelSize      size,
             boolean         fragile,
-            GeoAddress pickupAddress,
-            GeoAddress dropoffAddress,
+            GeoAddress      pickupAddress,
+            GeoAddress      dropoffAddress,
+            ParcelStatus    status,
+            LocalDate       deadlineDate,
+            OffsetDateTime  createdAt
+    ) {}
+
+    public record ParcelWithCodeResponse(
+            UUID            id,
+            UUID            userId,
+            String          description,
+            BigDecimal      weightKg,
+            ParcelSize      size,
+            boolean         fragile,
+            String          codeOTP,
+            GeoAddress      pickupAddress,
+            GeoAddress      dropoffAddress,
             ParcelStatus    status,
             LocalDate       deadlineDate,
             OffsetDateTime  createdAt
