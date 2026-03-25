@@ -50,7 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-resources/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
                         .requestMatchers("/api/v1/parcels").permitAll()
                         .anyRequest().authenticated() // to be changed
@@ -63,7 +63,7 @@ public class SecurityConfig {
                     ex.authenticationEntryPoint((request, response, e) -> {
                         response.setStatus(HttpStatus.UNAUTHORIZED.value());
                         response.setContentType("application/json");
-                        response.getWriter().write("{\"message\": \"Authentication required\"}");
+                        response.getWriter().write("{\"message\": \"Unauthorized access\"}");
                     });
                     ex.accessDeniedHandler((request, response, e) -> {
                         response.setStatus(HttpStatus.FORBIDDEN.value());
