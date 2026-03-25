@@ -48,6 +48,6 @@ CREATE TABLE "trip_stops" (
                               "longitude"    NUMERIC(10,7),
 
                               PRIMARY KEY ("id"),
-                              FOREIGN KEY ("trip_id") REFERENCES "trips"("id") ON UPDATE CASCADE ON DELETE RESTRICT,
+                              FOREIGN KEY ("trip_id") REFERENCES "trips"("id") ON DELETE CASCADE ON UPDATE CASCADE,
                               UNIQUE (trip_id, stop_order)
 );
