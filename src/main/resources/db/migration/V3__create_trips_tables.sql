@@ -26,6 +26,7 @@ CREATE TABLE "trips" (
                          "max_detour_km"         NUMERIC(6,2)  NOT NULL DEFAULT 1,
                          "status"                VARCHAR(30)   NOT NULL DEFAULT 'PUBLISHED'
                              CHECK ("status" IN ('PUBLISHED', 'FULL', 'CANCELED')),
+                         "instant_booking"       BOOLEAN NOT NULL DEFAULT FALSE,
                          "notes"                 TEXT,
                          "created_at"            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
 

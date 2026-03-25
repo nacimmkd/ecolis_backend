@@ -22,6 +22,7 @@ public class TripDto {
             @DecimalMin("0.0") BigDecimal availableVolumeCm3,
             @DecimalMin("0.0") BigDecimal availableWeightKg,
             @NotNull @DecimalMin("0.0") BigDecimal pricePerKg,
+            boolean instantBooking,
             @DecimalMin("0.0") BigDecimal maxDetourKm,
 
             String notes,
@@ -39,6 +40,7 @@ public class TripDto {
             BigDecimal availableVolumeCm3,
             BigDecimal availableWeightKg,
             BigDecimal pricePerKg,
+            boolean instantBooking,
             TripStatus status,
             String notes,
             List<StopResponse> stops

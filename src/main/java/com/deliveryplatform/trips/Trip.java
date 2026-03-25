@@ -67,6 +67,9 @@ public class Trip {
     @Column(name = "price_per_kg", precision = 10, scale = 2)
     private BigDecimal pricePerKg;
 
+    @Column(name = "instant_booking")
+    private boolean instantBooking;
+
     @Column(name = "max_detour_km", nullable = false, precision = 6, scale = 2)
     @Builder.Default
     private BigDecimal maxDetourKm = BigDecimal.ONE;
