@@ -39,7 +39,7 @@ public class ParcelService {
 
 
     public List<ParcelResponse> getAvailableParcels(){
-        return parcelRepository.findByStatus(ParcelStatus.AVAILABLE).stream()
+        return parcelRepository.findByStatus(ParcelStatus.PUBLISHED).stream()
                 .map(parcelMapper::toDto)
                 .toList();
     }

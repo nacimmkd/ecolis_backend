@@ -24,8 +24,8 @@ CREATE TABLE "trips" (
                          "available_weight_kg"   NUMERIC(8,2)  NOT NULL,
                          "price_per_kg"          NUMERIC(8,2)  NOT NULL DEFAULT 0.00,
                          "max_detour_km"         NUMERIC(6,2)  NOT NULL DEFAULT 1,
-                         "status"                VARCHAR(30)   NOT NULL DEFAULT 'PUBLISHED'
-                             CHECK ("status" IN ('PUBLISHED', 'FULL', 'CANCELED')),
+                         "status"                VARCHAR(20)   NOT NULL DEFAULT 'PUBLISHED'
+                             CHECK ("status" IN ('PUBLISHED', 'FULL', 'IN_TRANSIT', 'COMPLETED', 'CANCELLED')),
                          "instant_booking"       BOOLEAN NOT NULL DEFAULT FALSE,
                          "notes"                 TEXT,
                          "created_at"            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),

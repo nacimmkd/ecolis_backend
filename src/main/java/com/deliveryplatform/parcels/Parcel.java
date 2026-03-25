@@ -42,7 +42,7 @@ public class Parcel {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private ParcelStatus status = ParcelStatus.AVAILABLE;
+    private ParcelStatus status = ParcelStatus.PUBLISHED;
 
     @Column(name = "deadline_date")
     private LocalDate deadlineDate;
@@ -77,7 +77,7 @@ public class Parcel {
 
 
     public boolean isAvailable() {
-        return this.status == ParcelStatus.AVAILABLE;
+        return this.status == ParcelStatus.PUBLISHED;
     }
 
     public boolean isOwner(UUID userId) {

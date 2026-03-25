@@ -3,7 +3,8 @@ CREATE TABLE bookings (
                           trip_id         UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
                           parcel_id       UUID NOT NULL REFERENCES parcels(id) ON DELETE CASCADE,
                           requester_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                          status          VARCHAR(30)  NOT NULL DEFAULT 'pending',
+                          "status"                VARCHAR(20)   NOT NULL DEFAULT 'PENDING'
+                              CHECK ("status" IN ('PENDING', 'ACCEPTED', 'REJECTED', 'PAID','COMPLETED' ,'CANCELLED', 'DISPUTED')),
                           price    NUMERIC(8, 2),
                           message         TEXT,
                           confirmed_at    TIMESTAMPTZ,

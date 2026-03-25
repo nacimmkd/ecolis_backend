@@ -3,5 +3,7 @@ package com.deliveryplatform.trips;
 public enum TripStatus {
     PUBLISHED,
     FULL,
-    CANCELED
+    IN_TRANSIT,
+    COMPLETED,
+    CANCELLED
 }

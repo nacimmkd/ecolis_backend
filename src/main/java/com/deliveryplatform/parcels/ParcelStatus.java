@@ -1,8 +1,9 @@
 package com.deliveryplatform.parcels;
 
 public enum ParcelStatus {
-    AVAILABLE,
+    PUBLISHED,
     BOOKED,
+    PICKED_UP,
     IN_TRANSIT,
     DELIVERED,
     CANCELLED
