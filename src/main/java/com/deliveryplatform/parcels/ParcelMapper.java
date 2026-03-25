@@ -1,7 +1,9 @@
 package com.deliveryplatform.parcels;
 
+import com.deliveryplatform.parcels.dto.ParcelRequest;
+import com.deliveryplatform.parcels.dto.ParcelResponse;
+import com.deliveryplatform.parcels.dto.ParcelWithCodeResponse;
 import org.mapstruct.Mapper;
-import com.deliveryplatform.parcels.ParcelDto.*;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 

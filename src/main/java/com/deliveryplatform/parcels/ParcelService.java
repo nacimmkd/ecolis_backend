@@ -1,13 +1,15 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.common.CodeGeneratorUtil;
+import com.deliveryplatform.parcels.dto.ParcelRequest;
+import com.deliveryplatform.parcels.dto.ParcelResponse;
+import com.deliveryplatform.parcels.dto.ParcelWithCodeResponse;
 import com.deliveryplatform.parcels.exceptions.IllegalParcelStateException;
 import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
 import com.deliveryplatform.parcels.exceptions.UnauthorizedParcelActionException;
 import com.deliveryplatform.users.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.deliveryplatform.parcels.ParcelDto.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,7 +53,7 @@ public class ParcelService {
     }
 
 
-    public ParcelWithCodeResponse createParcel(UUID userId,ParcelRequest request) {
+    public ParcelWithCodeResponse createParcel(UUID userId, ParcelRequest request) {
         var parcel = parcelMapper.toEntity(request);
         var user = userService.getUserByIdOrThrow(userId);
         parcel.setUser(user);
