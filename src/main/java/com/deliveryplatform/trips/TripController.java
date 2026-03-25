@@ -108,8 +108,10 @@ public class TripController {
             @PathVariable UUID tripId,
             @PathVariable UUID stopId,
             @RequestBody Address address,
-            @AuthenticationPrincipal UUID userId) {
-        return ResponseEntity.ok(tripService.updateStop(stopId, tripId, userId, address));
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                tripService.updateStop(stopId, tripId, principal.getId(), address)
+        );
     }
 
 

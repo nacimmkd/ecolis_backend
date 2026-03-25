@@ -7,10 +7,7 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "trip_stops",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"trip_id", "stop_order"})
-)
+@Table(name = "trip_stops")
 @Getter
 @Setter
 @Builder
@@ -22,7 +19,7 @@ public class TripStop {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne
     @JoinColumn(name = "trip_id")
     @JsonIgnore
     private Trip trip;
@@ -31,6 +28,6 @@ public class TripStop {
     private int stopOrder;
 
     @Embedded
-    private GeoAddress address;;
+    private GeoAddress address;
 
 }

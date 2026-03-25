@@ -3,10 +3,7 @@ package com.deliveryplatform.trips;
 import com.deliveryplatform.common.addresses.AddressMapper;
 import com.deliveryplatform.common.addresses.Address;
 import com.deliveryplatform.trips.TripDto.*;
-import com.deliveryplatform.trips.exceptions.IllegalTripStateException;
-import com.deliveryplatform.trips.exceptions.TripNotFoundException;
-import com.deliveryplatform.trips.exceptions.TripStopNotFoundException;
-import com.deliveryplatform.trips.exceptions.UnauthorizedTripActionException;
+import com.deliveryplatform.trips.exceptions.*;
 import com.deliveryplatform.users.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -53,10 +50,6 @@ public class TripService {
                 .toList();
     }
 
-    public Trip getTripEntity(UUID id) {
-        return tripRepository.findById(id).orElseThrow(TripNotFoundException::new);
-    }
-
 
     @Transactional
     public TripResponse createTrip(UUID userId, TripRequest request) {
@@ -64,19 +57,20 @@ public class TripService {
         var trip = tripMapper.toEntity(request);
         trip.setUser(user);
 
-        if (trip.getStops() != null) {
-            trip.getStops().forEach(stop -> stop.setTrip(trip));
-        }
+        trip.addStops(stopMapper.toEntityList(request.stops()));
 
         return tripMapper.toResponse(tripRepository.save(trip));
     }
+
 
     @Transactional
     public TripResponse updateTrip(UUID tripId, UUID userId, TripRequest request) {
         var trip = getTripOrThrow(tripId);
         assertOwnership(trip, userId);
         assertTripIsPublished(trip);
+        assertStopOrder(request.stops());
         tripMapper.updateEntity(trip, request);
+        trip.updateStops(stopMapper.toEntityList(request.stops()));
         return tripMapper.toResponse(tripRepository.save(trip));
     }
 
@@ -103,14 +97,11 @@ public class TripService {
     public StopResponse addStop(UUID tripId, UUID userId, Address address) {
         var trip = getTripOrThrow(tripId);
         assertOwnership(trip, userId);
-
         int order = trip.getStops().size() + 1 ;
         var stop = TripStop.builder()
-                .trip(trip)
                 .stopOrder(order)
                 .address(addressMapper.toEntity(address))
                 .build();
-
         trip.addStop(stop);
         return stopMapper.toResponse(stopRepository.save(stop));
     }
@@ -120,10 +111,7 @@ public class TripService {
     public void deleteStop(UUID stopId, UUID tripId, UUID userId) {
         var trip = getTripOrThrow(tripId);
         assertOwnership(trip, userId);
-
-        var stopToRemove = findStopInTrip(trip, stopId);
-        removeAndReorder(trip, stopToRemove);
-
+        removeAndReorder(trip, stopId);
         tripRepository.save(trip);
     }
 
@@ -132,14 +120,10 @@ public class TripService {
     public StopResponse updateStop(UUID stopId, UUID tripId, UUID userId, Address address) {
         var trip = getTripOrThrow(tripId);
         assertOwnership(trip, userId);
-
         var stop = findStopInTrip(trip, stopId);
         stop.setAddress(addressMapper.toEntity(address));
-
         return stopMapper.toResponse(stopRepository.save(stop));
     }
-
-
 
 
     // ----------------------------------------------------------------
@@ -170,13 +154,17 @@ public class TripService {
                 .orElseThrow(TripStopNotFoundException::new);
     }
 
-    private void removeAndReorder(Trip trip, TripStop stopToRemove) {
+    private void removeAndReorder(Trip trip, UUID stopId) {
+        var stopToRemove = findStopInTrip(trip, stopId);
         trip.removeStop(stopToRemove);
-        stopRepository.delete(stopToRemove);
-        stopRepository.flush();
+        trip.reorderStops();
+    }
 
-        trip.getStops().stream()
-                .filter(stop -> stop.getStopOrder() > stopToRemove.getStopOrder())
-                .forEach(stop -> stop.setStopOrder(stop.getStopOrder() - 1));
+    private void assertStopOrder(List<StopRequest> stops) {
+        for (int i = 0; i < stops.size(); i++) {
+            if (stops.get(i).stopOrder() != i + 1) {
+                throw new InvalidStopOrderException();
+            }
+        }
     }
 }

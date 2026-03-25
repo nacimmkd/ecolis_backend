@@ -94,8 +94,28 @@ public class Trip {
         stop.setTrip(this);
     }
 
+    public void addStops(List<TripStop> stops) {
+        for(var  stop : stops) {
+            addStop(stop);
+        }
+    }
+    public void updateStops(List<TripStop> newStops) {
+        clearStops();
+        addStops(newStops);
+    }
+
     public void removeStop(TripStop stop) {
         stops.remove(stop);
         stop.setTrip(null);
+    }
+
+    public void clearStops(){
+        stops.clear();
+    }
+
+    public void reorderStops() {
+        for (int i = 0; i < stops.size(); i++) {
+            stops.get(i).setStopOrder(i + 1);
+        }
     }
 }

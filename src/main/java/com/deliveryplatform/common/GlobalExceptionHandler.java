@@ -4,10 +4,7 @@ import com.deliveryplatform.auth.AuthenticationSessionException;
 import com.deliveryplatform.parcels.exceptions.IllegalParcelStateException;
 import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
 import com.deliveryplatform.parcels.exceptions.UnauthorizedParcelActionException;
-import com.deliveryplatform.trips.exceptions.IllegalTripStateException;
-import com.deliveryplatform.trips.exceptions.TripNotFoundException;
-import com.deliveryplatform.trips.exceptions.TripStopNotFoundException;
-import com.deliveryplatform.trips.exceptions.UnauthorizedTripActionException;
+import com.deliveryplatform.trips.exceptions.*;
 import com.deliveryplatform.users.exceptions.EmailAlreadyExistsException;
 import com.deliveryplatform.users.exceptions.PasswordNotValidException;
 import com.deliveryplatform.users.exceptions.UserNotFoundException;
@@ -78,6 +75,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TripStopNotFoundException.class)
     public ResponseEntity<ApiError> handleTripStopNotFoundException(TripStopNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiError(ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidStopOrderException.class)
+    public ResponseEntity<ApiError> handleInvalidStopOrderException(InvalidStopOrderException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(ex.getMessage()));
     }
 
     // AUTH
