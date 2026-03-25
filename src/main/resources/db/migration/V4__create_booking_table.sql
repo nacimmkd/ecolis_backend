@@ -4,7 +4,7 @@ CREATE TABLE bookings (
                           parcel_id       UUID NOT NULL REFERENCES parcels(id) ON DELETE CASCADE,
                           requester_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                           status          VARCHAR(30)  NOT NULL DEFAULT 'pending',
-                          agreed_price    NUMERIC(8, 2),
+                          price    NUMERIC(8, 2),
                           message         TEXT,
                           confirmed_at    TIMESTAMPTZ,
                           picked_up_at    TIMESTAMPTZ,
