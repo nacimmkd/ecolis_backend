@@ -30,7 +30,7 @@ CREATE TABLE "trips" (
                          "created_at"            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
 
                          PRIMARY KEY ("id"),
-                         FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+                         FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT
 );
 
 
@@ -48,6 +48,6 @@ CREATE TABLE "trip_stops" (
                               "longitude"    NUMERIC(10,7),
 
                               PRIMARY KEY ("id"),
-                              FOREIGN KEY ("trip_id") REFERENCES "trips"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+                              FOREIGN KEY ("trip_id") REFERENCES "trips"("id") ON UPDATE CASCADE ON DELETE RESTRICT,
                               UNIQUE (trip_id, stop_order)
 );
