@@ -19,9 +19,9 @@ public class TripDto {
 
             @NotNull @FutureOrPresent LocalDate departureDate,
             @NotNull @FutureOrPresent LocalDate arrivalDate,
-            @DecimalMin("0.0") BigDecimal maxVolumeM3,
-            @DecimalMin("0.0") BigDecimal maxWeightKg,
-            @DecimalMin("0.0") BigDecimal price,
+            @DecimalMin("0.0") BigDecimal availableVolumeCm3,
+            @DecimalMin("0.0") BigDecimal availableWeightKg,
+            @NotNull @DecimalMin("0.0") BigDecimal pricePerKg,
             @DecimalMin("0.0") BigDecimal maxDetourKm,
 
             String notes,
@@ -36,9 +36,9 @@ public class TripDto {
             GeoAddress arrival,
             LocalDate departureDate,
             LocalDate arrivalDate,
-            BigDecimal maxVolumeM3,
-            BigDecimal maxWeightKg,
-            BigDecimal price,
+            BigDecimal availableVolumeCm3,
+            BigDecimal availableWeightKg,
+            BigDecimal pricePerKg,
             TripStatus status,
             String notes,
             List<StopResponse> stops

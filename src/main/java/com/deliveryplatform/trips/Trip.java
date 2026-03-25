@@ -58,14 +58,14 @@ public class Trip {
     @Column(name = "arrival_date")
     private LocalDate arrivalDate;
 
-    @Column(name = "max_volume_m3", precision = 8, scale = 2)
-    private BigDecimal maxVolumeM3;
+    @Column(name = "available_volume_cm3", precision = 8, scale = 2)
+    private BigDecimal availableVolumeCm3;
 
-    @Column(name = "max_weight_kg", precision = 8, scale = 2)
-    private BigDecimal maxWeightKg;
+    @Column(name = "available_weight_kg", precision = 8, scale = 2)
+    private BigDecimal availableWeightKg;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(name = "price_per_kg", precision = 10, scale = 2)
+    private BigDecimal pricePerKg;
 
     @Column(name = "max_detour_km", nullable = false, precision = 6, scale = 2)
     @Builder.Default
