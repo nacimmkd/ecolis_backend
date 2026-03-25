@@ -17,7 +17,7 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final RefreshTokenService refreshTokenService;
     private final JwtConfig jwtConfig;
 
@@ -70,8 +70,7 @@ public class AuthService {
 
     private User getUserFromRefreshToken(String refreshToken) {
         var userId = jwtService.getUserIdFromToken(refreshToken);
-        return userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+        return userService.getUserByIdOrThrow(userId);
     }
 
     private void validateRefreshTokenOrThrow(String refreshToken) {
