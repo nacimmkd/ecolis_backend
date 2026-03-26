@@ -1,8 +1,8 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.trips.TripStopDto.*;
+import com.deliveryplatform.trips.dto.StopRequest;
+import com.deliveryplatform.trips.dto.StopResponse;
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 
 import java.util.List;
 

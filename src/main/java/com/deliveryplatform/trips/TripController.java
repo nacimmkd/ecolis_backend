@@ -1,7 +1,9 @@
 package com.deliveryplatform.trips;
 
 import com.deliveryplatform.common.addresses.Address;
-import com.deliveryplatform.trips.TripDto.*;
+import com.deliveryplatform.trips.dto.StopResponse;
+import com.deliveryplatform.trips.dto.TripRequest;
+import com.deliveryplatform.trips.dto.TripResponse;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-import com.deliveryplatform.trips.TripStopDto.*;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,8 +1,9 @@
 package com.deliveryplatform.trips;
 
+import com.deliveryplatform.trips.dto.TripRequest;
+import com.deliveryplatform.trips.dto.TripResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import com.deliveryplatform.trips.TripDto.*;
 import org.mapstruct.MappingTarget;
 
 

@@ -1,7 +1,8 @@
 package com.deliveryplatform.users;
 
+import com.deliveryplatform.users.dto.UserRequest;
+import com.deliveryplatform.users.dto.UserResponse;
 import org.mapstruct.Mapper;
-import com.deliveryplatform.users.UserDto.*;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {

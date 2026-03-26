@@ -2,13 +2,15 @@ package com.deliveryplatform.trips;
 
 import com.deliveryplatform.common.addresses.AddressMapper;
 import com.deliveryplatform.common.addresses.Address;
-import com.deliveryplatform.trips.TripDto.*;
+import com.deliveryplatform.trips.dto.StopRequest;
+import com.deliveryplatform.trips.dto.StopResponse;
+import com.deliveryplatform.trips.dto.TripRequest;
+import com.deliveryplatform.trips.dto.TripResponse;
 import com.deliveryplatform.trips.exceptions.*;
 import com.deliveryplatform.users.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.deliveryplatform.trips.TripStopDto.*;
 
 
 import java.util.List;

@@ -1,6 +1,10 @@
 package com.deliveryplatform.users;
 
 
+import com.deliveryplatform.profiles.dto.ProfileRequest;
+import com.deliveryplatform.users.dto.ChangePasswordRequest;
+import com.deliveryplatform.users.dto.UserRequest;
+import com.deliveryplatform.users.dto.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -8,8 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-import com.deliveryplatform.users.UserDto.*;
-import com.deliveryplatform.profiles.ProfileDto.*;
+
 
 
 import java.util.List;

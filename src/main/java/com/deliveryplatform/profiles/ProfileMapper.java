@@ -1,7 +1,7 @@
 package com.deliveryplatform.profiles;
 
+import com.deliveryplatform.profiles.dto.ProfileRequest;
 import org.mapstruct.Mapper;
-import com.deliveryplatform.profiles.ProfileDto.*;
 
 @Mapper(componentModel = "spring")
 public interface ProfileMapper {

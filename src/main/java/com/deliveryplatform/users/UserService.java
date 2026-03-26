@@ -2,16 +2,17 @@ package com.deliveryplatform.users;
 
 import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.profiles.ProfileMapper;
+import com.deliveryplatform.profiles.dto.ProfileRequest;
+import com.deliveryplatform.users.dto.ChangePasswordRequest;
+import com.deliveryplatform.users.dto.UserRequest;
+import com.deliveryplatform.users.dto.UserResponse;
 import com.deliveryplatform.users.exceptions.EmailAlreadyExistsException;
 import com.deliveryplatform.users.exceptions.PasswordNotValidException;
 import com.deliveryplatform.users.exceptions.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.deliveryplatform.users.UserDto.*;
-import com.deliveryplatform.profiles.ProfileDto.*;
 
 import java.util.List;
 import java.util.UUID;
