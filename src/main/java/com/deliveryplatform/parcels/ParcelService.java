@@ -1,12 +1,12 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.common.CodeGeneratorUtil;
+import com.deliveryplatform.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.dto.ParcelRequest;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
 import com.deliveryplatform.parcels.dto.ParcelWithCodeResponse;
-import com.deliveryplatform.parcels.exceptions.IllegalParcelStateException;
-import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
-import com.deliveryplatform.parcels.exceptions.UnauthorizedParcelActionException;
 import com.deliveryplatform.users.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -88,19 +88,19 @@ public class ParcelService {
 
     public Parcel getParcelByIdOrThrow(UUID parcelId){
         return parcelRepository.findById(parcelId)
-                .orElseThrow(ParcelNotFoundException::new);
+                .orElseThrow(() -> new ResourceNotFoundException("Parcel"));
     }
 
 
     private void assertOwnership(Parcel parcel, UUID userId) {
         if (!parcel.isOwner(userId)) {
-            throw new UnauthorizedParcelActionException();
+            throw new UnauthorizedActionException("User is not owner of this parcel");
         }
     }
 
     private void assertParcelIsAvailable(Parcel parcel){
         if (!parcel.isAvailable()) {
-            throw new IllegalParcelStateException();
+            throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
         }
     }
 }

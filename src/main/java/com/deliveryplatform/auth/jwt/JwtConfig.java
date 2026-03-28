@@ -1,4 +1,4 @@
-package com.deliveryplatform.auth.token;
+package com.deliveryplatform.auth.jwt;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

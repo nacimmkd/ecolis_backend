@@ -2,9 +2,9 @@ package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingRequest;
 import com.deliveryplatform.bookings.dto.BookingResponse;
-import com.deliveryplatform.bookings.exceptions.BookingAlreadyExistsException;
-import com.deliveryplatform.bookings.exceptions.BookingNotFoundException;
-import com.deliveryplatform.bookings.exceptions.UnauthorizedBookingActionException;
+import com.deliveryplatform.exceptions.ConflictException;
+import com.deliveryplatform.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelService;
 import com.deliveryplatform.parcels.ParcelStatus;
@@ -119,7 +119,7 @@ public class BookingService {
 
     private Booking getBookingByIdOrThrow(UUID id) {
         return bookingRepository.findById(id)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking"));
     }
 
     private Booking buildBooking(Parcel parcel, Trip trip, com.deliveryplatform.users.User requester) {
@@ -140,27 +140,25 @@ public class BookingService {
 
     private void validateNoDuplicateBooking(BookingRequest request) {
         if (bookingRepository.existsByParcelIdAndTripId(request.parcelId(), request.tripId())) {
-            throw new BookingAlreadyExistsException(
-                    "A booking already exists for parcel %s on trip %s".formatted(request.parcelId(), request.tripId())
-            );
+            throw new ConflictException("Booking already exists for this parcel and trip");
         }
     }
 
     private void assertParcelOwner(Parcel parcel, UUID requesterId) {
         if (!parcel.getUser().getId().equals(requesterId)) {
-            throw new UnauthorizedBookingActionException("Requester is not the owner of the parcel");
+            throw new UnauthorizedActionException("Requester is not the owner of the parcel");
         }
     }
 
     private void assertTripOwner(Booking booking, UUID carrierId) {
         if (!booking.getTrip().getUser().getId().equals(carrierId)) {
-            throw new UnauthorizedBookingActionException("User is not the carrier of this trip");
+            throw new UnauthorizedActionException("User is not the carrier of this trip");
         }
     }
 
     private void assertBookingInStatus(Booking booking, BookingStatus expected, String message) {
         if (!booking.getStatus().equals(expected)) {
-            throw new UnauthorizedBookingActionException(message);
+            throw new UnauthorizedActionException(message);
         }
     }
 
@@ -169,11 +167,11 @@ public class BookingService {
         boolean isCarrier   = booking.getTrip().getUser().getId().equals(requesterId);
 
         if (!isRequester && !isCarrier) {
-            throw new UnauthorizedBookingActionException("Only the requester or carrier can cancel a booking");
+            throw new UnauthorizedActionException("Only the requester or carrier can cancel a booking");
         }
 
         if (TERMINAL_STATUSES.contains(booking.getStatus())) {
-            throw new UnauthorizedBookingActionException(
+            throw new UnauthorizedActionException(
                     "Cannot cancel a booking with status: " + booking.getStatus()
             );
         }

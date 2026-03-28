@@ -1,4 +1,4 @@
-package com.deliveryplatform.auth.token;
+package com.deliveryplatform.auth.jwt;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;

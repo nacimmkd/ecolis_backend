@@ -1,12 +1,16 @@
 package com.deliveryplatform.trips;
 
+import com.deliveryplatform.bookings.Booking;
+import com.deliveryplatform.bookings.BookingStatus;
 import com.deliveryplatform.common.addresses.AddressMapper;
 import com.deliveryplatform.common.addresses.Address;
+import com.deliveryplatform.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.trips.dto.StopRequest;
 import com.deliveryplatform.trips.dto.StopResponse;
 import com.deliveryplatform.trips.dto.TripRequest;
 import com.deliveryplatform.trips.dto.TripResponse;
-import com.deliveryplatform.trips.exceptions.*;
 import com.deliveryplatform.users.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -69,8 +73,8 @@ public class TripService {
     public TripResponse updateTrip(UUID tripId, UUID userId, TripRequest request) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, userId);
-        assertTripIsPublished(trip);
-        assertStopOrder(request.stops());
+        assertTripInStatus(trip, TripStatus.PUBLISHED, "Trip is not published");
+        validateStopsSequence(request.stops());
         tripMapper.updateEntity(trip, request);
         trip.updateStops(stopMapper.toEntityList(request.stops()));
         return tripMapper.toResponse(tripRepository.save(trip));
@@ -80,7 +84,7 @@ public class TripService {
     public void deleteTrip(UUID tripId, UUID userId) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, userId);
-        assertTripIsPublished(trip);
+        assertTripInStatus(trip, TripStatus.PUBLISHED, "Trip is not published");
         tripRepository.delete(trip);
     }
 
@@ -134,18 +138,18 @@ public class TripService {
 
     public Trip getTripByIdOrThrow(UUID id) {
         return tripRepository.findByIdWithStops(id)
-                .orElseThrow(TripNotFoundException::new);
+                .orElseThrow(() -> new ResourceNotFoundException("Trip"));
     }
 
     private void assertOwnership(Trip trip, UUID userId) {
         if (!trip.getUser().getId().equals(userId)) {
-            throw new UnauthorizedTripActionException();
+            throw new UnauthorizedActionException("User is not owner of this trip");
         }
     }
 
-    private void assertTripIsPublished(Trip trip) {
-        if (trip.getStatus() != TripStatus.PUBLISHED) {
-            throw new IllegalTripStateException();
+    private void assertTripInStatus(Trip trip, TripStatus expected, String message) {
+        if (!trip.getStatus().equals(expected)) {
+            throw new UnauthorizedActionException(message);
         }
     }
 
@@ -153,7 +157,7 @@ public class TripService {
         return trip.getStops().stream()
                 .filter(stop -> stop.getId().equals(stopId))
                 .findFirst()
-                .orElseThrow(TripStopNotFoundException::new);
+                .orElseThrow(() -> new ResourceNotFoundException("Trip stop"));
     }
 
     private void removeAndReorder(Trip trip, UUID stopId) {
@@ -162,11 +166,13 @@ public class TripService {
         trip.reorderStops();
     }
 
-    private void assertStopOrder(List<StopRequest> stops) {
+    private void validateStopsSequence(List<StopRequest> stops) {
         for (int i = 0; i < stops.size(); i++) {
             if (stops.get(i).stopOrder() != i + 1) {
-                throw new InvalidStopOrderException();
+                throw new InvalidDomainStateException("Trip stop must be in sequence order");
             }
         }
     }
+
+
 }

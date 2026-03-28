@@ -1,10 +1,12 @@
 package com.deliveryplatform.auth;
 
-import com.deliveryplatform.auth.token.JwtConfig;
-import com.deliveryplatform.auth.token.JwtService;
-import com.deliveryplatform.auth.token.RefreshTokenService;
-import com.deliveryplatform.users.*;
-import com.deliveryplatform.users.exceptions.UserNotFoundException;
+import com.deliveryplatform.auth.jwt.JwtConfig;
+import com.deliveryplatform.auth.jwt.JwtService;
+import com.deliveryplatform.auth.jwt.RefreshTokenService;
+import com.deliveryplatform.exceptions.AuthenticationException;
+import com.deliveryplatform.users.User;
+import com.deliveryplatform.users.UserPrincipal;
+import com.deliveryplatform.users.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -75,7 +77,7 @@ public class AuthService {
 
     private void validateRefreshTokenOrThrow(String refreshToken) {
         if (!jwtService.validateRefreshToken(refreshToken)) {
-            throw new AuthenticationSessionException("Session expired");
+            throw new AuthenticationException("Session expired");
         }
     }
 }

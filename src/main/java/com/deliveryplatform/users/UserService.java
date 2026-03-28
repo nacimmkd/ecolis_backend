@@ -1,14 +1,14 @@
 package com.deliveryplatform.users;
 
+import com.deliveryplatform.exceptions.ConflictException;
+import com.deliveryplatform.exceptions.InvalidCredentialsException;
+import com.deliveryplatform.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.profiles.ProfileMapper;
 import com.deliveryplatform.profiles.dto.ProfileRequest;
 import com.deliveryplatform.users.dto.ChangePasswordRequest;
 import com.deliveryplatform.users.dto.UserRequest;
 import com.deliveryplatform.users.dto.UserResponse;
-import com.deliveryplatform.users.exceptions.EmailAlreadyExistsException;
-import com.deliveryplatform.users.exceptions.PasswordNotValidException;
-import com.deliveryplatform.users.exceptions.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -65,7 +65,7 @@ public class UserService {
         User user = getUserByIdOrThrow(id);
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
-            throw new PasswordNotValidException();
+            throw new InvalidCredentialsException("Current password is incorrect");
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
@@ -90,13 +90,13 @@ public class UserService {
 
     public User getUserByIdOrThrow(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(() -> new ResourceNotFoundException("User"));
     }
 
     private void checkEmailUniquenessOrThrow(String email) {
         userRepository.findByEmail(email)
                 .ifPresent(user -> {
-                    throw new EmailAlreadyExistsException();
+                    throw new ConflictException("Email already exists");
                 });
     }
 
