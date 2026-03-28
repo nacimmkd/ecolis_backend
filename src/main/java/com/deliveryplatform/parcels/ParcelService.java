@@ -86,7 +86,7 @@ public class ParcelService {
 
     //----------------- private methods-----------------------------
 
-    private Parcel getParcelByIdOrThrow(UUID parcelId){
+    public Parcel getParcelByIdOrThrow(UUID parcelId){
         return parcelRepository.findById(parcelId)
                 .orElseThrow(ParcelNotFoundException::new);
     }

@@ -41,25 +41,20 @@ public class Booking {
     @JoinColumn(name = "requester_id")
     private User requester;
 
-    @Column(name = "status", nullable = false, length = 30)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
-    private String status = "pending";
+    private BookingStatus status = BookingStatus.PENDING;
 
     private BigDecimal price;
 
-    @Column(name = "message", columnDefinition = "TEXT")
-    private String message;
+    @Column(name = "accepted_at")
+    private OffsetDateTime acceptedAt;
 
-    @Column(name = "confirmed_at")
-    private OffsetDateTime confirmedAt;
+    @Column(name = "completed_at")
+    private OffsetDateTime completedAt;
 
-    @Column(name = "picked_up_at")
-    private OffsetDateTime pickedUpAt;
-
-    @Column(name = "delivered_at")
-    private OffsetDateTime deliveredAt;
-
-    @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private OffsetDateTime createdAt;
+    @Builder.Default
+    private OffsetDateTime createdAt = OffsetDateTime.now();
+
 }

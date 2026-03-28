@@ -1,6 +1,9 @@
 package com.deliveryplatform.common;
 
 import com.deliveryplatform.auth.AuthenticationSessionException;
+import com.deliveryplatform.bookings.exceptions.BookingAlreadyExistsException;
+import com.deliveryplatform.bookings.exceptions.BookingNotFoundException;
+import com.deliveryplatform.bookings.exceptions.UnauthorizedBookingActionException;
 import com.deliveryplatform.parcels.exceptions.IllegalParcelStateException;
 import com.deliveryplatform.parcels.exceptions.ParcelNotFoundException;
 import com.deliveryplatform.parcels.exceptions.UnauthorizedParcelActionException;
@@ -79,6 +82,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidStopOrderException.class)
     public ResponseEntity<ApiError> handleInvalidStopOrderException(InvalidStopOrderException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(ex.getMessage()));
+    }
+
+    // BOOKING
+
+    @ExceptionHandler(BookingNotFoundException.class)
+    public ResponseEntity<ApiError> handleBookingNotFoundException(BookingNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiError(ex.getMessage()));
+    }
+
+    @ExceptionHandler(BookingAlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleBookingAlreadyExistsException(BookingAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(ex.getMessage()));
+    }
+
+    @ExceptionHandler(UnauthorizedBookingActionException.class)
+    public ResponseEntity<ApiError> handleUnauthorizedBookingActionException(UnauthorizedBookingActionException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(ex.getMessage()));
     }
 

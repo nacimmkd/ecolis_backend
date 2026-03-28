@@ -87,4 +87,8 @@ public class Parcel {
         return this.user.getId().equals(userId);
     }
 
+    public void updateStatus(ParcelStatus status) {
+        this.status = status;
+    }
+
 }

@@ -29,7 +29,7 @@ public class TripService {
 
 
     public TripResponse getTrip(UUID id) {
-        return tripMapper.toResponse(getTripOrThrow(id));
+        return tripMapper.toResponse(getTripByIdOrThrow(id));
     }
 
     public List<TripResponse> getUserTrips(UUID userId) {
@@ -67,7 +67,7 @@ public class TripService {
 
     @Transactional
     public TripResponse updateTrip(UUID tripId, UUID userId, TripRequest request) {
-        var trip = getTripOrThrow(tripId);
+        var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, userId);
         assertTripIsPublished(trip);
         assertStopOrder(request.stops());
@@ -78,7 +78,7 @@ public class TripService {
 
     @Transactional
     public void deleteTrip(UUID tripId, UUID userId) {
-        var trip = getTripOrThrow(tripId);
+        var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, userId);
         assertTripIsPublished(trip);
         tripRepository.delete(trip);
@@ -86,7 +86,7 @@ public class TripService {
 
     @Transactional
     public void updateStatus(UUID tripId, TripStatus status) {
-        var trip = getTripOrThrow(tripId);
+        var trip = getTripByIdOrThrow(tripId);
         trip.setStatus(status);
         tripRepository.save(trip);
     }
@@ -97,7 +97,7 @@ public class TripService {
 
     @Transactional
     public StopResponse addStop(UUID tripId, UUID userId, Address address) {
-        var trip = getTripOrThrow(tripId);
+        var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, userId);
         int order = trip.getStops().size() + 1 ;
         var stop = TripStop.builder()
@@ -111,7 +111,7 @@ public class TripService {
 
     @Transactional
     public void deleteStop(UUID stopId, UUID tripId, UUID userId) {
-        var trip = getTripOrThrow(tripId);
+        var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, userId);
         removeAndReorder(trip, stopId);
         tripRepository.save(trip);
@@ -120,7 +120,7 @@ public class TripService {
 
     @Transactional
     public StopResponse updateStop(UUID stopId, UUID tripId, UUID userId, Address address) {
-        var trip = getTripOrThrow(tripId);
+        var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, userId);
         var stop = findStopInTrip(trip, stopId);
         stop.setAddress(addressMapper.toEntity(address));
@@ -132,7 +132,7 @@ public class TripService {
     // PRIVATE
     // ----------------------------------------------------------------
 
-    private Trip getTripOrThrow(UUID id) {
+    public Trip getTripByIdOrThrow(UUID id) {
         return tripRepository.findByIdWithStops(id)
                 .orElseThrow(TripNotFoundException::new);
     }
