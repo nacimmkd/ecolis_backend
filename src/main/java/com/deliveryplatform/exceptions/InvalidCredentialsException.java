@@ -1,4 +1,4 @@
-package com.deliveryplatform.common.exceptions;
+package com.deliveryplatform.exceptions;
 
 public class InvalidCredentialsException extends RuntimeException {
     public InvalidCredentialsException(String message) {

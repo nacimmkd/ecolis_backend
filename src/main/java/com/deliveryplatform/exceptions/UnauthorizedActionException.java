@@ -1,4 +1,4 @@
-package com.deliveryplatform.common.exceptions;
+package com.deliveryplatform.exceptions;
 
 public class UnauthorizedActionException extends RuntimeException {
     public UnauthorizedActionException(String message) {

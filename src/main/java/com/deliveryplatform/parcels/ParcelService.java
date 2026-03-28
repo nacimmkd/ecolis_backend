@@ -1,17 +1,17 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.common.CodeGeneratorUtil;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.dto.ParcelRequest;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
-import com.deliveryplatform.parcels.dto.ParcelWithCodeResponse;
 import com.deliveryplatform.users.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -24,16 +24,16 @@ public class ParcelService {
 
     public ParcelResponse getParcel(UUID id) {
         var parcel = getParcelByIdOrThrow(id);
-        return parcelMapper.toPublicDto(parcel);
-    }
-
-    public ParcelWithCodeResponse getParcelWithCode(UUID parcelId, UUID userId) {
-        var parcel = getParcelByIdOrThrow(parcelId);
-        assertOwnership(parcel,userId);
         return parcelMapper.toDto(parcel);
     }
 
-    public List<ParcelWithCodeResponse> getUserParcels(UUID userId){
+    public String getConfirmationCode(UUID parcelId, UUID userId) {
+        var parcel = getParcelByIdOrThrow(parcelId);
+        assertOwnership(parcel,userId);
+        return parcel.getCodeOTP();
+    }
+
+    public List<ParcelResponse> getUserParcels(UUID userId){
         return parcelRepository.findByUserId(userId).stream()
                 .map(parcelMapper::toDto)
                 .toList();
@@ -41,19 +41,13 @@ public class ParcelService {
 
     public List<ParcelResponse> getParcels(){
         return parcelRepository.findAll().stream()
-                .map(parcelMapper::toPublicDto)
+                .map(parcelMapper::toDto)
                 .toList();
     }
 
 
-    public List<ParcelResponse> getAvailableParcels(){
-        return parcelRepository.findByStatus(ParcelStatus.PUBLISHED).stream()
-                .map(parcelMapper::toPublicDto)
-                .toList();
-    }
 
-
-    public ParcelWithCodeResponse createParcel(UUID userId, ParcelRequest request) {
+    public ParcelResponse createParcel(UUID userId, ParcelRequest request) {
         var parcel = parcelMapper.toEntity(request);
         var user = userService.getUserByIdOrThrow(userId);
         parcel.setUser(user);
@@ -66,7 +60,7 @@ public class ParcelService {
         return parcelMapper.toDto(parcel);
     }
 
-    public ParcelWithCodeResponse updateParcel(UUID parcelId, UUID userId, ParcelRequest request) {
+    public ParcelResponse updateParcel(UUID parcelId, UUID userId, ParcelRequest request) {
         Parcel parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
         assertParcelIsAvailable(parcel);

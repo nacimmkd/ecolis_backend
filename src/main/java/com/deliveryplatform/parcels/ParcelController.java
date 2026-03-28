@@ -2,7 +2,6 @@ package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.parcels.dto.ParcelRequest;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
-import com.deliveryplatform.parcels.dto.ParcelWithCodeResponse;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -27,28 +27,25 @@ public class ParcelController {
         return ResponseEntity.ok(parcelService.getParcel(id));
     }
 
-    @GetMapping("/{id}/secure") // private
-    public ResponseEntity<ParcelWithCodeResponse> getParcelWithCode(
+    @GetMapping("/{id}/confirmation-code") // private
+    public ResponseEntity<Map<String,String>> getConfirmationCode(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal user
     ) {
-        return ResponseEntity.ok(parcelService.getParcelWithCode(id, user.getId()));
+        return ResponseEntity.ok(
+                Map.of("codeOTP",parcelService.getConfirmationCode(id,user.getId())
+        ));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<ParcelWithCodeResponse>> getMyParcels(
+    public ResponseEntity<List<ParcelResponse>> getMyParcels(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId()));
     }
 
-    @GetMapping("/available") // public
-    public ResponseEntity<List<ParcelResponse>> getAvailableParcels() {
-        return ResponseEntity.ok(parcelService.getAvailableParcels());
-    }
-
 
     @PostMapping
-    public ResponseEntity<ParcelWithCodeResponse> createParcel(
+    public ResponseEntity<ParcelResponse> createParcel(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelRequest request,
             UriComponentsBuilder uriBuilder) {
@@ -63,7 +60,7 @@ public class ParcelController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<ParcelWithCodeResponse> updateParcel(
+    public ResponseEntity<ParcelResponse> updateParcel(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelRequest request) {

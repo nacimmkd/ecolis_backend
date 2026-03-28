@@ -2,7 +2,6 @@ package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.parcels.dto.ParcelRequest;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
-import com.deliveryplatform.parcels.dto.ParcelWithCodeResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -11,8 +10,7 @@ import org.mapstruct.MappingTarget;
 public interface ParcelMapper {
 
     @Mapping(source = "user.id",target = "userId")
-    ParcelResponse toPublicDto(Parcel parcel);
-    ParcelWithCodeResponse toDto(Parcel parcel);
+    ParcelResponse toDto(Parcel parcel);
     Parcel toEntity(ParcelRequest parcelRequest);
     void updateEntity(@MappingTarget Parcel parcel, ParcelRequest request);
 }
