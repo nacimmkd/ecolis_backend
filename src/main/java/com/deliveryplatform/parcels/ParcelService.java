@@ -1,9 +1,9 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.common.CodeGeneratorUtil;
-import com.deliveryplatform.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.dto.ParcelRequest;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
 import com.deliveryplatform.parcels.dto.ParcelWithCodeResponse;

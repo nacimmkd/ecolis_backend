@@ -1,4 +1,4 @@
-package com.deliveryplatform.exceptions;
+package com.deliveryplatform.common.exceptions;
 
 import com.deliveryplatform.common.ApiError;
 import com.deliveryplatform.common.validations.ValidationError;

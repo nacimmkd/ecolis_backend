@@ -1,8 +1,8 @@
 package com.deliveryplatform.users;
 
-import com.deliveryplatform.exceptions.ConflictException;
-import com.deliveryplatform.exceptions.InvalidCredentialsException;
-import com.deliveryplatform.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.common.exceptions.ConflictException;
+import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
+import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.profiles.ProfileMapper;
 import com.deliveryplatform.profiles.dto.ProfileRequest;
