@@ -1,12 +1,10 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.bookings.BookingStatus;
 import com.deliveryplatform.common.addresses.AddressMapper;
 import com.deliveryplatform.common.addresses.Address;
-import com.deliveryplatform.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.trips.dto.StopRequest;
 import com.deliveryplatform.trips.dto.StopResponse;
 import com.deliveryplatform.trips.dto.TripRequest;

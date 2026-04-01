@@ -3,7 +3,7 @@ package com.deliveryplatform.auth;
 import com.deliveryplatform.auth.jwt.JwtConfig;
 import com.deliveryplatform.auth.jwt.JwtService;
 import com.deliveryplatform.auth.jwt.RefreshTokenService;
-import com.deliveryplatform.exceptions.AuthenticationException;
+import com.deliveryplatform.common.exceptions.AuthenticationException;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserPrincipal;
 import com.deliveryplatform.users.UserService;

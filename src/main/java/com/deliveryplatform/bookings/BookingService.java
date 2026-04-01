@@ -2,9 +2,9 @@ package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingRequest;
 import com.deliveryplatform.bookings.dto.BookingResponse;
-import com.deliveryplatform.exceptions.ConflictException;
-import com.deliveryplatform.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.common.exceptions.ConflictException;
+import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelService;
 import com.deliveryplatform.parcels.ParcelStatus;

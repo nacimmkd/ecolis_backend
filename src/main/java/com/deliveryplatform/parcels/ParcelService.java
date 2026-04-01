@@ -1,9 +1,9 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.common.CodeGeneratorUtil;
-import com.deliveryplatform.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.dto.ParcelRequest;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
 import com.deliveryplatform.users.UserService;
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
