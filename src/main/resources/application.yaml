@@ -21,3 +21,7 @@ spring:
     secret: ${JWT_SECRET}
     accessTokenExpiration: ${JWT_ACCESS_EXPIRATION}
     refreshTokenExpiration: ${JWT_REFRESH_EXPIRATION}
+
+
+cors:
+    allowed-origin: ${ALLOWED_ORIGINS:*}
