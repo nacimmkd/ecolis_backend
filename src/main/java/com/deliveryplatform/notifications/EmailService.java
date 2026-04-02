@@ -2,6 +2,7 @@ package com.deliveryplatform.notifications;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EmailService {
 
-    private static final String FROM = "noreply@tonapp.com";
+    @Value("${spring.mail.username}")
+    private  String from;
 
     private final JavaMailSender mailSender;
 
@@ -30,7 +32,7 @@ public class EmailService {
 
     private SimpleMailMessage buildMailMessage(String to, String subject, String body) {
         var message =  new SimpleMailMessage();
-        message.setFrom(FROM);
+        message.setFrom(from);
         message.setTo(to);
         message.setSubject(subject);
         message.setText(body);
