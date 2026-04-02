@@ -25,6 +25,7 @@ public class Notification {
     @Column(name = "user_id")
     private UUID userId;
 
+    @Enumerated(EnumType.STRING)
     private NotificationType type;
 
     @Column(name = "reference_id")
