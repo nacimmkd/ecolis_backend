@@ -1,6 +1,7 @@
 package com.deliveryplatform.notifications;
 
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.users.UserPrincipal;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +22,11 @@ public class NotificationService {
 
 
     @Transactional
-    public void notify(NotificationRequest request){
+    public void notify(NotificationRequest request, UserPrincipal user) {
         var notification = request.toEntity();
         notificationRepository.save(notification);
 
-        sendWebSocket(notification);
+        sendWebSocket(notification, user);
 
         if (request.type().isSendEmail()) {
             emailService.send(
@@ -52,18 +53,12 @@ public class NotificationService {
     // -------------------------------------------
 
 
-    private void sendWebSocket(Notification notification) {
-        try {
-            messagingTemplate.convertAndSendToUser(
-                    notification.getUserId().toString(),
-                    WS_DEST,
-                    notification
-            );
-        } catch (Exception e) {
-            log.warn("[Notification] WebSocket failed — userId={} type={}",
-                    notification.getUserId(),
-                    notification.getType());
-        }
+    private void sendWebSocket(Notification notification,UserPrincipal user) {
+        messagingTemplate.convertAndSendToUser(
+                user.getUsername(),
+                WS_DEST,
+                notification
+        );
     }
 
     private Notification getNotificationOrThrow(UUID notificationId, UUID userId) {

@@ -21,6 +21,12 @@ spring:
     host: smtp.gmail.com
     username: test
     password: test
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   jwt:
     secret: ${JWT_SECRET}

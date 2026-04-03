@@ -10,6 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "cors")
-public class CorsProperties {
+public class CorsConfig {
     private String allowedOrigin;
 }
