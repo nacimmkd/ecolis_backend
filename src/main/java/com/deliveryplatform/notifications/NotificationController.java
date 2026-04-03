@@ -1,13 +1,17 @@
 package com.deliveryplatform.notifications;
 
+import com.deliveryplatform.notifications.events.BookingAcceptedEvent;
+import com.deliveryplatform.notifications.events.ParcelDeliveredEvent;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import java.util.UUID;
@@ -20,7 +24,7 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final NotificationRepository notificationRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @GetMapping
     public ResponseEntity<List<Notification>> getAll(
@@ -60,17 +64,16 @@ public class NotificationController {
 
     // test
     @PostMapping("/test-ws")
-    public ResponseEntity<String> testWs(
-            @AuthenticationPrincipal UserPrincipal user) {
+    public ResponseEntity<String> testWs() {
 
-        var notif = NotificationRequest.builder()
-                .userId(user.getId())
-                .type(NotificationType.BOOKING_REQUESTED)
-                .referenceId(UUID.randomUUID())
-                .emailTo("test")
-                .build();
-        notificationService.notify(notif, user);
-
+        var event = new BookingAcceptedEvent(
+                UUID.fromString("d60f95ec-b632-4c84-88c3-1a6683060ca8"),
+                "mounir@gmail.com",
+                "nacim",
+                BigDecimal.valueOf(20.0),
+                UUID.randomUUID()
+        );
+        applicationEventPublisher.publishEvent(event);
 
         return ResponseEntity.ok("Check logs");
     }

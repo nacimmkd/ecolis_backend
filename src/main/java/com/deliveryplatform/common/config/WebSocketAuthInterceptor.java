@@ -44,7 +44,12 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
         }
 
         var principal = jwtService.extractPrincipal(token);
-        var auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+        var auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()){
+            @Override
+            public String getName() {
+                return principal.getId().toString();
+            }
+        };
         accessor.setUser(auth);
     }
 }

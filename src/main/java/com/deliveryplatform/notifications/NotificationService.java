@@ -2,10 +2,8 @@ package com.deliveryplatform.notifications;
 
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.notifications.email.Email;
-import com.deliveryplatform.notifications.email.EmailNotifier;
-import com.deliveryplatform.notifications.email.EmailTemplates;
-import com.deliveryplatform.notifications.websocket.WebSocketNotifier;
-import com.deliveryplatform.users.UserPrincipal;
+import com.deliveryplatform.notifications.email.EmailNotificationService;
+import com.deliveryplatform.notifications.inApp.InAppNotificationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,27 +15,21 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private static final String WS_DEST = "/queue/notifications";
 
     private final NotificationRepository notificationRepository;
-    private final WebSocketNotifier webSocketNotifier;
-    private final EmailNotifier emailService;
+    private final InAppNotificationService inAppNotifier;
+    private final EmailNotificationService emailNotifier;
 
 
     @Transactional
-    public void notify(NotificationRequest request, UserPrincipal user) {
-        var notification = request.toEntity();
-        notificationRepository.save(notification);
+    public void notify(NotificationRequest request) {
+        var notification = notificationRepository.save(request.toEntity());
+        inAppNotifier.send(request.userId().toString(), notification);
 
-        webSocketNotifier.send(user.getUsername(), notification);
-
-        if(request.emailTo() != null) {
-            emailService.send(
-                    Email.create(request.emailTo(), request.type(), request.payload())
-            );
+        if (request.emailTo() != null) {
+            emailNotifier.send(Email.create(request.emailTo(), request.type(), request.payload()));
         }
     }
-
 
     @Transactional
     public void markAsRead(UUID notificationId, UUID userId) {

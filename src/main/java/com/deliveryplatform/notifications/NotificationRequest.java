@@ -3,7 +3,6 @@ package com.deliveryplatform.notifications;
 
 import lombok.Builder;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Builder
@@ -15,7 +14,7 @@ public record NotificationRequest(
         String emailTo
 ) {
     public NotificationRequest {
-        if (type.isSendEmail() && (emailTo == null || emailTo.isBlank())) {
+        if (emailTo == null || emailTo.isBlank()) {
             throw new IllegalArgumentException(
                     "emailTo is required for notification type " + type
             );

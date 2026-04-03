@@ -1,4 +1,4 @@
-package com.deliveryplatform.notifications.websocket;
+package com.deliveryplatform.notifications.inApp;
 
 import com.deliveryplatform.notifications.Notification;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class WebSocketNotifier {
+public class InAppNotificationService {
 
     private static final String WS_DEST = "/queue/notifications";
     private final SimpMessagingTemplate messagingTemplate;
