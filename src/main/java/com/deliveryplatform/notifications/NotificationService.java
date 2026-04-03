@@ -17,8 +17,8 @@ public class NotificationService {
     private static final String WS_DEST = "/queue/notifications";
 
     private final NotificationRepository notificationRepository;
-    private final SimpMessagingTemplate messagingTemplate;
-    private final EmailService emailService;
+    private final WebSocketNotifier webSocketNotifier;
+    private final EmailNotifier emailService;
 
 
     @Transactional
@@ -26,8 +26,7 @@ public class NotificationService {
         var notification = request.toEntity();
         notificationRepository.save(notification);
 
-        sendWebSocket(notification, user);
-
+        webSocketNotifier.send(user.getUsername(), notification);
         if (request.type().isSendEmail()) {
             emailService.send(
                     request.emailTo(),
@@ -38,12 +37,14 @@ public class NotificationService {
     }
 
 
+    @Transactional
     public void markAsRead(UUID notificationId, UUID userId) {
         var notification = getNotificationOrThrow(notificationId, userId);
         notification.setRead(true);
         notificationRepository.save(notification);
     }
 
+    @Transactional
     public void delete(UUID notificationId, UUID userId) {
         var notification = getNotificationOrThrow(notificationId, userId);
         notificationRepository.delete(notification);
@@ -52,14 +53,6 @@ public class NotificationService {
 
     // -------------------------------------------
 
-
-    private void sendWebSocket(Notification notification,UserPrincipal user) {
-        messagingTemplate.convertAndSendToUser(
-                user.getUsername(),
-                WS_DEST,
-                notification
-        );
-    }
 
     private Notification getNotificationOrThrow(UUID notificationId, UUID userId) {
         return notificationRepository.findByIdAndUserId(notificationId, userId)

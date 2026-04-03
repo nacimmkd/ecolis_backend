@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class EmailService {
+public class EmailNotifier {
 
     @Value("${spring.mail.username}")
     private  String from;
