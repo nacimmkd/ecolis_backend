@@ -11,15 +11,19 @@ public record NotificationRequest(
         UUID userId,
         NotificationType type,
         UUID referenceId,
-        Map<String,Object> payload,
+        Object payload,
         String emailTo
-        ) {
-
-
+) {
     public NotificationRequest {
         if (type.isSendEmail() && (emailTo == null || emailTo.isBlank())) {
             throw new IllegalArgumentException(
-                    "[NotificationRequest] emailTo required for type " + type
+                    "emailTo is required for notification type " + type
+            );
+        }
+        if (payload != null && !type.getPayloadType().isInstance(payload)) {
+            throw new IllegalArgumentException(
+                    "Invalid payload type %s for notification type %s"
+                            .formatted(payload.getClass().getSimpleName(), type)
             );
         }
     }
@@ -31,6 +35,5 @@ public record NotificationRequest(
                 .referenceId(referenceId)
                 .payload(payload)
                 .build();
-
     }
 }

@@ -32,7 +32,7 @@ public class Notification {
     private UUID referenceId;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, Object> payload;
+    private Object payload;
 
     @Column(name = "is_read", nullable = false)
     @Builder.Default

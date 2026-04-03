@@ -1,11 +1,14 @@
 package com.deliveryplatform.notifications;
 
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.notifications.email.Email;
+import com.deliveryplatform.notifications.email.EmailNotifier;
+import com.deliveryplatform.notifications.email.EmailTemplates;
+import com.deliveryplatform.notifications.websocket.WebSocketNotifier;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
 
@@ -27,11 +30,10 @@ public class NotificationService {
         notificationRepository.save(notification);
 
         webSocketNotifier.send(user.getUsername(), notification);
-        if (request.type().isSendEmail()) {
+
+        if(request.emailTo() != null) {
             emailService.send(
-                    request.emailTo(),
-                    request.type().getSubject(),
-                    request.type().buildBody(request.payload())
+                    Email.create(request.emailTo(), request.type(), request.payload())
             );
         }
     }
