@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class EmailNotificationService {
 
     @Value("${spring.mail.username}")
-    private  String from;
+    private String from;
 
     private final JavaMailSender mailSender;
 
@@ -25,7 +25,7 @@ public class EmailNotificationService {
             mailSender.send(message);
             log.info("[Email] Sent — to={} subject={}", to, subject);
         } catch (Exception e) {
-            log.error("[Email] Failed — to={} subject={}", to, subject, e);
+            log.error("[Email] Failed — to={} subject={} — message={}", to, subject , e.getCause().getMessage());
         }
     }
 

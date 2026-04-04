@@ -21,7 +21,7 @@ public class InAppNotificationService {
                     notification
             );
         }catch (Exception e){
-            log.error("[WS] Failed to send notification — user={}", notification.getUserId().toString(), e);
+            log.error("[WS] Failed to send notification — user={} — message={}", notification.getUserId().toString(), e.getMessage());
         }
     }
 }
