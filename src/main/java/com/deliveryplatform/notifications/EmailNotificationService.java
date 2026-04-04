@@ -1,12 +1,17 @@
 package com.deliveryplatform.notifications;
 
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
 
 @Service
 @Slf4j
@@ -17,12 +22,18 @@ public class EmailNotificationService {
     private String from;
 
     private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
 
     @Async
-    public void send(String to, String subject, String body) {
+    public void send(String to, String subject, String content) {
         try {
-            var message = buildMailMessage(to, subject, body);
-            mailSender.send(message);
+            var mime = mailSender.createMimeMessage();
+            var helper = new MimeMessageHelper(mime, true, "UTF-8");
+            helper.setFrom(from);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(resolveTemplate(content), true);
+            mailSender.send(mime);
             log.info("[Email] Sent — to={} subject={}", to, subject);
         } catch (Exception e) {
             log.error("[Email] Failed — to={} subject={} — message={}", to, subject , e.getCause().getMessage());
@@ -30,12 +41,9 @@ public class EmailNotificationService {
     }
 
 
-    private SimpleMailMessage buildMailMessage(String to, String subject, String body) {
-        var message =  new SimpleMailMessage();
-        message.setFrom(from);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
-        return message;
+    private String resolveTemplate(String content) {
+        var context = new Context();
+        context.setVariable("content", content);
+        return templateEngine.process("mail/email", context);
     }
 }
