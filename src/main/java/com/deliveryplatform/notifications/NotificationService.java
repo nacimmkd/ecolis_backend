@@ -1,20 +1,15 @@
 package com.deliveryplatform.notifications;
 
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.notifications.email.Email;
-import com.deliveryplatform.notifications.email.EmailNotificationService;
-import com.deliveryplatform.notifications.inApp.InAppNotificationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
 import java.util.UUID;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class NotificationService {
-
 
     private final NotificationRepository notificationRepository;
     private final InAppNotificationService inAppNotifier;
@@ -24,11 +19,15 @@ public class NotificationService {
     @Transactional
     public void notify(NotificationRequest request) {
         var notification = notificationRepository.save(request.toEntity());
-        inAppNotifier.send(request.userId().toString(), notification);
-
-        if (request.emailTo() != null) {
-            emailNotifier.send(Email.create(request.emailTo(), request.type(), request.payload()));
-        }
+        inAppNotifier.send(
+                request.userId().toString(),
+                notification
+        );
+        emailNotifier.send(
+                request.emailTo(),
+                EmailTemplates.NotificationReminderTemplate().subject(),
+                EmailTemplates.NotificationReminderTemplate().body()
+        );
     }
 
     @Transactional
@@ -54,5 +53,6 @@ public class NotificationService {
                         "Notification %s not found for user %s".formatted(notificationId, userId)
                 ));
     }
+
 
 }

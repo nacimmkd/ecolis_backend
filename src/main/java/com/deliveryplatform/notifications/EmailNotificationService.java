@@ -1,4 +1,4 @@
-package com.deliveryplatform.notifications.email;
+package com.deliveryplatform.notifications;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +19,13 @@ public class EmailNotificationService {
     private final JavaMailSender mailSender;
 
     @Async
-    public void send(Email email) {
+    public void send(String to, String subject, String body) {
         try {
-            var message = buildMailMessage(email.getTo(), email.getSubject(), email.getBody());
+            var message = buildMailMessage(to, subject, body);
             mailSender.send(message);
-            log.info("[Email] Sent — to={} subject={}",email.getTo(), email.getSubject());
+            log.info("[Email] Sent — to={} subject={}", to, subject);
         } catch (Exception e) {
-            log.error("[Email] Failed — to={} subject={}", email.getTo(), email.getSubject(), e);
+            log.error("[Email] Failed — to={} subject={}", to, subject, e);
         }
     }
 

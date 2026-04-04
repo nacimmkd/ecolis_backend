@@ -21,10 +21,6 @@ public class NotificationEventHandler {
                         .type(NotificationType.BOOKING_REQUESTED)
                         .referenceId(event.bookingId())
                         .emailTo(event.carrierEmail())
-                        .payload(new NotificationPayloads.BookingRequested(
-                                event.departureCity(),
-                                event.arrivalCity()
-                        ))
                         .build()
         );
     }
@@ -38,10 +34,6 @@ public class NotificationEventHandler {
                         .type(NotificationType.BOOKING_ACCEPTED)
                         .referenceId(event.bookingId())
                         .emailTo(event.senderEmail())
-                        .payload(new NotificationPayloads.BookingAccepted(
-                                event.carrierName(),
-                                event.price()
-                        ))
                         .build()
         );
     }
@@ -55,7 +47,6 @@ public class NotificationEventHandler {
                         .type(NotificationType.BOOKING_CANCELLED)
                         .referenceId(event.bookingId())
                         .emailTo(event.userEmail())
-                        .payload(new NotificationPayloads.BookingCancelled(event.bookingId()))
                         .build()
         );
     }
@@ -69,10 +60,6 @@ public class NotificationEventHandler {
                         .type(NotificationType.PAYMENT_RECEIVED)
                         .referenceId(event.bookingId())
                         .emailTo(event.userEmail())
-                        .payload(new NotificationPayloads.PaymentReceived(
-                                event.amount(),
-                                event.bookingId()
-                        ))
                         .build()
         );
     }
@@ -86,11 +73,6 @@ public class NotificationEventHandler {
                         .type(NotificationType.TRIP_CANCELLED)
                         .referenceId(event.tripId())
                         .emailTo(event.userEmail())
-                        .payload(new NotificationPayloads.TripCancelled(
-                                event.departureCity(),
-                                event.arrivalCity(),
-                                event.departureDate()
-                        ))
                         .build()
         );
     }
@@ -104,7 +86,6 @@ public class NotificationEventHandler {
                         .type(NotificationType.PARCEL_DELIVERED)
                         .referenceId(event.parcelId())
                         .emailTo(event.userEmail())
-                        .payload(new NotificationPayloads.ParcelDelivered(event.parcelId()))
                         .build()
         );
     }

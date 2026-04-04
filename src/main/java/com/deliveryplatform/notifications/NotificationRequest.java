@@ -3,28 +3,22 @@ package com.deliveryplatform.notifications;
 
 import lombok.Builder;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Builder
 public record NotificationRequest(
         UUID userId,
+        String emailTo,
         NotificationType type,
-        UUID referenceId,
-        Object payload,
-        String emailTo
+        UUID referenceId
 ) {
+
     public NotificationRequest {
-        if (emailTo == null || emailTo.isBlank()) {
-            throw new IllegalArgumentException(
-                    "emailTo is required for notification type " + type
-            );
-        }
-        if (payload != null && !type.getPayloadType().isInstance(payload)) {
-            throw new IllegalArgumentException(
-                    "Invalid payload type %s for notification type %s"
-                            .formatted(payload.getClass().getSimpleName(), type)
-            );
-        }
+        Objects.requireNonNull(userId, "userId is required");
+        Objects.requireNonNull(emailTo, "userEmail is required");
+        Objects.requireNonNull(type, "type is required");
+        Objects.requireNonNull(referenceId, "referenceId is required");
     }
 
     public Notification toEntity() {
@@ -32,7 +26,7 @@ public record NotificationRequest(
                 .userId(userId)
                 .type(type)
                 .referenceId(referenceId)
-                .payload(payload)
+                .isRead(false)
                 .build();
     }
 }

@@ -1,6 +1,5 @@
-package com.deliveryplatform.notifications.inApp;
+package com.deliveryplatform.notifications;
 
-import com.deliveryplatform.notifications.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
