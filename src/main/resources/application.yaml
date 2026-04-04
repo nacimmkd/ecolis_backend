@@ -28,10 +28,10 @@ spring:
           starttls:
             enable: true
 
-  jwt:
-    secret: ${JWT_SECRET}
-    accessTokenExpiration: ${JWT_ACCESS_EXPIRATION}
-    refreshTokenExpiration: ${JWT_REFRESH_EXPIRATION}
+jwt:
+  secret: ${JWT_SECRET}
+  accessTokenExpiration: ${JWT_ACCESS_EXPIRATION}
+  refreshTokenExpiration: ${JWT_REFRESH_EXPIRATION}
 
 
 cors:
