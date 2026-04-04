@@ -18,9 +18,10 @@ spring:
       port: 6379
 
   mail:
-    host: smtp.gmail.com
-    username: test
-    password: test
+    host: ${MAIL_HOST}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    port: ${MAIL_PORT}
     properties:
       mail:
         smtp:
@@ -36,3 +37,7 @@ jwt:
 
 cors:
     allowed-origin: ${ALLOWED_ORIGINS:*}
+
+app:
+  mail:
+    from: ${MAIL_FROM}

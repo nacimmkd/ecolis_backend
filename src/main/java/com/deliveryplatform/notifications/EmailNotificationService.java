@@ -18,7 +18,7 @@ import org.thymeleaf.context.Context;
 @RequiredArgsConstructor
 public class EmailNotificationService {
 
-    @Value("${spring.mail.username}")
+    @Value("${app.mail.from}")
     private String from;
 
     private final JavaMailSender mailSender;
@@ -36,7 +36,7 @@ public class EmailNotificationService {
             mailSender.send(mime);
             log.info("[Email] Sent — to={} subject={}", to, subject);
         } catch (Exception e) {
-            log.error("[Email] Failed — to={} subject={} — message={}", to, subject , e.getCause().getMessage());
+            log.error("[Email] Failed — to={} subject={}", to, subject);
         }
     }
 
@@ -44,6 +44,6 @@ public class EmailNotificationService {
     private String resolveTemplate(String content) {
         var context = new Context();
         context.setVariable("content", content);
-        return templateEngine.process("mail/email", context);
+        return templateEngine.process("email", context);
     }
 }

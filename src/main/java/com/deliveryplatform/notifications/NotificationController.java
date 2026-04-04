@@ -63,20 +63,20 @@ public class NotificationController {
 
 
     // test
-    @PostMapping("/test-ws")
-    public ResponseEntity<String> testWs(
-            @AuthenticationPrincipal UserPrincipal user
-    ) {
-
-        var event = new BookingAcceptedEvent(
-                user.getId(),
-                "mounir@gmail.com",
-                "nacim",
-                BigDecimal.valueOf(20.0),
-                UUID.randomUUID()
-        );
-        applicationEventPublisher.publishEvent(event);
-
-        return ResponseEntity.ok("Check logs");
-    }
+//    @PostMapping("/test-ws")
+//    public ResponseEntity<String> testWs(
+//            @AuthenticationPrincipal UserPrincipal user
+//    ) {
+//
+//        var event = new BookingAcceptedEvent(
+//                user.getId(),
+//                "",
+//                "nacim",
+//                BigDecimal.valueOf(20.0),
+//                UUID.randomUUID()
+//        );
+//        applicationEventPublisher.publishEvent(event);
+//
+//        return ResponseEntity.ok("Check logs");
+//    }
 }
