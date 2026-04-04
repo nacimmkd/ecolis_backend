@@ -13,15 +13,15 @@ public class InAppNotificationService {
     private static final String WS_DEST = "/queue/notifications";
     private final SimpMessagingTemplate messagingTemplate;
 
-    public void send(String username, Notification notification) {
+    public void send(Notification notification) {
         try{
             messagingTemplate.convertAndSendToUser(
-                    username,
+                    notification.getUserId().toString(),
                     WS_DEST,
                     notification
             );
         }catch (Exception e){
-            log.error("[WS] Failed to send notification — user={}", username, e);
+            log.error("[WS] Failed to send notification — user={}", notification.getUserId().toString(), e);
         }
     }
 }

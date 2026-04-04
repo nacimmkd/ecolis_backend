@@ -3,6 +3,7 @@ package com.deliveryplatform.notifications;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -14,20 +15,23 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final InAppNotificationService inAppNotifier;
     private final EmailNotificationService emailNotifier;
+    private final SimpUserRegistry simpUserRegistry;
 
 
     @Transactional
     public void notify(NotificationRequest request) {
         var notification = notificationRepository.save(request.toEntity());
-        inAppNotifier.send(
-                request.userId().toString(),
-                notification
-        );
-        emailNotifier.send(
-                request.emailTo(),
-                EmailTemplates.NotificationReminderTemplate().subject(),
-                EmailTemplates.NotificationReminderTemplate().body()
-        );
+
+        var isConnected = this.isUserConnected(notification.getUserId());
+        if(isConnected){
+            inAppNotifier.send(notification);
+        } else {
+            emailNotifier.send(
+                    request.emailTo(),
+                    EmailTemplates.NotificationReminderTemplate().subject(),
+                    EmailTemplates.NotificationReminderTemplate().body()
+            );
+        }
     }
 
     @Transactional
@@ -52,6 +56,10 @@ public class NotificationService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Notification %s not found for user %s".formatted(notificationId, userId)
                 ));
+    }
+
+    private boolean isUserConnected(UUID userId) {
+        return simpUserRegistry.getUser(userId.toString()) != null;
     }
 
 

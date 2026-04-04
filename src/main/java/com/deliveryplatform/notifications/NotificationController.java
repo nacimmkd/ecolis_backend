@@ -64,10 +64,12 @@ public class NotificationController {
 
     // test
     @PostMapping("/test-ws")
-    public ResponseEntity<String> testWs() {
+    public ResponseEntity<String> testWs(
+            @AuthenticationPrincipal UserPrincipal user
+    ) {
 
         var event = new BookingAcceptedEvent(
-                UUID.fromString("d60f95ec-b632-4c84-88c3-1a6683060ca8"),
+                user.getId(),
                 "mounir@gmail.com",
                 "nacim",
                 BigDecimal.valueOf(20.0),
