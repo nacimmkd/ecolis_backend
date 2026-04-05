@@ -16,11 +16,12 @@ public class NotificationService {
     private final InAppNotificationService inAppNotifier;
     private final EmailNotificationService emailNotifier;
     private final SimpUserRegistry simpUserRegistry;
+    private final NotificationMapper notificationMapper;
 
 
     @Transactional
     public void notify(NotificationRequest request) {
-        var notification = notificationRepository.save(request.toEntity());
+        var notification = notificationRepository.save(notificationMapper.toEntity(request));
 
         var isConnected = this.isUserConnected(notification.getUserId());
         if(isConnected){
