@@ -1,6 +1,6 @@
 package com.deliveryplatform.parcels.dto;
 
-import com.deliveryplatform.common.addresses.GeoAddress;
+import com.deliveryplatform.addresses.GeocodedAddress;
 import com.deliveryplatform.parcels.ParcelSize;
 import com.deliveryplatform.parcels.ParcelStatus;
 
@@ -16,8 +16,8 @@ public record ParcelResponse(
         BigDecimal weightKg,
         ParcelSize size,
         boolean         fragile,
-        GeoAddress pickupAddress,
-        GeoAddress      dropoffAddress,
+        GeocodedAddress pickupAddress,
+        GeocodedAddress dropoffAddress,
         ParcelStatus status,
         LocalDate deadlineDate,
         OffsetDateTime createdAt

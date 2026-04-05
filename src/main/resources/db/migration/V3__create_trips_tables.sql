@@ -7,16 +7,16 @@ CREATE TABLE "trips" (
                          departure_city        VARCHAR(100)  NOT NULL,
                          departure_postal_code VARCHAR(20)   NOT NULL,
                          departure_country     VARCHAR(60)   NOT NULL,
-                         departure_lat         NUMERIC(10,7),
-                         departure_lng         NUMERIC(10,7),
+                         departure_lat         DOUBLE PRECISION,
+                         departure_lng         DOUBLE PRECISION,
 
     -- arrival address
                          arrival_street         TEXT          NOT NULL,
                          arrival_city           VARCHAR(100)  NOT NULL,
                          arrival_postal_code    VARCHAR(20)   NOT NULL,
                          arrival_country        VARCHAR(60)   NOT NULL,
-                         arrival_lat            NUMERIC(10,7),
-                         arrival_lng            NUMERIC(10,7),
+                         arrival_lat            DOUBLE PRECISION,
+                         arrival_lng            DOUBLE PRECISION,
 
                          departure_date        DATE,
                          arrival_date          DATE,
@@ -45,8 +45,8 @@ CREATE TABLE "trip_stops" (
                               city         VARCHAR(100)  NOT NULL,
                               postal_code  VARCHAR(20)   NOT NULL,
                               country      VARCHAR(60)   NOT NULL,
-                              latitude     NUMERIC(10,7),
-                              longitude    NUMERIC(10,7),
+                              latitude     DOUBLE PRECISION,
+                              longitude    DOUBLE PRECISION,
 
                               PRIMARY KEY (id),
                               FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE ON UPDATE CASCADE,

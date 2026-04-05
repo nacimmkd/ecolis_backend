@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips.dto;
 
-import com.deliveryplatform.common.addresses.GeoAddress;
+import com.deliveryplatform.addresses.GeocodedAddress;
 import com.deliveryplatform.trips.TripStatus;
 
 import java.math.BigDecimal;
@@ -11,8 +11,8 @@ import java.util.UUID;
 public record TripResponse(
         UUID id,
         UUID userId,
-        GeoAddress departure,
-        GeoAddress arrival,
+        GeocodedAddress departure,
+        GeocodedAddress arrival,
         LocalDate departureDate,
         LocalDate arrivalDate,
         BigDecimal availableVolumeCm3,

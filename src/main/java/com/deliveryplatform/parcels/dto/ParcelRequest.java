@@ -1,6 +1,6 @@
 package com.deliveryplatform.parcels.dto;
 
-import com.deliveryplatform.common.addresses.Address;
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.parcels.ParcelSize;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;

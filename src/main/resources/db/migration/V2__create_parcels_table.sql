@@ -12,16 +12,16 @@ CREATE TABLE parcels (
                          pickup_city         VARCHAR(100) NOT NULL,
                          pickup_postal_code  VARCHAR(20)  NOT NULL,
                          pickup_country      VARCHAR(60)  NOT NULL,
-                         pickup_lat          NUMERIC(10,7),
-                         pickup_lng          NUMERIC(10,7),
+                         pickup_lat          DOUBLE PRECISION,
+                         pickup_lng          DOUBLE PRECISION,
 
                          -- dropoff address
                          dropoff_street      TEXT         NOT NULL,
                          dropoff_city        VARCHAR(100) NOT NULL,
                          dropoff_postal_code VARCHAR(20)  NOT NULL,
                          dropoff_country     VARCHAR(60)  NOT NULL,
-                         dropoff_lat         NUMERIC(10,7),
-                         dropoff_lng         NUMERIC(10,7),
+                         dropoff_lat         DOUBLE PRECISION,
+                         dropoff_lng         DOUBLE PRECISION,
 
                          status              VARCHAR(20) NOT NULL DEFAULT 'PUBLISHED'
                              CHECK (status IN ('PUBLISHED','BOOKED','PICKED_UP','IN_TRANSIT','DELIVERED','CANCELLED')),

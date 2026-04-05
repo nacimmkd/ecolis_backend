@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.common.addresses.GeoAddress;
+import com.deliveryplatform.addresses.GeocodedAddress;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -36,10 +36,10 @@ public class Trip {
             @AttributeOverride(name = "city",       column = @Column(name = "departure_city",        nullable = false, length = 100)),
             @AttributeOverride(name = "postalCode", column = @Column(name = "departure_postal_code", nullable = false, length = 20)),
             @AttributeOverride(name = "country",    column = @Column(name = "departure_country",     nullable = false, length = 60)),
-            @AttributeOverride(name = "latitude",   column = @Column(name = "departure_lat",         precision = 10, scale = 7)),
-            @AttributeOverride(name = "longitude",  column = @Column(name = "departure_lng",         precision = 10, scale = 7))
+            @AttributeOverride(name = "latitude",   column = @Column(name = "departure_lat"         )),
+            @AttributeOverride(name = "longitude",  column = @Column(name = "departure_lng"         ))
     })
-    private GeoAddress departure;
+    private GeocodedAddress departure;
 
     @Embedded
     @AttributeOverrides({
@@ -47,10 +47,10 @@ public class Trip {
             @AttributeOverride(name = "city",       column = @Column(name = "arrival_city",        nullable = false, length = 100)),
             @AttributeOverride(name = "postalCode", column = @Column(name = "arrival_postal_code", nullable = false, length = 20)),
             @AttributeOverride(name = "country",    column = @Column(name = "arrival_country",     nullable = false, length = 60)),
-            @AttributeOverride(name = "latitude",   column = @Column(name = "arrival_lat",         precision = 10, scale = 7)),
-            @AttributeOverride(name = "longitude",  column = @Column(name = "arrival_lng",         precision = 10, scale = 7))
+            @AttributeOverride(name = "latitude",   column = @Column(name = "arrival_lat")),
+            @AttributeOverride(name = "longitude",  column = @Column(name = "arrival_lng"))
     })
-    private GeoAddress arrival;
+    private GeocodedAddress arrival;
 
     @Column(name = "departure_date")
     private LocalDate departureDate;

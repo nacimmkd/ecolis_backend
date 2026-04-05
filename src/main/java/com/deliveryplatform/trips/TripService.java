@@ -1,7 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.common.addresses.AddressMapper;
-import com.deliveryplatform.common.addresses.Address;
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
@@ -26,7 +25,6 @@ public class TripService {
     private final TripStopRepository stopRepository;
     private final TripMapper     tripMapper;
     private final TripStopMapper stopMapper;
-    private final AddressMapper addressMapper;
     private final UserService    userService;
 
 
@@ -104,7 +102,7 @@ public class TripService {
         int order = trip.getStops().size() + 1 ;
         var stop = TripStop.builder()
                 .stopOrder(order)
-                .address(addressMapper.toEntity(address))
+                //.address(addressMapper.toEntity(address))
                 .build();
         trip.addStop(stop);
         return stopMapper.toResponse(stopRepository.save(stop));
@@ -125,7 +123,7 @@ public class TripService {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, userId);
         var stop = findStopInTrip(trip, stopId);
-        stop.setAddress(addressMapper.toEntity(address));
+        //stop.setAddress(addressMapper.toEntity(address));
         return stopMapper.toResponse(stopRepository.save(stop));
     }
 

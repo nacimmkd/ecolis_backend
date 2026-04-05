@@ -31,9 +31,14 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  accessTokenExpiration: ${JWT_ACCESS_EXPIRATION}
-  refreshTokenExpiration: ${JWT_REFRESH_EXPIRATION}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION}
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION}
 
+
+geocoding:
+  nominatim:
+    base-url: ${GEOCODING_BASE_URL}
+    user-agent: ${GEOCODING_USER_AGENT}
 
 cors:
     allowed-origin: ${ALLOWED_ORIGINS:*}

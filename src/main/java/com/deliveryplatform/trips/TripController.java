@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.common.addresses.Address;
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.trips.dto.StopResponse;
 import com.deliveryplatform.trips.dto.TripRequest;
 import com.deliveryplatform.trips.dto.TripResponse;
