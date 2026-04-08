@@ -41,7 +41,7 @@ public class User {
     @Builder.Default
     private boolean isActive = true;
 
-    @OneToOne( mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne( mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     private Profile profile;
 
     public void setProfile(Profile profile) {

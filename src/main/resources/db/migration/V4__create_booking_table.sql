@@ -1,8 +1,9 @@
 CREATE TABLE bookings (
                           id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                          trip_id         UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
-                          parcel_id       UUID NOT NULL REFERENCES parcels(id) ON DELETE CASCADE,
-                          requester_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                          trip_id         UUID NOT NULL,
+                          parcel_id       UUID NOT NULL,
+                          sender_id    UUID NOT NULL,
+                          carrier_id    UUID NOT NULL,
                           "status"                VARCHAR(20)   NOT NULL DEFAULT 'PENDING'
                               CHECK ("status" IN ('PENDING', 'ACCEPTED', 'REJECTED', 'PAID','COMPLETED' ,'CANCELLED', 'DISPUTED')),
                           price           NUMERIC(8, 2),
@@ -13,7 +14,8 @@ CREATE TABLE bookings (
 
                           UNIQUE (trip_id, parcel_id),
 
-                          CONSTRAINT fk_booking_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE ON UPDATE CASCADE,
-                          CONSTRAINT fk_booking_parcel FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE CASCADE ON UPDATE CASCADE,
-                          CONSTRAINT fk_booking_user FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+                          CONSTRAINT fk_booking_trip FOREIGN KEY (trip_id) REFERENCES trips(id),
+                          CONSTRAINT fk_booking_parcel FOREIGN KEY (parcel_id) REFERENCES parcels(id),
+                          CONSTRAINT fk_booking_sender FOREIGN KEY (sender_id) REFERENCES users(id),
+                          CONSTRAINT fk_booking_carrier FOREIGN KEY (carrier_id) REFERENCES users(id)
 );

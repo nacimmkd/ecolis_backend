@@ -1,4 +1,4 @@
-package com.deliveryplatform.reviews;
+package com.deliveryplatform.reviews.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
