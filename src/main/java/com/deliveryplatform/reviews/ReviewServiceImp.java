@@ -53,8 +53,8 @@ public class ReviewServiceImp implements ReviewService {
         return reviewMapper.toResponse(review);
     }
 
-    public void remove(UUID reviewId, UUID ownerId) {
-        assertOwnedReviewExists(reviewId, ownerId);
+    public void remove(UUID reviewId, UUID reviewerId) {
+        assertOwnedReviewExists(reviewId, reviewerId);
         reviewRepository.deleteById(reviewId);
     }
 
@@ -80,7 +80,8 @@ public class ReviewServiceImp implements ReviewService {
 
 
     private void assertOwnedReviewExists(UUID reviewId, UUID userId) {
-        // exists & owned by requester
+        // checks if review exists
+        // checks if requester is the one who did the review
         if (!reviewRepository.existsByIdAndReviewerId(reviewId, userId)) {
             throw new UnauthorizedActionException("Action not allowed");
         }
