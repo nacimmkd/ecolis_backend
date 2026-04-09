@@ -1,7 +1,7 @@
 package com.deliveryplatform.common.exceptions;
 
 import com.deliveryplatform.common.ApiError;
-import com.deliveryplatform.common.validations.ValidationError;
+import com.deliveryplatform.common.validations.ApiValidationError;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -9,12 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestCookieException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
-import java.util.Map;
 
 
 @Slf4j
@@ -93,23 +91,20 @@ public class GlobalExceptionHandler {
 
     // VALIDATIONS
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String,Object>> handleValidationErrors(
+    public ResponseEntity<ApiValidationError> handleValidationErrors(
             MethodArgumentNotValidException ex
     ){
-        List<ValidationError> errors = ex.getBindingResult()
+        List<ApiValidationError.ValidationError> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(error -> new ValidationError(
+                .map(error -> new ApiValidationError.ValidationError(
                         error.getField(),
                         error.getDefaultMessage()
                 ))
                 .toList();
 
-        Map<String, Object> response = Map.of(
-                "status", HttpStatus.BAD_REQUEST.value(),
-                "errors", errors
+        return ResponseEntity.badRequest().body(
+                ApiValidationError.of(errors)
         );
-
-        return ResponseEntity.badRequest().body(response);
     }
 }
