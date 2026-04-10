@@ -41,7 +41,8 @@ aws:
   region: ${AWS_REGION}
   s3:
     bucket-name: ${AWS_BUCKET_NAME}
-    presign-duration : 10m
+    presign-duration : 5m
+    read-duration : 5m
 
 geocoding:
   nominatim:

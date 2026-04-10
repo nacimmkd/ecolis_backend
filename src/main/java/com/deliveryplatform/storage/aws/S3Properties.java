@@ -13,4 +13,5 @@ import java.time.Duration;
 public class S3Properties {
     private String bucketName;
     private Duration presignDuration;
+    private Duration readDuration;
 }

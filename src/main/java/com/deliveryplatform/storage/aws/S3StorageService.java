@@ -32,15 +32,15 @@ public class S3StorageService implements StorageService {
     @Override
     public PresignedUrlResponse generatePresignedUrl(String content) {
 
-        SupportedMediaType contentType = SupportedMediaType.of(content)
+        SupportedMediaType mediaType = SupportedMediaType.of(content)
                 .orElseThrow(() -> new InvalidDomainStateException("Invalid content type"));
 
-        String key = FOLDER + "/" + UUID.randomUUID() + contentType.getExtension();
+        String key = FOLDER + "/" + UUID.randomUUID() + mediaType.getExtension();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(s3Properties.getBucketName())
                 .key(key)
-                .contentType(contentType.getValue())
+                .contentType(mediaType.getValue())
                 .build();
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(r -> r
@@ -50,7 +50,6 @@ public class S3StorageService implements StorageService {
         return PresignedUrlResponse.of(
                 presignedRequest.url().toString(),
                 key,
-                contentType.getValue(),
                 s3Properties.getPresignDuration()
         );
     }
@@ -58,7 +57,7 @@ public class S3StorageService implements StorageService {
     @Override
     public String generateReadUrl(String key) {
         PresignedGetObjectRequest presigned = s3Presigner.presignGetObject(r -> r
-                .signatureDuration(s3Properties.getPresignDuration())
+                .signatureDuration(s3Properties.getReadDuration())
                 .getObjectRequest(g -> g
                         .bucket(s3Properties.getBucketName())
                         .key(key)
