@@ -30,7 +30,7 @@ public class S3StorageService implements StorageService {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final S3Properties s3Properties;
-    private final ImageRepository storageRepository;
+    private final ImageRepository imageRepository;
 
 
     @Override
@@ -42,7 +42,7 @@ public class S3StorageService implements StorageService {
 
         PresignedPutObjectRequest presignedRequest = createPresignedRequest(key, mediaType);
 
-        storageRepository.save(Image.builder()
+        imageRepository.save(Image.builder()
                 .key(key)
                 .contentType(mediaType)
                 .build()
@@ -78,7 +78,7 @@ public class S3StorageService implements StorageService {
         if (image.isConfirmed()) throw new InvalidDomainStateException("Image is already confirmed");
 
         image.setConfirmed(true);
-        storageRepository.save(image);
+        imageRepository.save(image);
     }
 
 
@@ -87,7 +87,7 @@ public class S3StorageService implements StorageService {
         Image image = getByKeyOrThrow(key);
         try{
             s3Client.deleteObject(r -> r.bucket(s3Properties.getBucketName()).key(key));
-            storageRepository.delete(image);
+            imageRepository.delete(image);
         } catch (S3Exception e) {
             log.error("Error while trying to delete file: {}", key);
             throw new ExternalServiceException(
@@ -101,7 +101,7 @@ public class S3StorageService implements StorageService {
     //---------------------------------------------------------------------
 
     private Image getByKeyOrThrow(String key) {
-        return storageRepository.findByKey(key)
+        return imageRepository.findByKey(key)
                 .orElseThrow(() -> new ResourceNotFoundException("Image not found: " + key));
     }
 
