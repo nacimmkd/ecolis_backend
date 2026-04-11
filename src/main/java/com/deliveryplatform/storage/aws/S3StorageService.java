@@ -4,8 +4,8 @@ import com.deliveryplatform.common.exceptions.ExternalServiceException;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.storage.Image;
-import com.deliveryplatform.storage.MediaType;
-import com.deliveryplatform.storage.StorageRepository;
+import com.deliveryplatform.storage.ImageType;
+import com.deliveryplatform.storage.ImageRepository;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.storage.dto.PresignedUrlResponse;
 import jakarta.transaction.Transactional;
@@ -30,14 +30,14 @@ public class S3StorageService implements StorageService {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final S3Properties s3Properties;
-    private final StorageRepository storageRepository;
+    private final ImageRepository storageRepository;
 
 
     @Override
     @Transactional
     public PresignedUrlResponse generatePresignedUrl(String content) {
 
-        MediaType mediaType = resolveMediaType(content);
+        ImageType mediaType = resolveMediaType(content);
         String key = generateKey(mediaType);
 
         PresignedPutObjectRequest presignedRequest = createPresignedRequest(key, mediaType);
@@ -105,16 +105,16 @@ public class S3StorageService implements StorageService {
                 .orElseThrow(() -> new ResourceNotFoundException("Image not found: " + key));
     }
 
-    private MediaType resolveMediaType(String content) {
-        return MediaType.of(content)
+    private ImageType resolveMediaType(String content) {
+        return ImageType.of(content)
                 .orElseThrow(() -> new InvalidDomainStateException("Invalid content type"));
     }
 
-    private String generateKey(MediaType mediaType) {
+    private String generateKey(ImageType mediaType) {
         return "images/" + UUID.randomUUID() + mediaType.getExtension();
     }
 
-    private PresignedPutObjectRequest createPresignedRequest(String key, MediaType mediaType) {
+    private PresignedPutObjectRequest createPresignedRequest(String key, ImageType mediaType) {
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(s3Properties.getBucketName())

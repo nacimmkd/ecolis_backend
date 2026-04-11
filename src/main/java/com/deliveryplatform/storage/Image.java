@@ -23,7 +23,7 @@ public class Image {
 
     @Column(name = "content_type")
     @Enumerated(EnumType.STRING)
-    private MediaType contentType;
+    private ImageType contentType;
 
     @Builder.Default
     private boolean confirmed = false;

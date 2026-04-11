@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @Getter
-public enum MediaType {
+public enum ImageType {
 
     IMAGE_JPEG     ("image/jpeg",      ".jpg"),
     IMAGE_PNG      ("image/png",       ".png"),
@@ -15,13 +15,13 @@ public enum MediaType {
     private final String value;
     private final String extension;
 
-    MediaType(String value, String extension) {
+    ImageType(String value, String extension) {
         this.value     = value;
         this.extension = extension;
     }
 
-    public static Optional<MediaType> of(String value) {
-        return Arrays.stream(MediaType.values())
+    public static Optional<ImageType> of(String value) {
+        return Arrays.stream(ImageType.values())
                 .filter(ft -> ft.value.equalsIgnoreCase(value))
                 .findFirst();
     }
