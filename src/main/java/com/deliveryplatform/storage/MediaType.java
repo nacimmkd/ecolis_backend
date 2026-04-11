@@ -6,23 +6,23 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @Getter
-public enum ImageType {
+public enum MediaType {
 
     IMAGE_JPEG     ("image/jpeg",      ".jpg"),
     IMAGE_PNG      ("image/png",       ".png"),
     IMAGE_WEBP     ("image/webp",      ".webp");
 
-    private final String value;
+    private final String content;
     private final String extension;
 
-    ImageType(String value, String extension) {
-        this.value     = value;
+    MediaType(String content, String extension) {
+        this.content     = content;
         this.extension = extension;
     }
 
-    public static Optional<ImageType> of(String value) {
-        return Arrays.stream(ImageType.values())
-                .filter(ft -> ft.value.equalsIgnoreCase(value))
+    public static Optional<MediaType> of(String value) {
+        return Arrays.stream(MediaType.values())
+                .filter(ft -> ft.content.equalsIgnoreCase(value))
                 .findFirst();
     }
 }

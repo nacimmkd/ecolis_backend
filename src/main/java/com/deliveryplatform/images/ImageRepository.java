@@ -1,4 +1,4 @@
-package com.deliveryplatform.storage;
+package com.deliveryplatform.images;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

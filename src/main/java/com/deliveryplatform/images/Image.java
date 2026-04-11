@@ -1,5 +1,6 @@
-package com.deliveryplatform.storage;
+package com.deliveryplatform.images;
 
+import com.deliveryplatform.storage.MediaType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,7 +24,10 @@ public class Image {
 
     @Column(name = "content_type")
     @Enumerated(EnumType.STRING)
-    private ImageType contentType;
+    private MediaType mediaType;
+
+    @Column(name = "uploaded_by")
+    private UUID uploadedBy;
 
     @Builder.Default
     private boolean confirmed = false;

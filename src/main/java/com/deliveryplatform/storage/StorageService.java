@@ -1,11 +1,9 @@
 package com.deliveryplatform.storage;
 
-import com.deliveryplatform.storage.dto.PresignedUrlResponse;
-
 public interface StorageService {
-    PresignedUrlResponse generatePresignedUrl(String contentType);
+    PresignedUrl generatePresignedUrl(MediaType mediaType, String folder);
     String generateReadUrl(String key);
-    void confirmUpload(String key);
+    boolean exists(String key);
     void delete(String key);
 
 }
