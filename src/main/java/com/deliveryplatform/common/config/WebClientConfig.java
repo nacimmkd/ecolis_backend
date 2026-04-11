@@ -1,6 +1,6 @@
 package com.deliveryplatform.common.config;
 
-import com.deliveryplatform.addresses.NominatimProperties;
+import com.deliveryplatform.addresses.nominatim.NominatimProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

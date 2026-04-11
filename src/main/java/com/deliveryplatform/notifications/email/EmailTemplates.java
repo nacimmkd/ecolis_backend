@@ -1,4 +1,4 @@
-package com.deliveryplatform.notifications;
+package com.deliveryplatform.notifications.email;
 
 public final class EmailTemplates {
 
@@ -6,7 +6,7 @@ public final class EmailTemplates {
 
     public record EmailContent(String subject, String body) {}
 
-    public static EmailContent NotificationReminderTemplate() {
+    public static EmailContent notificationReminderTemplate() {
         return new EmailContent(
                 "Vous avez une nouvelle notification",
                 """

@@ -1,6 +1,8 @@
-package com.deliveryplatform.notifications;
+package com.deliveryplatform.notifications.events;
 
-import com.deliveryplatform.notifications.events.*;
+import com.deliveryplatform.notifications.NotificationServiceImp;
+import com.deliveryplatform.notifications.NotificationType;
+import com.deliveryplatform.notifications.dto.NotificationRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -10,12 +12,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NotificationEventHandler {
 
-    private final NotificationService notificationService;
+    private final NotificationServiceImp notificationServiceImp;
 
     @EventListener
     @Async
     public void onBookingRequested(BookingRequestedEvent event) {
-        notificationService.notify(
+        notificationServiceImp.notify(
                 NotificationRequest.builder()
                         .userId(event.carrierId())
                         .type(NotificationType.BOOKING_REQUESTED)
@@ -28,7 +30,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onBookingAccepted(BookingAcceptedEvent event) {
-        notificationService.notify(
+        notificationServiceImp.notify(
                 NotificationRequest.builder()
                         .userId(event.senderId())
                         .type(NotificationType.BOOKING_ACCEPTED)
@@ -41,7 +43,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onBookingCancelled(BookingCancelledEvent event) {
-        notificationService.notify(
+        notificationServiceImp.notify(
                 NotificationRequest.builder()
                         .userId(event.userId())
                         .type(NotificationType.BOOKING_CANCELLED)
@@ -54,7 +56,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onPaymentReceived(PaymentReceivedEvent event) {
-        notificationService.notify(
+        notificationServiceImp.notify(
                 NotificationRequest.builder()
                         .userId(event.userId())
                         .type(NotificationType.PAYMENT_RECEIVED)
@@ -67,7 +69,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onTripCancelled(TripCancelledEvent event) {
-        notificationService.notify(
+        notificationServiceImp.notify(
                 NotificationRequest.builder()
                         .userId(event.userId())
                         .type(NotificationType.TRIP_CANCELLED)
@@ -80,7 +82,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onParcelDelivered(ParcelDeliveredEvent event) {
-        notificationService.notify(
+        notificationServiceImp.notify(
                 NotificationRequest.builder()
                         .userId(event.userId())
                         .type(NotificationType.PARCEL_DELIVERED)

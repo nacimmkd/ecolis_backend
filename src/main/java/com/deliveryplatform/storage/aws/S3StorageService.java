@@ -2,9 +2,13 @@ package com.deliveryplatform.storage.aws;
 
 import com.deliveryplatform.common.exceptions.ExternalServiceException;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.storage.SupportedMediaType;
+import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.storage.Image;
+import com.deliveryplatform.storage.MediaType;
+import com.deliveryplatform.storage.StorageRepository;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.storage.dto.PresignedUrlResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,33 +30,31 @@ public class S3StorageService implements StorageService {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final S3Properties s3Properties;
+    private final StorageRepository storageRepository;
 
-    private static final String FOLDER = "images";
 
     @Override
+    @Transactional
     public PresignedUrlResponse generatePresignedUrl(String content) {
 
-        SupportedMediaType mediaType = SupportedMediaType.of(content)
-                .orElseThrow(() -> new InvalidDomainStateException("Invalid content type"));
+        MediaType mediaType = resolveMediaType(content);
+        String key = generateKey(mediaType);
 
-        String key = FOLDER + "/" + UUID.randomUUID() + mediaType.getExtension();
+        PresignedPutObjectRequest presignedRequest = createPresignedRequest(key, mediaType);
 
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(s3Properties.getBucketName())
+        storageRepository.save(Image.builder()
                 .key(key)
-                .contentType(mediaType.getValue())
-                .build();
-
-        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(r -> r
-                .signatureDuration(s3Properties.getPresignDuration())
-                .putObjectRequest(putObjectRequest)
+                .contentType(mediaType)
+                .build()
         );
+
         return PresignedUrlResponse.of(
                 presignedRequest.url().toString(),
                 key,
                 s3Properties.getPresignDuration()
         );
     }
+
 
     @Override
     public String generateReadUrl(String key) {
@@ -66,31 +68,76 @@ public class S3StorageService implements StorageService {
         return presigned.url().toString();
     }
 
+
     @Override
-    public boolean exists(String key) {
-        try {
-            s3Client.headObject(r -> r.bucket(s3Properties.getBucketName()).key(key));
-            return true;
-        } catch (NoSuchKeyException e) {
-            return false;
-        } catch (S3Exception e) {
-            log.error("Error while checking existence of key: {}", key, e);
-            throw new ExternalServiceException(
-                    S3StorageService.class,
-                    "Error while checking file existence: " + key
-            );
-        }
+    @Transactional
+    public void confirmUpload(String key) {
+        assertMediaExistsInS3(key);
+        Image image = getByKeyOrThrow(key);
+
+        if (image.isConfirmed()) throw new InvalidDomainStateException("Image is already confirmed");
+
+        image.setConfirmed(true);
+        storageRepository.save(image);
     }
+
 
     @Override
     public void delete(String key) {
+        Image image = getByKeyOrThrow(key);
         try{
             s3Client.deleteObject(r -> r.bucket(s3Properties.getBucketName()).key(key));
+            storageRepository.delete(image);
         } catch (S3Exception e) {
             log.error("Error while trying to delete file: {}", key);
             throw new ExternalServiceException(
                     S3StorageService.class,
                     "Error while trying to delete file : " + key
+            );
+        }
+    }
+
+
+    //---------------------------------------------------------------------
+
+    private Image getByKeyOrThrow(String key) {
+        return storageRepository.findByKey(key)
+                .orElseThrow(() -> new ResourceNotFoundException("Image not found: " + key));
+    }
+
+    private MediaType resolveMediaType(String content) {
+        return MediaType.of(content)
+                .orElseThrow(() -> new InvalidDomainStateException("Invalid content type"));
+    }
+
+    private String generateKey(MediaType mediaType) {
+        return "images/" + UUID.randomUUID() + mediaType.getExtension();
+    }
+
+    private PresignedPutObjectRequest createPresignedRequest(String key, MediaType mediaType) {
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(s3Properties.getBucketName())
+                .key(key)
+                .contentType(mediaType.getValue())
+                .build();
+
+        return s3Presigner.presignPutObject(r -> r
+                .signatureDuration(s3Properties.getPresignDuration())
+                .putObjectRequest(putObjectRequest)
+        );
+    }
+
+    private void assertMediaExistsInS3(String key){
+        try {
+            s3Client.headObject(r -> r.bucket(s3Properties.getBucketName()).key(key));
+        } catch (NoSuchKeyException e) {
+            throw new ResourceNotFoundException("Image not found : " + key);
+        } catch (S3Exception e) {
+            log.error("Error while checking existence of key: {}", key, e);
+            throw new ExternalServiceException(
+                    S3StorageService.class,
+                    "Error while checking file existence: " + key
             );
         }
     }

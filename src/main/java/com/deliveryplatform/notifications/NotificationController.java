@@ -1,17 +1,12 @@
 package com.deliveryplatform.notifications;
 
-import com.deliveryplatform.notifications.events.BookingAcceptedEvent;
-import com.deliveryplatform.notifications.events.ParcelDeliveredEvent;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import java.util.UUID;
@@ -24,7 +19,6 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final NotificationRepository notificationRepository;
-    private final ApplicationEventPublisher applicationEventPublisher;
 
     @GetMapping
     public ResponseEntity<List<Notification>> getAll(
@@ -70,7 +64,7 @@ public class NotificationController {
 //
 //        var event = new BookingAcceptedEvent(
 //                user.getId(),
-//                "",
+//                "test",
 //                "nacim",
 //                BigDecimal.valueOf(20.0),
 //                UUID.randomUUID()

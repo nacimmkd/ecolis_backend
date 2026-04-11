@@ -1,10 +1,10 @@
-package com.deliveryplatform.notifications;
+package com.deliveryplatform.notifications.dto;
 
 
+import com.deliveryplatform.notifications.NotificationType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
-import java.util.Objects;
 import java.util.UUID;
 
 @Builder

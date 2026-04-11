@@ -1,9 +1,12 @@
-package com.deliveryplatform.addresses;
+package com.deliveryplatform.addresses.nominatim;
 
+import com.deliveryplatform.addresses.Address;
+import com.deliveryplatform.addresses.AddressMapper;
+import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.addresses.GeocodingService;
 import com.deliveryplatform.common.exceptions.ExternalServiceException;
 import com.deliveryplatform.common.exceptions.UnprocessableEntityException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

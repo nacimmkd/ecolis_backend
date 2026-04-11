@@ -1,5 +1,6 @@
 package com.deliveryplatform.notifications;
 
+import com.deliveryplatform.notifications.dto.NotificationRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
