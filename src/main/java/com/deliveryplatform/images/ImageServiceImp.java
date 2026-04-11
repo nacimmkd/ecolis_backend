@@ -40,7 +40,9 @@ public class ImageServiceImp implements ImageService {
     public void confirmUpload(String key, UUID uploadedBy) {
         var image = getByKeyOrThrow(key);
         assertOwnership(image, uploadedBy);
+        assertExistsInStorage(key);
         image.setConfirmed(true);
+        imageRepository.save(image);
     }
 
     @Override
@@ -74,5 +76,11 @@ public class ImageServiceImp implements ImageService {
         if (!image.getUploadedBy().equals(requestedBy)) {
             throw new UnauthorizedActionException("You are not allowed to perform this action");
         }
+    }
+
+    private void assertExistsInStorage(String key){
+        if(!s3StorageService.exists(key)){
+            throw new ResourceNotFoundException("Image not found : " + key);
+        };
     }
 }

@@ -20,7 +20,7 @@ public class ImageController {
 
     private final ImageService imageService;
 
-    @GetMapping("/presign")
+    @PostMapping("/presign")
     public ResponseEntity<PresignedUrl> requestImageUpload(
             @RequestParam("content") @NotBlank String contentType,
             @AuthenticationPrincipal UserPrincipal user) {
@@ -45,5 +45,11 @@ public class ImageController {
 
         imageService.remove(id, user.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    // test
+    @GetMapping
+    public String getUrl(@RequestParam("key")   String key){
+        return imageService.getImageUrl(key);
     }
 }
