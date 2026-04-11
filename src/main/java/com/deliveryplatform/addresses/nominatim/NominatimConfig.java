@@ -1,6 +1,5 @@
-package com.deliveryplatform.common.config;
+package com.deliveryplatform.addresses.nominatim;
 
-import com.deliveryplatform.addresses.nominatim.NominatimProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 @RequiredArgsConstructor
-public class WebClientConfig {
+public class NominatimConfig {
 
     private final NominatimProperties nominatimProperties;
 
