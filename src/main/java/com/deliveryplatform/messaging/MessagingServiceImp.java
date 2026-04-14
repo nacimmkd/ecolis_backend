@@ -36,15 +36,21 @@ public class MessagingServiceImp implements  MessagingService {
     @Override
     @Transactional
     public ConversationResponse getOrCreateConversation(UUID bookingId, UUID currentUserId) {
-        var booking = getBookingOrThrow(bookingId);
-        assertIsBookingParticipant(booking, currentUserId);
+
         var conversation = conversationRepository.getConversationByBookingId(bookingId)
-                .orElseGet(() -> conversationRepository.save(
-                        Conversation.builder()
-                                .booking(booking)
-                                .build()
-                ));
-        return ConversationResponse.of(conversation, resolveReceiver(booking, currentUserId));
+                .orElseGet(() -> {
+                    var booking = getBookingOrThrow(bookingId);
+                    assertIsBookingParticipant(booking, currentUserId);
+                    return conversationRepository.save(
+                            Conversation.builder().booking(booking).build()
+                    );
+                });
+
+        assertIsBookingParticipant(conversation.getBooking(), currentUserId);
+        return ConversationResponse.of(
+                conversation,
+                resolveReceiver(conversation.getBooking(), currentUserId)
+        );
     }
 
 
@@ -117,11 +123,6 @@ public class MessagingServiceImp implements  MessagingService {
     private Conversation getConversationOrThrow(UUID conversationId) {
         return conversationRepository.getConversationById(conversationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Conversation not found: " + conversationId));
-    }
-
-    private Message getMessageOrThrow(UUID messageId){
-        return messageRepository.getMessageById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message not found: " + messageId));
     }
 
     private Booking getBookingOrThrow(UUID bookingId) {

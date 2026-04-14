@@ -85,7 +85,6 @@ public class MessagingController {
             Principal principal) {
 
         UserPrincipal user = (UserPrincipal) ((Authentication) principal).getPrincipal();
-
         messagingService.sendMessage(request, user.getId());
     }
 }

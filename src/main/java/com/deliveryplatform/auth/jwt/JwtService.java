@@ -21,11 +21,11 @@ public class JwtService {
     private final RefreshTokenService refreshTokenService;
 
 
-    public String generateAccessToken(User user) {
+    public String generateAccessToken(UserPrincipal user) {
         return generateToken(user, jwtConfig.getAccessTokenExpiration());
     }
 
-    public String generateRefreshToken(User user) {
+    public String generateRefreshToken(UserPrincipal user) {
         return generateToken(user, jwtConfig.getRefreshTokenExpiration());
     }
 
@@ -58,7 +58,8 @@ public class JwtService {
         return new UserPrincipal(
                 getUserIdFromToken(token),
                 getEmailFromToken(token),
-                getRoleFromToken(token));
+                getRoleFromToken(token),
+                null);
     }
     // ---------------------------------------------------------------------
 
@@ -71,7 +72,7 @@ public class JwtService {
         }
     }
 
-    private String generateToken(User user, int expiration) {
+    private String generateToken(UserPrincipal user, int expiration) {
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())

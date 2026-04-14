@@ -4,7 +4,6 @@ import com.deliveryplatform.auth.jwt.JwtConfig;
 import com.deliveryplatform.auth.jwt.JwtService;
 import com.deliveryplatform.auth.jwt.RefreshTokenService;
 import com.deliveryplatform.common.exceptions.AuthenticationException;
-import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserPrincipal;
 import com.deliveryplatform.users.UserService;
 import lombok.AllArgsConstructor;
@@ -27,12 +26,12 @@ public class AuthService {
     public AuthResponse login(AuthRequest request) {
 
         var auth = authenticate(request.getEmail(), request.getPassword());
-        var user = (UserPrincipal) auth.getPrincipal();
+        var userPrincipal = (UserPrincipal) auth.getPrincipal();
 
-        var accessToken = jwtService.generateAccessToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
+        var accessToken = jwtService.generateAccessToken(userPrincipal);
+        var refreshToken = jwtService.generateRefreshToken(userPrincipal);
 
-        refreshTokenService.save(user.getId(), refreshToken);
+        refreshTokenService.save(userPrincipal.getId(), refreshToken);
 
         return new AuthResponse(
                 accessToken,
@@ -44,12 +43,12 @@ public class AuthService {
 
     public String refresh(String refreshToken) {
         validateRefreshTokenOrThrow(refreshToken);
-        var user = getUserFromRefreshToken(refreshToken);
+        var userPrincipal = getPrincipalFromRefreshToken(refreshToken);
 
-        var newRefreshToken = jwtService.generateRefreshToken(user);
-        refreshTokenService.save(user.getId(), newRefreshToken);
+        var newRefreshToken = jwtService.generateRefreshToken(userPrincipal);
+        refreshTokenService.save(userPrincipal.getId(), newRefreshToken);
 
-        return jwtService.generateAccessToken(user);
+        return jwtService.generateAccessToken(userPrincipal);
     }
 
     public void logout(String refreshToken) {
@@ -70,9 +69,10 @@ public class AuthService {
         );
     }
 
-    private User getUserFromRefreshToken(String refreshToken) {
+    private UserPrincipal getPrincipalFromRefreshToken(String refreshToken) {
         var userId = jwtService.getUserIdFromToken(refreshToken);
-        return userService.getUserByIdOrThrow(userId);
+        var user = userService.getUserByIdOrThrow(userId);
+        return UserPrincipal.from(user);
     }
 
     private void validateRefreshTokenOrThrow(String refreshToken) {
