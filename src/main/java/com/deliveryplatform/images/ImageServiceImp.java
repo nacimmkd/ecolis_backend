@@ -3,6 +3,7 @@ package com.deliveryplatform.images;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.images.dto.ImageResponse;
 import com.deliveryplatform.storage.MediaType;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.storage.PresignedUrl;
@@ -20,9 +21,12 @@ public class ImageServiceImp implements ImageService {
 
 
     @Override
-    public String getImageUrl(String key) {
-        return s3StorageService.generateReadUrl(key);
+    public ImageResponse getImage(String key) {
+        var image = getByKeyOrThrow(key);
+        var url = s3StorageService.generateReadUrl(key);
+        return ImageResponse.of(image, url);
     }
+
 
     @Override
     public PresignedUrl requestImageUpload(String contentType , UUID uploadedBy) {
@@ -37,12 +41,14 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
-    public void confirmUpload(String key, UUID uploadedBy) {
+    public ImageResponse confirmUpload(String key, UUID uploadedBy) {
         var image = getByKeyOrThrow(key);
         assertOwnership(image, uploadedBy);
         assertExistsInStorage(key);
         image.setConfirmed(true);
-        imageRepository.save(image);
+
+        var url = s3StorageService.generateReadUrl(key);
+        return ImageResponse.of(image, url);
     }
 
     @Override

@@ -50,7 +50,8 @@ geocoding:
     user-agent: ${GEOCODING_USER_AGENT}
 
 cors:
-    allowed-origin: ${ALLOWED_ORIGINS:*}
+    allowed-origin:
+      - http://localhost:3000
 
 app:
   mail:
