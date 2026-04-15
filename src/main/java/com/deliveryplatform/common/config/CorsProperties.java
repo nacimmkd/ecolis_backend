@@ -12,6 +12,6 @@ import java.util.List;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "cors")
-public class CorsConfig {
+public class CorsProperties {
     private List<String> allowedOrigins = List.of("*");
 }

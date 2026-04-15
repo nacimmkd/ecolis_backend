@@ -22,11 +22,11 @@ public class JwtService {
 
 
     public String generateAccessToken(UserPrincipal user) {
-        return generateToken(user, jwtConfig.getAccessTokenExpiration());
+        return generateToken(user, jwtConfig.getAccessTokenDuration());
     }
 
     public String generateRefreshToken(UserPrincipal user) {
-        return generateToken(user, jwtConfig.getRefreshTokenExpiration());
+        return generateToken(user, jwtConfig.getRefreshTokenDuration());
     }
 
     public boolean validateRefreshToken(String refreshToken) {

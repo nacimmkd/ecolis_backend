@@ -31,8 +31,8 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration: ${JWT_ACCESS_EXPIRATION}
-  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION}
+  access-token-duration: ${JWT_ACCESS_DURATION}
+  refresh-token-duration: ${JWT_REFRESH_DURATION}
 
 aws:
   credentials:
@@ -46,11 +46,11 @@ aws:
 
 geocoding:
   nominatim:
-    base-url: ${GEOCODING_BASE_URL}
-    user-agent: ${GEOCODING_USER_AGENT}
+    base-url: ${NOMINATIM_BASE_URL}
+    user-agent: ${NOMINATIM_USER_AGENT}
 
 cors:
-    allowed-origin:
+    allowed-origins:
       - http://localhost:3000
 
 app:

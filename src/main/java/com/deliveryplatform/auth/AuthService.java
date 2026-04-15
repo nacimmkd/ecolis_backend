@@ -36,7 +36,7 @@ public class AuthService {
         return new AuthResponse(
                 accessToken,
                 refreshToken,
-                jwtConfig.getRefreshTokenExpiration()
+                jwtConfig.getRefreshTokenDuration()
         );
     }
 

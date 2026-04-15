@@ -14,12 +14,12 @@ public class RefreshTokenService {
     private final JwtConfig jwtConfig;
 
     public void save(UUID userId, String token) {
-        var RefreshToken = new RefreshToken(
+        var refreshToken = new RefreshToken(
                 userId,
                 token,
-                jwtConfig.getRefreshTokenExpiration()
+                jwtConfig.getRefreshTokenDuration()
         );
-        refreshTokenRepository.save(RefreshToken);
+        refreshTokenRepository.save(refreshToken);
     }
 
     public Optional<RefreshToken> findByToken(String token) {

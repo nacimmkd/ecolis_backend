@@ -9,6 +9,6 @@ import org.springframework.context.annotation.Configuration;
 @Data
 public class JwtConfig {
     private String secret;
-    private int accessTokenExpiration;
-    private int refreshTokenExpiration;
+    private int accessTokenDuration;
+    private int refreshTokenDuration;
 }
