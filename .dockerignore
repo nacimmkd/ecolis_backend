@@ -1,0 +1,15 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+
+# Build local
+target
+node_modules
+
+# Docker
+docker-compose.yml
+Dockerfile
