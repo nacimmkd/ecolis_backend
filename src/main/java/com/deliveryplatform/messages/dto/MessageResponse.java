@@ -1,7 +1,7 @@
-package com.deliveryplatform.messaging.dto;
+package com.deliveryplatform.messages.dto;
 
 import com.deliveryplatform.images.dto.ImageResponse;
-import com.deliveryplatform.messaging.Message;
+import com.deliveryplatform.messages.Message;
 
 import java.time.OffsetDateTime;
 import java.util.List;

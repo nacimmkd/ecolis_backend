@@ -1,4 +1,4 @@
-package com.deliveryplatform.messaging.dto;
+package com.deliveryplatform.messages.dto;
 
 import com.deliveryplatform.users.User;
 

@@ -1,4 +1,4 @@
-package com.deliveryplatform.messaging;
+package com.deliveryplatform.messages;
 
 import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingRepository;
@@ -7,10 +7,10 @@ import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageRepository;
 import com.deliveryplatform.images.dto.ImageResponse;
-import com.deliveryplatform.messaging.dto.ConversationDetailedResponse;
-import com.deliveryplatform.messaging.dto.ConversationResponse;
-import com.deliveryplatform.messaging.dto.MessageResponse;
-import com.deliveryplatform.messaging.dto.SendMessageRequest;
+import com.deliveryplatform.messages.dto.ConversationDetailedResponse;
+import com.deliveryplatform.messages.dto.ConversationResponse;
+import com.deliveryplatform.messages.dto.MessageResponse;
+import com.deliveryplatform.messages.dto.SendMessageRequest;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.users.User;
 import jakarta.transaction.Transactional;

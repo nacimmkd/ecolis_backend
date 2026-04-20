@@ -1,4 +1,4 @@
-package com.deliveryplatform.messaging.dto;
+package com.deliveryplatform.messages.dto;
 
 import jakarta.validation.constraints.NotNull;
 

@@ -1,4 +1,4 @@
-package com.deliveryplatform.notifications.email;
+package com.deliveryplatform.emails;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import org.thymeleaf.context.Context;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class EmailNotificationService {
+public class EmailService {
 
     @Value("${app.mail.from}")
     private String from;

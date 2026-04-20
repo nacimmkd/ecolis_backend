@@ -23,13 +23,13 @@ public class ReviewController {
     // public
     @GetMapping("/{id}")
     public List<ReviewResponse> getUserReviews(@PathVariable UUID id) {
-        return reviewService.getReviewsForUser(id);
+        return reviewService.getUserReviews(id);
     }
 
     @GetMapping
     public List<ReviewResponse> getReviewsMe(
             @AuthenticationPrincipal UserPrincipal user){
-        return reviewService.getReviewsForUser(user.getId());
+        return reviewService.getUserReviews(user.getId());
     }
 
     @PostMapping

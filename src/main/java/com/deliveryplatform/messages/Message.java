@@ -1,11 +1,10 @@
-package com.deliveryplatform.messaging;
+package com.deliveryplatform.messages;
 
 
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;

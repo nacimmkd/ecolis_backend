@@ -1,7 +1,7 @@
-package com.deliveryplatform.messaging.dto;
+package com.deliveryplatform.messages.dto;
 
 
-import com.deliveryplatform.messaging.Conversation;
+import com.deliveryplatform.messages.Conversation;
 import com.deliveryplatform.users.User;
 
 import java.time.OffsetDateTime;

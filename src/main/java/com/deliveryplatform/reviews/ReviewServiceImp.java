@@ -27,7 +27,7 @@ public class ReviewServiceImp implements ReviewService {
     private final ReviewMapper reviewMapper;
 
 
-    public List<ReviewResponse> getReviewsForUser(UUID userId) {
+    public List<ReviewResponse> getUserReviews(UUID userId) {
         return reviewRepository.findByRevieweeId(userId)
                 .stream()
                 .map(reviewMapper::toResponse)

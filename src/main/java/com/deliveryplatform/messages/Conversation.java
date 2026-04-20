@@ -1,4 +1,4 @@
-package com.deliveryplatform.messaging;
+package com.deliveryplatform.messages;
 
 import com.deliveryplatform.bookings.Booking;
 import jakarta.persistence.*;

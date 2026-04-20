@@ -1,8 +1,8 @@
-package com.deliveryplatform.messaging;
+package com.deliveryplatform.messages;
 
-import com.deliveryplatform.messaging.dto.ConversationDetailedResponse;
-import com.deliveryplatform.messaging.dto.ConversationResponse;
-import com.deliveryplatform.messaging.dto.SendMessageRequest;
+import com.deliveryplatform.messages.dto.ConversationDetailedResponse;
+import com.deliveryplatform.messages.dto.ConversationResponse;
+import com.deliveryplatform.messages.dto.SendMessageRequest;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
