@@ -21,9 +21,16 @@ public class ImageServiceImp implements ImageService {
 
 
     @Override
-    public ImageResponse getImage(String key) {
+    public ImageResponse getImageByKey(String key) {
         var image = getByKeyOrThrow(key);
         var url = s3StorageService.generateReadUrl(key);
+        return ImageResponse.of(image, url);
+    }
+
+    @Override
+    public ImageResponse getImageById(UUID id) {
+        var image = imageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Image Not Found"));
+        var url = s3StorageService.generateReadUrl(image.getKey());
         return ImageResponse.of(image, url);
     }
 
