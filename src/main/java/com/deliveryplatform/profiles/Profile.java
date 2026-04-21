@@ -29,6 +29,8 @@ public class Profile {
 
     private String phone;
 
+    private String avatar_url;
+
     @Column(name = "avg_rating", precision = 2, scale = 1)
     private BigDecimal avgRating = null;
 
@@ -37,8 +39,6 @@ public class Profile {
 
     @Column(name = "total_orders")
     private int totalOrders = 0;
-
-    private String iban;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id")

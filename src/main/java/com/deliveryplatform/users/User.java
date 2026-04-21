@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +36,7 @@ public class User {
 
     @Column(name = "registered_at")
     @Builder.Default
-    private LocalDateTime registeredAt = LocalDateTime.now();
+    private OffsetDateTime registeredAt = OffsetDateTime.now();
 
     @Column(name = "is_active")
     @Builder.Default
