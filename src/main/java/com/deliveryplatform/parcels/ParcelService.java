@@ -6,7 +6,7 @@ import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.dto.ParcelRequest;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
-import com.deliveryplatform.users.UserService;
+import com.deliveryplatform.users.UserServiceImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ import java.util.UUID;
 public class ParcelService {
 
     private final ParcelRepository parcelRepository;
-    private final UserService userService;
+    private final UserServiceImp userService;
     private final ParcelMapper parcelMapper;
 
     public ParcelResponse getParcel(UUID id) {

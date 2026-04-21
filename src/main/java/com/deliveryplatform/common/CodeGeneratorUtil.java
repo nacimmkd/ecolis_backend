@@ -13,4 +13,9 @@ public class CodeGeneratorUtil {
         return "PAR-" + number;
     }
 
+    public static String generateVerificationCode() {
+        int number = random.nextInt(9000) + 1000;
+        return "VERF-" + number;
+    }
+
 }

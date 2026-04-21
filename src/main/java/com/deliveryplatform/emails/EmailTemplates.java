@@ -21,4 +21,25 @@ public final class EmailTemplates {
                 """
         );
     }
+
+    public static EmailContent confirmEmailTemplate(String code) {
+        return new EmailContent(
+                "Confirmer votre email",
+                """
+                Bonjour,
+    
+                Merci d'avoir inscrit sur DeliveryPlatform.
+    
+                Votre code de confirmation est :
+    
+                %s
+    
+                Ce code est valable 15 minutes.
+                Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
+    
+                À bientôt,
+                L'équipe DeliveryPlatform
+                """.formatted(code)
+        );
+    }
 }

@@ -8,7 +8,7 @@ import com.deliveryplatform.trips.dto.StopRequest;
 import com.deliveryplatform.trips.dto.StopResponse;
 import com.deliveryplatform.trips.dto.TripRequest;
 import com.deliveryplatform.trips.dto.TripResponse;
-import com.deliveryplatform.users.UserService;
+import com.deliveryplatform.users.UserServiceImp;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class TripService {
     private final TripStopRepository stopRepository;
     private final TripMapper     tripMapper;
     private final TripStopMapper stopMapper;
-    private final UserService    userService;
+    private final UserServiceImp userService;
 
 
     public TripResponse getTrip(UUID id) {

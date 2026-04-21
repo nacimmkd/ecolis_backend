@@ -1,11 +1,11 @@
 package com.deliveryplatform.users;
 
 
-import com.deliveryplatform.profiles.dto.ProfileRequest;
-import com.deliveryplatform.users.dto.ChangePasswordRequest;
+import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserRequest;
 import com.deliveryplatform.users.dto.UserResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserServiceImp userService;
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getMe(
@@ -37,7 +37,7 @@ public class UserController {
     public ResponseEntity<UserResponse> register(
             @Valid @RequestBody UserRequest request,
             UriComponentsBuilder uriBuilder
-    ) {
+    ){
         var user = userService.register(request);
 
         var uri = uriBuilder
@@ -47,19 +47,27 @@ public class UserController {
         return ResponseEntity.created(uri).body(user);
     }
 
-    @PutMapping("/me")
-    public ResponseEntity<UserResponse> updateMe(
-            @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody ProfileRequest request
-    ) {
-        var updatedUserDto = userService.updateProfile(principal.getId(), request);
-        return ResponseEntity.ok(updatedUserDto);
+
+    @PostMapping("/{id}/verification/send")
+    public ResponseEntity<Void> sendVerificationCode(@PathVariable UUID id) {
+        userService.sendVerificationCode(id);
+        return ResponseEntity.noContent().build();
     }
+
+
+    @PostMapping("/verification/verify")
+    public ResponseEntity<Void> verify(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody @NotBlank String code) {
+        userService.verify(principal.getEmail(), code);
+        return ResponseEntity.noContent().build();
+    }
+
 
     @PutMapping("/me/password")
     public ResponseEntity<Void> changePassword(
             @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody ChangePasswordRequest request
+            @Valid @RequestBody UpdatePasswordRequest request
     ) {
         userService.changePassword(principal.getId(), request);
         return ResponseEntity.noContent().build();

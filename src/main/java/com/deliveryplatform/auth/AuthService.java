@@ -5,7 +5,7 @@ import com.deliveryplatform.auth.jwt.JwtService;
 import com.deliveryplatform.auth.jwt.RefreshTokenService;
 import com.deliveryplatform.common.exceptions.AuthenticationException;
 import com.deliveryplatform.users.UserPrincipal;
-import com.deliveryplatform.users.UserService;
+import com.deliveryplatform.users.UserServiceImp;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +18,7 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserService userService;
+    private final UserServiceImp userService;
     private final RefreshTokenService refreshTokenService;
     private final JwtConfig jwtConfig;
 

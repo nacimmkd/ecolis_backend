@@ -11,7 +11,7 @@ import com.deliveryplatform.parcels.ParcelStatus;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.trips.TripService;
 import com.deliveryplatform.users.User;
-import com.deliveryplatform.users.UserService;
+import com.deliveryplatform.users.UserServiceImp;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class BookingService {
     private final BookingMapper bookingMapper;
     private final ParcelService parcelService;
     private final TripService tripService;
-    private final UserService userService;
+    private final UserServiceImp userService;
 
     private static final Set<BookingStatus> TERMINAL_STATUSES = Set.of(
             BookingStatus.COMPLETED,
