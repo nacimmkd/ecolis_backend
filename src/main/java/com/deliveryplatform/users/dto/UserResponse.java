@@ -5,6 +5,7 @@ import com.deliveryplatform.users.User;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Builder
@@ -14,7 +15,7 @@ public record UserResponse(
         Role          role,
         boolean       isVerified,
         boolean       isActive,
-        LocalDateTime registeredAt
+        OffsetDateTime registeredAt
 ) {
 
     public static UserResponse of(User user) {
