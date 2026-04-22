@@ -1,11 +1,13 @@
 package com.deliveryplatform.users;
 
+import com.deliveryplatform.auth.jwt.RefreshTokenService;
 import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.emails.EmailService;
 import com.deliveryplatform.emails.EmailTemplates;
+import com.deliveryplatform.profiles.dto.ProfilePostRequest;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserRequest;
 import com.deliveryplatform.users.dto.UserResponse;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +28,7 @@ public class UserServiceImp implements  UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final UserVerificationService userVerificationService;
+    private final RefreshTokenService refreshTokenService;
 
 
     @Override
@@ -49,6 +53,9 @@ public class UserServiceImp implements  UserService {
         var user = UserRequest.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.USER);
+
+        var profileEntity = ProfilePostRequest.toEntity(request.profile());
+        user.setProfile(profileEntity);
         return UserResponse.of(userRepository.save(user));
     }
 
@@ -56,8 +63,12 @@ public class UserServiceImp implements  UserService {
     @Override
     public void sendVerificationCode(UUID id){
         var user = getUserByIdOrThrow(id);
+        if (user.isVerified()) throw new ConflictException("User is already verified");
+        if(userVerificationService.exists(user.getEmail())) throw new ConflictException("Verification code already sent");
+
+
         var code = CodeGeneratorUtil.generateVerificationCode();
-        userVerificationService.save(user.getEmail(),code);
+        userVerificationService.send(user.getEmail(),code);
 
         var template = EmailTemplates.confirmEmailTemplate(code);
         emailService.send(
@@ -93,17 +104,15 @@ public class UserServiceImp implements  UserService {
     @Transactional
     public void softDelete(UUID id) {
         User user = getUserByIdOrThrow(id);
-        user.setActive(false);
+
+        user.setDeleted(true);
+        user.setEmail("_deleted_" + UUID.randomUUID() + "_" + user.getEmail());
+        user.setDeletedAt(OffsetDateTime.now());
+
+        refreshTokenService.remove(user.getId());
         userRepository.save(user);
     }
 
-    @Override
-    @Transactional
-    public void banUser(UUID id) {
-        User user = getUserByIdOrThrow(id);
-        user.setActive(false);
-        userRepository.save(user);
-    }
 
     // ----------------------------------------------------------------
 
@@ -118,10 +127,9 @@ public class UserServiceImp implements  UserService {
     }
 
     private void assertEmailUniqueness(String email) {
-        userRepository.findByEmail(email)
-                .ifPresent(user -> {
-                    throw new ConflictException("Email already exists");
-                });
+        if(userRepository.existsByEmail(email)){
+            throw new ConflictException("Account with this email already exists");
+        }
     }
 
     private void assertPasswordMatch(String oldPassword, String newPassword) {

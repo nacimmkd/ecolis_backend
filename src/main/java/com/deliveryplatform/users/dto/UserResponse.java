@@ -14,8 +14,9 @@ public record UserResponse(
         String        email,
         Role          role,
         boolean       isVerified,
-        boolean       isActive,
-        OffsetDateTime registeredAt
+        boolean       isDeleted,
+        OffsetDateTime registeredAt,
+        OffsetDateTime deletedAt
 ) {
 
     public static UserResponse of(User user) {
@@ -24,8 +25,9 @@ public record UserResponse(
                 .email(user.getEmail())
                 .role(user.getRole())
                 .isVerified(user.isVerified())
-                .isActive(user.isActive())
+                .isDeleted(user.isDeleted())
                 .registeredAt(user.getRegisteredAt())
+                .deletedAt(user.getDeletedAt())
                 .build();
     }
 }

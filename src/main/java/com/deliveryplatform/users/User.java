@@ -5,6 +5,7 @@ import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.trips.Trip;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "users")
+@SQLRestriction("deleted = false")
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -32,15 +34,18 @@ public class User {
 
     @Column(name = "is_verified")
     @Builder.Default
-    private boolean isVerified = false;
+    private boolean isVerified = true;
 
     @Column(name = "registered_at")
     @Builder.Default
     private OffsetDateTime registeredAt = OffsetDateTime.now();
 
-    @Column(name = "is_active")
+    @Column(name = "deleted")
     @Builder.Default
-    private boolean isActive = true;
+    private boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
 
     @OneToOne( mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     private Profile profile;

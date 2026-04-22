@@ -15,5 +15,4 @@ public interface UserService {
     void verify(String email, String code);
     void changePassword(UUID id, UpdatePasswordRequest request);
     void softDelete(UUID id);
-    void banUser(UUID id);
 }

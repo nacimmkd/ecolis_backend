@@ -4,6 +4,7 @@ package com.deliveryplatform.users;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserRequest;
 import com.deliveryplatform.users.dto.UserResponse;
+import com.deliveryplatform.users.dto.VerificationCodeRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -58,8 +59,8 @@ public class UserController {
     @PostMapping("/verification/verify")
     public ResponseEntity<Void> verify(
             @AuthenticationPrincipal UserPrincipal principal,
-            @RequestBody @NotBlank String code) {
-        userService.verify(principal.getEmail(), code);
+            @RequestBody @Valid VerificationCodeRequest codeRequest) {
+        userService.verify(principal.getEmail(), codeRequest.code());
         return ResponseEntity.noContent().build();
     }
 
@@ -98,14 +99,6 @@ public class UserController {
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         var userDto = userService.findById(id);
         return ResponseEntity.ok(userDto);
-    }
-
-
-    @PutMapping("/{id}/ban")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> banUser(@PathVariable UUID id) {
-        userService.banUser(id);
-        return ResponseEntity.noContent().build();
     }
 
 }

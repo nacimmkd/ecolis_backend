@@ -5,7 +5,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -14,10 +13,10 @@ public class UserVerificationServiceImp implements UserVerificationService {
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String PREFIX = "email:verify:";
-    private static final Duration TTL = Duration.ofMinutes(15);
+    private static final Duration TTL = Duration.ofMinutes(5);
 
     @Override
-    public void save(String email, String code) {
+    public void send(String email, String code) {
         var key = PREFIX + email;
         redisTemplate.opsForValue().set(key, code, TTL);
     }
@@ -26,17 +25,15 @@ public class UserVerificationServiceImp implements UserVerificationService {
     public boolean verify(String email, String code) {
         var key = PREFIX + email;
         String stored = redisTemplate.opsForValue().get(key);
-        if (!Objects.isNull(stored) && stored.equals(code)) {
+        if (stored != null && stored.equals(code)) {
             redisTemplate.delete(key);
             return true;
         }
         return false;
     }
 
-
     @Override
-    public void invalidate(String email) {
-        var key = PREFIX + email;
-        redisTemplate.delete(key);
+    public boolean exists(String email) {
+        return redisTemplate.hasKey(PREFIX + email);
     }
 }
