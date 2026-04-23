@@ -1,6 +1,6 @@
 package com.deliveryplatform.users.dto;
 
-import com.deliveryplatform.profiles.dto.ProfilePostRequest;
+import com.deliveryplatform.profiles.dto.ProfileRequest;
 import com.deliveryplatform.users.Role;
 import com.deliveryplatform.users.User;
 import jakarta.validation.Valid;
@@ -17,7 +17,7 @@ public record UserRequest(
         @Size(min = 5, max = 100)
         String password,
 
-        @Valid ProfilePostRequest profile
+        @Valid ProfileRequest profile
 ) {
 
     public static User toEntity(UserRequest userRequest) {

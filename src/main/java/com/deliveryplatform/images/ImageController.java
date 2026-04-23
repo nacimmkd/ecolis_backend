@@ -23,7 +23,7 @@ public class ImageController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ImageResponse> getImage(@PathVariable @NotNull UUID id){
-        return ResponseEntity.ok(imageService.getImageById(id));
+        return ResponseEntity.ok(imageService.getImage(id));
     }
 
     @PostMapping("/presign")
@@ -35,12 +35,12 @@ public class ImageController {
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<Void> confirmUpload(
+    public ResponseEntity<ImageResponse> confirmUpload(
             @RequestParam("key") @NotBlank String key,
             @AuthenticationPrincipal UserPrincipal user) {
 
-        imageService.confirmUpload(key, user.getId());
-        return ResponseEntity.noContent().build();
+        var response =imageService.confirmUpload(key, user.getId());
+        return ResponseEntity.ok(response);
     }
 
 

@@ -19,19 +19,22 @@ public class ImageServiceImp implements ImageService {
     private final StorageService s3StorageService;
     private final ImageRepository imageRepository;
 
+    @Override
+    public Image getImageEntity(UUID imageId) {
+        return getByIdOrThrow(imageId);
+    }
 
     @Override
-    public ImageResponse getImageByKey(String key) {
-        var image = getByKeyOrThrow(key);
-        var url = s3StorageService.generateReadUrl(key);
+    public ImageResponse getImage(UUID id) {
+        var image = getByIdOrThrow(id);
+        var url = s3StorageService.generateReadUrl(image.getKey());
         return ImageResponse.of(image, url);
     }
 
     @Override
-    public ImageResponse getImageById(UUID id) {
-        var image = imageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Image Not Found"));
-        var url = s3StorageService.generateReadUrl(image.getKey());
-        return ImageResponse.of(image, url);
+    public String getReadUrl(UUID id) {
+        var image = getByIdOrThrow(id);
+        return s3StorageService.generateReadUrl(image.getKey());
     }
 
 
@@ -39,6 +42,7 @@ public class ImageServiceImp implements ImageService {
     public PresignedUrl requestImageUpload(String contentType , UUID uploadedBy) {
         var mediaType = resolveMediaType(contentType);
         var presignedUrl = s3StorageService.generatePresignedUrl(mediaType, "images");
+
         imageRepository.save(Image.builder()
                 .key(presignedUrl.key())
                 .mediaType(mediaType)
@@ -53,10 +57,11 @@ public class ImageServiceImp implements ImageService {
         assertOwnership(image, uploadedBy);
         assertExistsInStorage(key);
         image.setConfirmed(true);
-
+        imageRepository.save(image);
         var url = s3StorageService.generateReadUrl(key);
         return ImageResponse.of(image, url);
     }
+    
 
     @Override
     public void remove(UUID imageId, UUID userId) {
@@ -66,8 +71,7 @@ public class ImageServiceImp implements ImageService {
         imageRepository.delete(image);
     }
 
-
-
+    
     // ------------------------------------------------------
 
     private MediaType resolveMediaType(String content) {

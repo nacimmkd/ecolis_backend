@@ -8,8 +8,9 @@ import java.util.UUID;
 public interface ImageService {
 
     PresignedUrl requestImageUpload(String contentType, UUID uploadedBy);
-    ImageResponse getImageByKey(String key);
-    ImageResponse getImageById(UUID id);
+    Image getImageEntity(UUID imageId);
+    ImageResponse getImage(UUID id);
+    String getReadUrl(UUID id);
     ImageResponse confirmUpload(String key, UUID uploadedBy);
     void remove(UUID imageId, UUID userId);
 }

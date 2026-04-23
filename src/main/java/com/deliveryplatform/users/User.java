@@ -22,7 +22,8 @@ import java.util.UUID;
 @Table(name = "users")
 @SQLRestriction("deleted = false")
 public class User {
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String email;
@@ -47,7 +48,7 @@ public class User {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-    @OneToOne( mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     private Profile profile;
 
     public void setProfile(Profile profile) {

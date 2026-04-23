@@ -1,19 +1,14 @@
 package com.deliveryplatform.users;
 
 
-import com.deliveryplatform.users.dto.UpdatePasswordRequest;
-import com.deliveryplatform.users.dto.UserRequest;
-import com.deliveryplatform.users.dto.UserResponse;
-import com.deliveryplatform.users.dto.VerificationCodeRequest;
+import com.deliveryplatform.users.dto.*;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
 
 
 import java.util.List;
@@ -38,7 +33,7 @@ public class UserController {
     public ResponseEntity<UserResponse> register(
             @Valid @RequestBody UserRequest request,
             UriComponentsBuilder uriBuilder
-    ){
+    ) {
         var user = userService.register(request);
 
         var uri = uriBuilder
@@ -89,7 +84,7 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
+    public ResponseEntity<List<UserSummaryResponse>> getAllUsers() {
         var users = userService.findAll();
         return ResponseEntity.ok(users);
     }

@@ -1,7 +1,6 @@
 package com.deliveryplatform.storage.aws;
 
 import com.deliveryplatform.common.exceptions.ExternalServiceException;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.storage.MediaType;
 import com.deliveryplatform.storage.StorageService;

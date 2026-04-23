@@ -1,6 +1,7 @@
 package com.deliveryplatform.profiles;
 
 
+import com.deliveryplatform.images.Image;
 import com.deliveryplatform.users.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -29,7 +30,9 @@ public class Profile {
 
     private String phone;
 
-    private String avatar_url;
+    @OneToOne
+    @JoinColumn(name = "avatar_image_id")
+    private Image avatar;
 
     @Column(name = "avg_rating", precision = 2, scale = 1)
     private BigDecimal avgRating = null;

@@ -7,10 +7,11 @@ import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.emails.EmailService;
 import com.deliveryplatform.emails.EmailTemplates;
-import com.deliveryplatform.profiles.dto.ProfilePostRequest;
+import com.deliveryplatform.profiles.dto.ProfileRequest;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserRequest;
 import com.deliveryplatform.users.dto.UserResponse;
+import com.deliveryplatform.users.dto.UserSummaryResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,9 +23,9 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImp implements  UserService {
+public class UserServiceImp implements UserService {
 
-    private final UserRepository  userRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final UserVerificationService userVerificationService;
@@ -38,10 +39,10 @@ public class UserServiceImp implements  UserService {
     }
 
     @Override
-    public List<UserResponse> findAll() {
+    public List<UserSummaryResponse> findAll() {
         return userRepository.findAll().stream()
                 .filter(user -> !user.getRole().equals(Role.ADMIN))
-                .map(UserResponse::of)
+                .map(UserSummaryResponse::of)
                 .toList();
     }
 
@@ -54,21 +55,25 @@ public class UserServiceImp implements  UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.USER);
 
-        var profileEntity = ProfilePostRequest.toEntity(request.profile());
+        var profile = ProfileRequest.toEntity(request.profile());
+        user.setProfile(profile);
+
+        var profileEntity = ProfileRequest.toEntity(request.profile());
         user.setProfile(profileEntity);
         return UserResponse.of(userRepository.save(user));
     }
 
 
     @Override
-    public void sendVerificationCode(UUID id){
+    public void sendVerificationCode(UUID id) {
         var user = getUserByIdOrThrow(id);
         if (user.isVerified()) throw new ConflictException("User is already verified");
-        if(userVerificationService.exists(user.getEmail())) throw new ConflictException("Verification code already sent");
+        if (userVerificationService.exists(user.getEmail()))
+            throw new ConflictException("Verification code already sent");
 
 
         var code = CodeGeneratorUtil.generateVerificationCode();
-        userVerificationService.send(user.getEmail(),code);
+        userVerificationService.send(user.getEmail(), code);
 
         var template = EmailTemplates.confirmEmailTemplate(code);
         emailService.send(
@@ -81,7 +86,7 @@ public class UserServiceImp implements  UserService {
 
     @Override
     @Transactional
-    public void verify(String email, String code){
+    public void verify(String email, String code) {
         if (!userVerificationService.verify(email, code)) {
             throw new InvalidCredentialsException("Code invalid or expired");
         }
@@ -127,7 +132,7 @@ public class UserServiceImp implements  UserService {
     }
 
     private void assertEmailUniqueness(String email) {
-        if(userRepository.existsByEmail(email)){
+        if (userRepository.existsByEmail(email)) {
             throw new ConflictException("Account with this email already exists");
         }
     }
