@@ -54,7 +54,10 @@ public class ProfileServiceImp implements ProfileService {
         }
 
         profile.setAvatar(image);
-        return ProfileResponse.of(profileRepository.save(profile));
+        profileRepository.save(profile);
+
+        var url = imageService.getReadUrl(imageId);
+        return ProfileResponse.of(profile, url);
     }
 
     @Override
