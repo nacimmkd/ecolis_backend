@@ -7,9 +7,9 @@ import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.emails.EmailService;
 import com.deliveryplatform.emails.EmailTemplates;
-import com.deliveryplatform.profiles.dto.ProfileRequest;
+import com.deliveryplatform.profiles.dto.ProfilePostRequest;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
-import com.deliveryplatform.users.dto.UserRequest;
+import com.deliveryplatform.users.dto.UserPostRequest;
 import com.deliveryplatform.users.dto.UserResponse;
 import com.deliveryplatform.users.dto.UserSummaryResponse;
 import jakarta.transaction.Transactional;
@@ -49,16 +49,16 @@ public class UserServiceImp implements UserService {
 
     @Override
     @Transactional
-    public UserResponse register(UserRequest request) {
+    public UserResponse register(UserPostRequest request) {
         assertEmailUniqueness(request.email());
-        var user = UserRequest.toEntity(request);
+        var user = UserPostRequest.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.USER);
 
-        var profile = ProfileRequest.toEntity(request.profile());
+        var profile = ProfilePostRequest.toEntity(request.profile());
         user.setProfile(profile);
 
-        var profileEntity = ProfileRequest.toEntity(request.profile());
+        var profileEntity = ProfilePostRequest.toEntity(request.profile());
         user.setProfile(profileEntity);
         return UserResponse.of(userRepository.save(user));
     }

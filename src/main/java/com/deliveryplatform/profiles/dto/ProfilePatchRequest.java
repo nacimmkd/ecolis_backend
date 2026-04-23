@@ -5,9 +5,7 @@ import com.deliveryplatform.profiles.Profile;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import java.util.UUID;
-
-public record ProfileRequest(
+public record ProfilePatchRequest(
         @NotBlank(message = "Invalid firstname") @Size(max = 100)
         String firstName,
 
@@ -18,7 +16,7 @@ public record ProfileRequest(
         String phone
 ) {
 
-    public static Profile toEntity(ProfileRequest request) {
+    public static Profile toEntity(ProfilePatchRequest request) {
         return Profile.builder()
                 .firstName(request.firstName)
                 .lastName(request.lastName)
@@ -26,7 +24,6 @@ public record ProfileRequest(
                 .avgRating(null)
                 .totalDeliveries(0)
                 .totalOrders(0)
-                .totalDeliveries(0)
                 .avatar(null)
                 .build();
     }

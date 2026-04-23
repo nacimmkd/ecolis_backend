@@ -31,7 +31,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(
-            @Valid @RequestBody UserRequest request,
+            @Valid @RequestBody UserPostRequest request,
             UriComponentsBuilder uriBuilder
     ) {
         var user = userService.register(request);

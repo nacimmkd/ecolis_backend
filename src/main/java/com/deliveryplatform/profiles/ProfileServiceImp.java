@@ -2,7 +2,8 @@ package com.deliveryplatform.profiles;
 
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.images.ImageService;
-import com.deliveryplatform.profiles.dto.ProfileRequest;
+import com.deliveryplatform.profiles.dto.ProfilePatchRequest;
+import com.deliveryplatform.profiles.dto.ProfilePostRequest;
 import com.deliveryplatform.profiles.dto.ProfileResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +32,12 @@ public class ProfileServiceImp implements ProfileService {
 
     @Override
     @Transactional
-    public ProfileResponse updateProfile(UUID userId, ProfileRequest request) {
+    public ProfileResponse updateProfile(UUID userId, ProfilePatchRequest request) {
         var profile = getByIdOrThrow(userId); // userId and profileId are the same
 
-        profile.setFirstName(request.firstName());
-        profile.setLastName(request.lastName());
-        profile.setPhone(request.phone());
+        if(request.firstName() != null) profile.setFirstName(request.firstName());
+        if(request.lastName() != null) profile.setLastName(request.lastName());
+        if(request.phone() != null) profile.setPhone(request.phone());
 
         profileRepository.save(profile);
         return ProfileResponse.of(profile);

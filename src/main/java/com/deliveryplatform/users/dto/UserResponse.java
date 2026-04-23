@@ -5,7 +5,6 @@ import com.deliveryplatform.users.Role;
 import com.deliveryplatform.users.User;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -16,7 +15,7 @@ public record UserResponse(
         Role role,
         boolean isVerified,
         boolean isDeleted,
-        ProfileResponse profileResponse,
+        ProfileResponse profile,
         OffsetDateTime registeredAt,
         OffsetDateTime deletedAt
 ) {
@@ -28,7 +27,7 @@ public record UserResponse(
                 .role(user.getRole())
                 .isVerified(user.isVerified())
                 .isDeleted(user.isDeleted())
-                .profileResponse(ProfileResponse.of(user.getProfile()))
+                .profile(user.getProfile() != null ? ProfileResponse.of(user.getProfile()) : null)
                 .registeredAt(user.getRegisteredAt())
                 .deletedAt(user.getDeletedAt())
                 .build();
