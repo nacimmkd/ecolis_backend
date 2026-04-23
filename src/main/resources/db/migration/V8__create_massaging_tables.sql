@@ -13,7 +13,6 @@ CREATE TABLE messages (
                           conversation_id UUID        NOT NULL,
                           sender_id       UUID        NOT NULL,
                           content         TEXT,
-                          read            BOOLEAN     DEFAULT FALSE,
                           sent_at         TIMESTAMPTZ NOT NULL    DEFAULT now(),
 
                           CONSTRAINT fk_messages_conversation FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,

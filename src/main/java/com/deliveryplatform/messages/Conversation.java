@@ -35,14 +35,12 @@ public class Conversation {
 
 
     public Message getLastMessage(){
-        if (messages == null || messages.isEmpty()) return null;  // ← null check
+        if (messages == null || messages.isEmpty()) return null;
         return messages.get(messages.size() - 1);
     }
 
-    public long countUnreadMessages(){
-        if (messages == null) return 0;
-        return this.messages.stream()
-                .filter(m -> !m.isRead())
-                .count();
+    public void addMessage(Message message){
+        message.setConversation(this);
+        messages.add(message);
     }
 }

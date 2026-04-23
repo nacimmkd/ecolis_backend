@@ -10,6 +10,7 @@ import com.deliveryplatform.storage.PresignedUrl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -22,6 +23,11 @@ public class ImageServiceImp implements ImageService {
     @Override
     public Image getImageEntity(UUID imageId) {
         return getByIdOrThrow(imageId);
+    }
+
+    @Override
+    public List<Image> getImageEntities(List<UUID> imageIds) {
+        return imageRepository.findAllById(imageIds);
     }
 
     @Override
@@ -39,7 +45,7 @@ public class ImageServiceImp implements ImageService {
 
 
     @Override
-    public PresignedUrl requestImageUpload(String contentType , UUID uploadedBy) {
+    public PresignedUrl requestImageUpload(String contentType, UUID uploadedBy) {
         var mediaType = resolveMediaType(contentType);
         var presignedUrl = s3StorageService.generatePresignedUrl(mediaType, "images");
 
@@ -61,17 +67,17 @@ public class ImageServiceImp implements ImageService {
         var url = s3StorageService.generateReadUrl(key);
         return ImageResponse.of(image, url);
     }
-    
+
 
     @Override
     public void remove(UUID imageId, UUID userId) {
         var image = getByIdOrThrow(imageId);
-        assertOwnership(image,userId);
+        assertOwnership(image, userId);
         s3StorageService.delete(image.getKey());
         imageRepository.delete(image);
     }
 
-    
+
     // ------------------------------------------------------
 
     private MediaType resolveMediaType(String content) {
@@ -95,9 +101,10 @@ public class ImageServiceImp implements ImageService {
         }
     }
 
-    private void assertExistsInStorage(String key){
-        if(!s3StorageService.exists(key)){
+    private void assertExistsInStorage(String key) {
+        if (!s3StorageService.exists(key)) {
             throw new ResourceNotFoundException("Image not found : " + key);
-        };
+        }
+        ;
     }
 }

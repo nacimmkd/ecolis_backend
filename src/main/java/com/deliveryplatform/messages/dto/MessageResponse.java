@@ -12,17 +12,15 @@ public record MessageResponse(
         ChatUser       sender,
         String         content,
         List<ImageResponse>   images,
-        boolean        read,
         OffsetDateTime sentAt
 ) {
 
-    public static MessageResponse of(Message message , List<ImageResponse> images) {
+    public static MessageResponse of(Message message, ChatUser sender , List<ImageResponse> images) {
         return new MessageResponse(
                 message.getId(),
-                ChatUser.of(message.getSender()),
+                sender,
                 message.getContent(),
                 images,
-                message.isRead(),
                 message.getSentAt()
         );
     }

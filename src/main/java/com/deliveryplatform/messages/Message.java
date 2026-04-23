@@ -13,7 +13,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "messages")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -37,15 +38,12 @@ public class Message {
     @ManyToMany
     @JoinTable(
             name = "message_images",
-            joinColumns        = @JoinColumn(name = "message_id"),
+            joinColumns = @JoinColumn(name = "message_id"),
             inverseJoinColumns = @JoinColumn(name = "image_id")
     )
     @Builder.Default
     private List<Image> images = new ArrayList<>();
 
-    @Column(name = "read")
-    @Builder.Default
-    private boolean isRead = false;
 
     @Column(name = "sent_at")
     @Builder.Default

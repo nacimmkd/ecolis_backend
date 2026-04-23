@@ -27,7 +27,7 @@ public class MessagingController {
     private final MessagingService messagingService;
 
 
-    @PostMapping("/booking/{bookingId}")
+    @GetMapping("/booking/{bookingId}")
     public ResponseEntity<ConversationResponse> getOrCreateConversation(
             @PathVariable @NotNull UUID bookingId,
             @AuthenticationPrincipal UserPrincipal user) {
@@ -65,16 +65,6 @@ public class MessagingController {
             @AuthenticationPrincipal UserPrincipal user) {
 
         messagingService.deleteConversation(conversationId, user.getId());
-        return ResponseEntity.noContent().build();
-    }
-
-
-    @PatchMapping("/{conversationId}/read")
-    public ResponseEntity<Void> markAsRead(
-            @PathVariable @NotNull UUID conversationId,
-            @AuthenticationPrincipal UserPrincipal user) {
-
-        messagingService.markConversationAsRead(conversationId, user.getId());
         return ResponseEntity.noContent().build();
     }
 

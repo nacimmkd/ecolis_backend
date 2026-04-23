@@ -23,6 +23,19 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
         """)
     Optional<Conversation> getConversationById(@Param("conversationId") UUID conversationId);
 
+
+    @Query("""
+        SELECT c FROM Conversation c
+        JOIN FETCH c.booking b
+        JOIN FETCH b.sender s
+        JOIN FETCH c.messages
+        JOIN FETCH b.carrier ca
+        LEFT JOIN FETCH s.profile
+        LEFT JOIN FETCH ca.profile
+        WHERE c.id  = :conversationId
+        """)
+    Optional<Conversation> getConversationWithMessagesById(@Param("conversationId") UUID conversationId);
+
     @Query("""
         SELECT c FROM Conversation c
         JOIN FETCH c.booking b

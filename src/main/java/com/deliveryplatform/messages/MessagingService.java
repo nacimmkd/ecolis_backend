@@ -12,6 +12,5 @@ public interface MessagingService {
     List<ConversationResponse> getUserConversations(UUID currentUserId);
     ConversationDetailedResponse getConversationDetails(UUID conversationId, UUID currentUserId);
     void deleteConversation(UUID conversationId, UUID currentUserId);
-    void markConversationAsRead(UUID conversationId, UUID currentUserId);
     void sendMessage(SendMessageRequest sendMessageRequest, UUID currentUserId);
 }
