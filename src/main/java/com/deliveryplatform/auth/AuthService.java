@@ -4,7 +4,9 @@ import com.deliveryplatform.auth.jwt.JwtConfig;
 import com.deliveryplatform.auth.jwt.JwtService;
 import com.deliveryplatform.auth.jwt.RefreshTokenService;
 import com.deliveryplatform.common.exceptions.AuthenticationException;
+import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.users.UserPrincipal;
+import com.deliveryplatform.users.UserRepository;
 import com.deliveryplatform.users.UserServiceImp;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,13 +14,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 @Service
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserServiceImp userService;
+    private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
     private final JwtConfig jwtConfig;
 
@@ -51,9 +55,7 @@ public class AuthService {
         return jwtService.generateAccessToken(userPrincipal);
     }
 
-    public void logout(String refreshToken) {
-        validateRefreshTokenOrThrow(refreshToken);
-        var userId = jwtService.getUserIdFromToken(refreshToken);
+    public void logout(UUID userId) {
         refreshTokenService.remove(userId);
     }
 
@@ -71,7 +73,8 @@ public class AuthService {
 
     private UserPrincipal getPrincipalFromRefreshToken(String refreshToken) {
         var userId = jwtService.getUserIdFromToken(refreshToken);
-        var user = userService.getUserByIdOrThrow(userId);
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthenticationException("Session expired, please log in again"));
         return UserPrincipal.from(user);
     }
 

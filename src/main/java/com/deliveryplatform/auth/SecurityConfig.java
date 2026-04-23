@@ -1,9 +1,12 @@
 package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.jwt.JwtAuthenticationFilter;
+import com.deliveryplatform.common.ApiError;
 import com.deliveryplatform.common.config.CorsProperties;
 import com.deliveryplatform.users.UserPrincipal;
 import com.deliveryplatform.users.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,17 +66,23 @@ public class SecurityConfig {
 
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
-                // pour renvoyer les bon HttpStatus entre 401 et 403
+                // to return the right HTTP code (401 & 403)
                 .exceptionHandling(ex -> {
                     ex.authenticationEntryPoint((request, response, e) -> {
+                        var error = ApiError.of(401, "Unauthorized access", request.getRequestURI());
                         response.setStatus(HttpStatus.UNAUTHORIZED.value());
                         response.setContentType("application/json");
-                        response.getWriter().write("{\"message\": \"Unauthorized access\"}");
+                        response.getWriter().write(new ObjectMapper()
+                                .registerModule(new JavaTimeModule())
+                                .writeValueAsString(error));
                     });
                     ex.accessDeniedHandler((request, response, e) -> {
+                        var error = ApiError.of(403, "Access denied", request.getRequestURI());
                         response.setStatus(HttpStatus.FORBIDDEN.value());
                         response.setContentType("application/json");
-                        response.getWriter().write("{\"message\": \"Access denied\"}");
+                        response.getWriter().write(new ObjectMapper()
+                                .registerModule(new JavaTimeModule())
+                                .writeValueAsString(error));
                     });
                 });
         return http.build();

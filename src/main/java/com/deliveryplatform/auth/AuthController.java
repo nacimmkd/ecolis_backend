@@ -1,12 +1,14 @@
 package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.jwt.JwtResponse;
+import com.deliveryplatform.users.UserPrincipal;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -46,10 +48,10 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-            @CookieValue("refresh_token") String refreshToken,
+           @AuthenticationPrincipal UserPrincipal principal,
             HttpServletResponse response
     ) {
-        authService.logout(refreshToken);
+        authService.logout(principal.getId());
         var cookie = generateCookie(null,0);
         response.addCookie(cookie);
         return ResponseEntity.noContent().build();
