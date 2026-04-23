@@ -24,21 +24,19 @@ public class ReviewServiceImp implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final BookingRepository bookingRepository;
-    private final ReviewMapper reviewMapper;
 
 
     public List<ReviewResponse> getUserReviews(UUID userId) {
         return reviewRepository.findByRevieweeId(userId)
                 .stream()
-                .map(reviewMapper::toResponse)
+                .map(ReviewResponse::of)
                 .toList();
     }
 
     @Transactional
     public ReviewResponse create(CreateReviewRequest request, UUID reviewerId) {
 
-        var booking = bookingRepository.findBookingWithParticipants(request.bookingId())
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+        var booking = getBookingByIdOrThrow(request.bookingId());
 
         assertBookingIsCompleted(booking);
         assertReviewerInvolvedInBooking(booking, reviewerId);
@@ -47,11 +45,10 @@ public class ReviewServiceImp implements ReviewService {
         var reviewer = booking.resolveParticipant(reviewerId);
         var reviewee = booking.resolveOtherParticipant(reviewerId);
 
-        var review = buildReview(booking,reviewer,reviewee,request.rating(),request.comment());
-        reviewRepository.save(review);
-
-        return reviewMapper.toResponse(review);
+        var review = buildReview(booking, reviewer, reviewee, request.rating(), request.comment());
+        return ReviewResponse.of(reviewRepository.save(review));
     }
+
 
     public void remove(UUID reviewId, UUID reviewerId) {
         assertOwnedReviewExists(reviewId, reviewerId);
@@ -68,7 +65,7 @@ public class ReviewServiceImp implements ReviewService {
     }
 
     private void assertBookingIsCompleted(Booking booking) {
-        if(!booking.isCompleted()) {
+        if (!booking.isCompleted()) {
             throw new InvalidDomainStateException("Booking must be completed before reviewing");
         }
     }
@@ -76,6 +73,11 @@ public class ReviewServiceImp implements ReviewService {
     private void assertReviewerInvolvedInBooking(Booking booking, UUID reviewerId) {
         if (!booking.involves(reviewerId))
             throw new UnauthorizedActionException("You are not part of this booking");
+    }
+
+    private Booking getBookingByIdOrThrow(UUID bookingId) {
+        return bookingRepository.findBookingWithParticipants(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
     }
 
 
@@ -95,10 +97,8 @@ public class ReviewServiceImp implements ReviewService {
                 .reviewee(reviewee)
                 .rating(rating)
                 .comment(comment)
-                .createdAt(OffsetDateTime.now())
                 .build();
     }
-
 
 
 }
