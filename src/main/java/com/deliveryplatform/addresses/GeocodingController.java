@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 // NOTE : Controller just for testing
-
 @RestController
 @RequestMapping("/api/v1/geocoding")
 @RequiredArgsConstructor

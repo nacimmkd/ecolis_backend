@@ -1,7 +1,6 @@
 package com.deliveryplatform.addresses.nominatim;
 
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.addresses.AddressMapper;
 import com.deliveryplatform.addresses.GeocodedAddress;
 import com.deliveryplatform.addresses.GeocodingService;
 import com.deliveryplatform.common.exceptions.ExternalServiceException;
@@ -22,12 +21,11 @@ import java.util.Optional;
 public class NominatimGeocodingService implements GeocodingService {
 
     private final WebClient nominatimWebClient;
-    private final AddressMapper addressMapper;
 
     @Override
     public GeocodedAddress geocode(Address address) {
         return fetchFirstResult(address)
-                .map(result -> addressMapper.toGeocodedAddress(
+                .map(result -> GeocodedAddress.of(
                         address,
                         Double.parseDouble((String) result.get("lat")),
                         Double.parseDouble((String) result.get("lon"))

@@ -16,4 +16,15 @@ public class GeocodedAddress {
     private String country;
     private double latitude;
     private double longitude;
+
+    public static GeocodedAddress of(Address address, double latitude, double longitude) {
+        return GeocodedAddress.builder()
+                .street(address.street())
+                .city(address.city())
+                .postalCode(address.postalCode())
+                .country(address.country())
+                .latitude(latitude)
+                .longitude(longitude)
+                .build();
+    }
 }
