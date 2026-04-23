@@ -1,7 +1,6 @@
 package com.deliveryplatform.auth.jwt;
 
 import com.deliveryplatform.users.Role;
-import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserPrincipal;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -18,7 +17,7 @@ import java.util.UUID;
 public class JwtService {
 
     private final JwtConfig jwtConfig;
-    private final RefreshTokenService refreshTokenService;
+    private final JwtRefreshService jwtRefreshService;
 
 
     public String generateAccessToken(UserPrincipal user) {
@@ -30,26 +29,25 @@ public class JwtService {
     }
 
     public boolean validateRefreshToken(String refreshToken) {
-        return refreshTokenService.findByToken(refreshToken)
-                .map(token -> validateToken(token.getToken()))
-                .orElse(false);
+        var userId = getUserIdFromToken(refreshToken);
+        return jwtRefreshService.isValid(userId, refreshToken) && isValidToken(refreshToken);
     }
 
     public boolean validateAccessToken(String accessToken) {
-        return validateToken(accessToken);
+        return isValidToken(accessToken);
     }
 
 
-    public UUID getUserIdFromToken(String token){
+    public UUID getUserIdFromToken(String token) {
         return UUID.fromString(parseClaims(token).getSubject());
     }
 
-    public String getEmailFromToken(String token){
+    public String getEmailFromToken(String token) {
         return parseClaims(token).get("email", String.class);
     }
 
 
-    public Role getRoleFromToken(String token){
+    public Role getRoleFromToken(String token) {
         return Role.valueOf(parseClaims(token).get("role", String.class));
     }
 
@@ -63,7 +61,7 @@ public class JwtService {
     }
     // ---------------------------------------------------------------------
 
-    private boolean validateToken(String token){
+    private boolean isValidToken(String token) {
         try {
             var claims = parseClaims(token);
             return claims.getExpiration().after(new Date());

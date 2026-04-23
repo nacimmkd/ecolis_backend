@@ -1,7 +1,6 @@
 package com.deliveryplatform.users;
 
 import com.deliveryplatform.auth.AuthService;
-import com.deliveryplatform.auth.jwt.RefreshTokenService;
 import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
