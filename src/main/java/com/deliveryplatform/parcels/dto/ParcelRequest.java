@@ -33,4 +33,5 @@ public record ParcelRequest(
 
         @Future
         LocalDate deadlineDate
-) {}
+) {
+}

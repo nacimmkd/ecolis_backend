@@ -6,7 +6,7 @@ import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.Parcel;
-import com.deliveryplatform.parcels.ParcelService;
+import com.deliveryplatform.parcels.ParcelServiceImp;
 import com.deliveryplatform.parcels.ParcelStatus;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.trips.TripService;
@@ -27,7 +27,7 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final BookingMapper bookingMapper;
-    private final ParcelService parcelService;
+    private final ParcelServiceImp parcelService;
     private final TripService tripService;
     private final UserServiceImp userService;
 

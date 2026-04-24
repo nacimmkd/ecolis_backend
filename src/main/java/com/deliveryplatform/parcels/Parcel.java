@@ -52,25 +52,22 @@ public class Parcel {
 
 
     @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "street",     column = @Column(name = "pickup_street",      nullable = false)),
-            @AttributeOverride(name = "city",       column = @Column(name = "pickup_city",        nullable = false)),
-            @AttributeOverride(name = "postalCode", column = @Column(name = "pickup_postal_code", nullable = false)),
-            @AttributeOverride(name = "country",    column = @Column(name = "pickup_country",     nullable = false)),
-            @AttributeOverride(name = "latitude",        column = @Column(name = "pickup_lat")),
-            @AttributeOverride(name = "longitude",        column = @Column(name = "pickup_lng"))
-    })
+    @AttributeOverride(name = "street",     column = @Column(name = "pickup_street",      nullable = false))
+    @AttributeOverride(name = "city",       column = @Column(name = "pickup_city",        nullable = false))
+    @AttributeOverride(name = "postalCode", column = @Column(name = "pickup_postal_code", nullable = false))
+    @AttributeOverride(name = "country",    column = @Column(name = "pickup_country",     nullable = false))
+    @AttributeOverride(name = "latitude",   column = @Column(name = "pickup_lat"))
+    @AttributeOverride(name = "longitude",  column = @Column(name = "pickup_lng"))
     private GeocodedAddress pickupAddress;
 
+
     @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "street",     column = @Column(name = "dropoff_street",      nullable = false)),
-            @AttributeOverride(name = "city",       column = @Column(name = "dropoff_city",        nullable = false)),
-            @AttributeOverride(name = "postalCode", column = @Column(name = "dropoff_postal_code", nullable = false)),
-            @AttributeOverride(name = "country",    column = @Column(name = "dropoff_country",     nullable = false)),
-            @AttributeOverride(name = "latitude",        column = @Column(name = "dropoff_lat")),
-            @AttributeOverride(name = "longitude",        column = @Column(name = "dropoff_lng"))
-    })
+    @AttributeOverride(name = "street",     column = @Column(name = "dropoff_street",      nullable = false))
+    @AttributeOverride(name = "city",       column = @Column(name = "dropoff_city",        nullable = false))
+    @AttributeOverride(name = "postalCode", column = @Column(name = "dropoff_postal_code", nullable = false))
+    @AttributeOverride(name = "country",    column = @Column(name = "dropoff_country",     nullable = false))
+    @AttributeOverride(name = "latitude",   column = @Column(name = "dropoff_lat"))
+    @AttributeOverride(name = "longitude",  column = @Column(name = "dropoff_lng"))
     private GeocodedAddress dropoffAddress;
 
     @CreationTimestamp
