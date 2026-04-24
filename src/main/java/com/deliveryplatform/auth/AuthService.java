@@ -6,7 +6,7 @@ public interface AuthService {
 
     AuthResponse login(AuthRequest request);
 
-    String refresh(String refreshToken);
+    AuthResponse refresh(String refreshToken);
 
     void logout(UUID userId);
 

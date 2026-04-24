@@ -39,20 +39,29 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<JwtResponse> refresh(
-            @CookieValue("refresh_token") String refreshToken
+            @CookieValue("REFRESH_TOKEN") String refreshToken,
+            HttpServletResponse response
     ) {
-        var accessToken = authService.refresh(refreshToken);
-        return ResponseEntity.ok(new JwtResponse(accessToken));
+        var authResponse = authService.refresh(refreshToken);
+
+        var cookie = generateCookie(
+                authResponse.refreshToken(),
+                authResponse.refreshExpiration()
+        );
+
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(new JwtResponse(authResponse.accessToken()));
     }
 
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-           @AuthenticationPrincipal UserPrincipal principal,
+            @AuthenticationPrincipal UserPrincipal principal,
             HttpServletResponse response
     ) {
         authService.logout(principal.getId());
-        var cookie = generateCookie(null,0);
+        var cookie = generateCookie(null, 0);
         response.addCookie(cookie);
         return ResponseEntity.noContent().build();
     }
@@ -73,7 +82,7 @@ public class AuthController {
     //-------------------------------------------------------------------
 
     private Cookie generateCookie(String refreshToken, int expiration) {
-        var cookie = new Cookie("refresh_token", refreshToken);
+        var cookie = new Cookie("REFRESH_TOKEN", refreshToken);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");

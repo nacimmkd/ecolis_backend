@@ -26,7 +26,8 @@ public class JwtRefreshService {
     }
 
     public boolean isValid(UUID userId, String token) {
-        String stored = redisTemplate.opsForValue().get(PREFIX + userId);
+        var key = PREFIX + userId;
+        String stored = redisTemplate.opsForValue().get(key);
         return stored != null && stored.equals(token);
     }
 

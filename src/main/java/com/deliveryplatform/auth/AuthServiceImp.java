@@ -38,14 +38,20 @@ public class AuthServiceImp implements AuthService {
     }
 
     @Override
-    public String refresh(String refreshToken) {
+    public AuthResponse refresh(String refreshToken) {
         validateRefreshTokenOrThrow(refreshToken);
         var userPrincipal = getPrincipalFromRefreshToken(refreshToken);
 
+        // Refresh Token Rotation for more security
         var newRefreshToken = jwtService.generateRefreshToken(userPrincipal);
         refreshTokenService.save(userPrincipal.getId(), newRefreshToken);
 
-        return jwtService.generateAccessToken(userPrincipal);
+        var newAccessToken = jwtService.generateAccessToken(userPrincipal);
+        return new AuthResponse(
+                newAccessToken,
+                newRefreshToken,
+                jwtConfig.getRefreshTokenDuration()
+        );
     }
 
     @Override
