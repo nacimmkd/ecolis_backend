@@ -1,15 +1,14 @@
 package com.deliveryplatform.messages;
 
-import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.bookings.BookingRepository;
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
-import com.deliveryplatform.images.ImageRepository;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.images.dto.ImageResponse;
 import com.deliveryplatform.messages.dto.*;
 import com.deliveryplatform.users.User;
+import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,45 +22,45 @@ import java.util.UUID;
 public class MessagingServiceImp implements MessagingService {
 
     private final ConversationRepository conversationRepository;
-    private final BookingRepository bookingRepository;
+    private final MessageRepository messageRepository;
+    private final UserRepository         userRepository;
+    private final ImageService           imageService;
+    private final SimpMessagingTemplate  messagingTemplate;
 
-    private final SimpMessagingTemplate messagingTemplate;
-    private final ImageService imageService;
+    private static final String WS_DEST = "/queue/messages";
+
+
 
     @Override
     @Transactional
-    public ConversationResponse getOrCreateConversation(UUID bookingId, UUID currentUserId) {
-        var conversation = conversationRepository.getConversationByBookingId(bookingId)
-                .orElseGet(() -> createConversation(bookingId, currentUserId));
+    public ConversationResponse getOrCreateConversation(UUID otherUserId, UUID currentUserId) {
+        var conversation = conversationRepository
+                .findByParticipants(currentUserId, otherUserId)
+                .orElseGet(() -> createConversation(currentUserId, otherUserId));
 
-        assertIsBookingParticipant(conversation.getBooking(), currentUserId);
         return toConversationResponse(conversation, currentUserId);
     }
 
     @Override
     public List<ConversationResponse> getUserConversations(UUID currentUserId) {
-        return conversationRepository.findAllByUserId(currentUserId)
-                .stream()
-                .map(conversation -> toConversationResponse(conversation, currentUserId))
+        return conversationRepository.findAllByMemberId(currentUserId).stream()
+                .map(c -> toConversationResponse(c, currentUserId))
                 .toList();
     }
 
     @Override
-    @Transactional
     public ConversationDetailedResponse getConversationDetails(UUID conversationId, UUID currentUserId) {
         var conversation = getConversationWithMessagesOrThrow(conversationId);
-        assertIsBookingParticipant(conversation.getBooking(), currentUserId);
+        assertIsParticipant(conversation, currentUserId);
 
-        var messages = conversation.getMessages().stream()
+        var messages = messageRepository.getMessagesByConversationId(conversationId).stream()
                 .map(this::toMessageResponse)
                 .toList();
 
-        var receiver = resolveOtherParticipant(conversation.getBooking(), currentUserId);
-        var avatarUrl = resolveAvatarUrl(receiver);
-
+        var receiver = resolveOtherParticipant(conversation, currentUserId);
         return ConversationDetailedResponse.of(
                 conversation,
-                ChatUser.of(receiver, avatarUrl),
+                ChatUser.of(receiver, resolveAvatarUrl(receiver)),
                 messages
         );
     }
@@ -70,7 +69,7 @@ public class MessagingServiceImp implements MessagingService {
     @Transactional
     public void deleteConversation(UUID conversationId, UUID currentUserId) {
         var conversation = getConversationOrThrow(conversationId);
-        assertIsBookingParticipant(conversation.getBooking(), currentUserId);
+        assertIsParticipant(conversation, currentUserId);
         conversationRepository.delete(conversation);
     }
 
@@ -78,52 +77,46 @@ public class MessagingServiceImp implements MessagingService {
     @Transactional
     public void sendMessage(SendMessageRequest request, UUID currentUserId) {
         var conversation = getConversationOrThrow(request.conversationId());
-        assertIsBookingParticipant(conversation.getBooking(), currentUserId);
+        assertIsParticipant(conversation, currentUserId);
         assertMessageNotEmpty(request);
 
-        var sender = resolveParticipant(conversation.getBooking(), currentUserId);
-        var images = resolveImages(request.imageIds());
-
+        var sender = resolveCurrentUser(conversation, currentUserId);
         var message = Message.builder()
                 .conversation(conversation)
                 .sender(sender)
                 .content(request.content())
-                .images(images)
+                .images(resolveImages(request.imageIds()))
                 .build();
 
         conversation.addMessage(message);
         conversationRepository.save(conversation);
 
-        broadcastToReceiver(
-                conversation.getBooking(),
-                currentUserId,
-                toMessageResponse(message)
-        );
+        broadcastToReceiver(conversation, currentUserId, toMessageResponse(message));
     }
 
     // ----------------------------------------------------------------
 
-    private Conversation createConversation(UUID bookingId, UUID currentUserId) {
-        var booking = getBookingOrThrow(bookingId);
-        assertIsBookingParticipant(booking, currentUserId);
-        return conversationRepository.save(Conversation.builder().booking(booking).build());
+    private Conversation createConversation(UUID currentUserId, UUID otherUserId) {
+        var current = getUserByIdOrThrow(currentUserId);
+        var other   = getUserByIdOrThrow(otherUserId);
+        return conversationRepository.save(Conversation.builder()
+                .participants(List.of(current, other))
+                .build()
+        );
     }
 
     private ConversationResponse toConversationResponse(Conversation conversation, UUID currentUserId) {
-        var receiver = resolveOtherParticipant(conversation.getBooking(), currentUserId);
-        var avatarUrl = resolveAvatarUrl(receiver);
-        return ConversationResponse.of(conversation, ChatUser.of(receiver, avatarUrl));
+        var receiver = resolveOtherParticipant(conversation, currentUserId);
+        return ConversationResponse.of(conversation, ChatUser.of(receiver, resolveAvatarUrl(receiver)));
     }
 
     private MessageResponse toMessageResponse(Message message) {
+        var sender = message.getSender();
         var images = message.getImages().stream()
                 .filter(Image::isConfirmed)
-                .map(image -> ImageResponse.of(image, imageService.getReadUrl(image.getId())))
+                .map(img -> ImageResponse.of(img, imageService.getReadUrl(img.getId())))
                 .toList();
-
-        var sender = message.getSender();
-        var avatarUrl = resolveAvatarUrl(sender);
-        return MessageResponse.of(message, ChatUser.of(sender, avatarUrl), images);
+        return MessageResponse.of(message, ChatUser.of(sender, resolveAvatarUrl(sender)), images);
     }
 
     private String resolveAvatarUrl(User user) {
@@ -133,16 +126,11 @@ public class MessagingServiceImp implements MessagingService {
         return imageService.getReadUrl(avatar.getId());
     }
 
-    private User resolveOtherParticipant(Booking booking, UUID currentUserId) {
-        return booking.getSender().getId().equals(currentUserId)
-                ? booking.getCarrier()
-                : booking.getSender();
-    }
-
-    private User resolveParticipant(Booking booking, UUID currentUserId) {
-        return booking.getSender().getId().equals(currentUserId)
-                ? booking.getSender()
-                : booking.getCarrier();
+    private User resolveCurrentUser(Conversation conversation, UUID currentUserId) {
+        return conversation.getParticipants().stream()
+                .filter(m -> m.getId().equals(currentUserId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     private List<Image> resolveImages(List<UUID> imageIds) {
@@ -150,27 +138,21 @@ public class MessagingServiceImp implements MessagingService {
         return imageService.getImageEntities(imageIds);
     }
 
-    private void assertIsBookingParticipant(Booking booking, UUID userId) {
-        if (!booking.involves(userId)) {
-            throw new UnauthorizedActionException("User is not a participant of this booking");
-        }
+    private void assertIsParticipant(Conversation conversation, UUID userId) {
+        if (!conversation.involves(userId))
+            throw new UnauthorizedActionException("User is not a participant of this conversation");
     }
 
     private void assertMessageNotEmpty(SendMessageRequest request) {
         boolean hasContent = request.content() != null && !request.content().isBlank();
-        boolean hasImages = request.imageIds() != null && !request.imageIds().isEmpty();
-        if (!hasContent && !hasImages) {
-            throw new IllegalArgumentException("Message must have content or at least one image");
-        }
+        boolean hasImages  = request.imageIds() != null && !request.imageIds().isEmpty();
+        if (!hasContent && !hasImages)
+            throw new InvalidDomainStateException("Message must have content or at least one image");
     }
 
-    private void broadcastToReceiver(Booking booking, UUID currentUserId, MessageResponse message) {
-        var receiverId = resolveOtherParticipant(booking, currentUserId).getId();
-        messagingTemplate.convertAndSendToUser(
-                receiverId.toString(),
-                "/queue/messages",
-                message
-        );
+    private void broadcastToReceiver(Conversation conversation, UUID currentUserId, MessageResponse message) {
+        var receiverId = resolveOtherParticipant(conversation, currentUserId).getId();
+        messagingTemplate.convertAndSendToUser(receiverId.toString(), WS_DEST, message);
     }
 
     private Conversation getConversationOrThrow(UUID id) {
@@ -183,8 +165,15 @@ public class MessagingServiceImp implements MessagingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
     }
 
-    private Booking getBookingOrThrow(UUID id) {
-        return bookingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+    private User getUserByIdOrThrow(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    public User resolveOtherParticipant(Conversation conversation, UUID currentUserId) {
+        return conversation.getParticipants().stream()
+                .filter(m -> !m.getId().equals(currentUserId))
+                .findFirst()
+                .orElseThrow(() -> new InvalidDomainStateException("Other participant not found"));
     }
 }

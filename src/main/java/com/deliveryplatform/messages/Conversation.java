@@ -1,10 +1,11 @@
 package com.deliveryplatform.messages;
 
-import com.deliveryplatform.bookings.Booking;
+import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,26 +22,40 @@ public class Conversation {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id")
-    private Booking booking;
 
-    @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY , cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "conversations_participants",
+            joinColumns = @JoinColumn(name = "conversation_id"),
+            inverseJoinColumns = @JoinColumn(name = "participant_id")
+    )
+    @Builder.Default
+    private List<User> participants = new ArrayList<>();
+
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_message_id")
+    private Message lastMessage;
+
+
+    @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @OrderBy("sentAt ASC")
     private List<Message> messages;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at")
     @Builder.Default
-    private OffsetDateTime createdAt =  OffsetDateTime.now();
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
 
-    public Message getLastMessage(){
-        if (messages == null || messages.isEmpty()) return null;
-        return messages.get(messages.size() - 1);
+    public boolean involves(UUID userId) {
+        return participants.stream().anyMatch(m -> m.getId().equals(userId));
     }
 
-    public void addMessage(Message message){
+    public void addMessage(Message message) {
         message.setConversation(this);
         messages.add(message);
+        lastMessage = message;
     }
+
+
 }
