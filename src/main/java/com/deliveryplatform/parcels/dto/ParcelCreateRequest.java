@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record ParcelRequest(
+public record ParcelCreateRequest(
 
         @Size(max = 500)
         String description,

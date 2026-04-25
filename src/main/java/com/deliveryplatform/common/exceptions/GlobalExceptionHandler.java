@@ -52,9 +52,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnprocessableEntityException.class)
     public ResponseEntity<ApiError> handleUnprocessableEntityException(UnprocessableEntityException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(ApiError.of(
-                        HttpStatus.BAD_GATEWAY.value(),
+                        HttpStatus.UNPROCESSABLE_ENTITY.value(),
                         ex.getMessage(),
                         request.getRequestURI()));
     }

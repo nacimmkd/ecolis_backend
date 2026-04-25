@@ -23,12 +23,12 @@ public class BookingController {
         return bookingService.getBookingById(id);
     }
 
-    @PostMapping
-    public BookingResponse create(
-            @RequestBody BookingRequest request,
-            @AuthenticationPrincipal UserPrincipal user) {
-        return bookingService.create(request , user.getId());
-    }
+//    @PostMapping
+//    public BookingResponse create(
+//            @RequestBody BookingRequest request,
+//            @AuthenticationPrincipal UserPrincipal user) {
+//        return bookingService.create(request , user.getId());
+//    }
 
     @PatchMapping("/{id}/accept")
     public ResponseEntity<Void> accept(

@@ -1,7 +1,8 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.parcels.dto.ParcelRequest;
+import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
+import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,12 @@ public class ParcelController {
         return ResponseEntity.ok(parcelService.getParcel(id));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<List<ParcelResponse>> getMyParcels(
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId()));
+    }
+
     @GetMapping("/{id}/confirmation-code") // private
     public ResponseEntity<Map<String,String>> getConfirmationCode(
             @PathVariable UUID id,
@@ -34,20 +41,14 @@ public class ParcelController {
     ) {
         return ResponseEntity.ok(
                 Map.of("codeOTP",parcelService.getConfirmationCode(id,user.getId())
-        ));
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<List<ParcelResponse>> getMyParcels(
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId()));
+                ));
     }
 
 
     @PostMapping
     public ResponseEntity<ParcelResponse> createParcel(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody @Valid ParcelRequest request,
+            @RequestBody @Valid ParcelCreateRequest request,
             UriComponentsBuilder uriBuilder) {
 
         var parcelDto = parcelService.createParcel(
@@ -59,11 +60,11 @@ public class ParcelController {
     }
 
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ParcelResponse> updateParcel(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody @Valid ParcelRequest request) {
+            @RequestBody @Valid ParcelUpdateRequest request) {
 
         return ResponseEntity.ok(parcelService.updateParcel(id, userPrincipal.getId(), request));
     }

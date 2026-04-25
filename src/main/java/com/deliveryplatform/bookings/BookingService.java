@@ -43,25 +43,25 @@ public class BookingService {
     }
 
 
-    @Transactional
-    public BookingResponse create(BookingRequest request, UUID requesterId) {
-        validateNoDuplicateBooking(request);
-
-        var parcel = parcelService.getParcelByIdOrThrow(request.parcelId());
-        assertParcelOwner(parcel, requesterId);
-
-        var trip = tripService.getTripByIdOrThrow(request.tripId());
-        var requester = parcel.getUser();
-        var requested = trip.getUser();
-        var booking = buildBooking(parcel, trip, requester , requested);
-
-        // For instant bookings, the parcel is immediately reserved
-        if (trip.isInstantBooking()) {
-            parcel.setStatus(ParcelStatus.BOOKED);
-        }
-
-        return bookingMapper.toDto(bookingRepository.save(booking));
-    }
+//    @Transactional
+//    public BookingResponse create(BookingRequest request, UUID requesterId) {
+//        validateNoDuplicateBooking(request);
+//
+//        var parcel = parcelService.getParcelByIdOrThrow(request.parcelId());
+//        assertParcelOwner(parcel, requesterId);
+//
+//        var trip = tripService.getTripByIdOrThrow(request.tripId());
+//        var requester = parcel.getUser();
+//        var requested = trip.getUser();
+//        var booking = buildBooking(parcel, trip, requester , requested);
+//
+//        // For instant bookings, the parcel is immediately reserved
+//        if (trip.isInstantBooking()) {
+//            parcel.setStatus(ParcelStatus.BOOKED);
+//        }
+//
+//        return bookingMapper.toDto(bookingRepository.save(booking));
+//    }
 
     @Transactional
     public void accept(UUID bookingId, UUID carrierId) {
