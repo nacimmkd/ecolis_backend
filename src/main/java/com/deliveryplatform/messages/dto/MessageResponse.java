@@ -11,11 +11,11 @@ public record MessageResponse(
         UUID           id,
         ChatUser       sender,
         String         content,
-        List<ImageResponse>   images,
+        List<String>   imagesUrls,
         OffsetDateTime sentAt
 ) {
 
-    public static MessageResponse of(Message message, ChatUser sender , List<ImageResponse> images) {
+    public static MessageResponse of(Message message, ChatUser sender , List<String> images) {
         return new MessageResponse(
                 message.getId(),
                 sender,

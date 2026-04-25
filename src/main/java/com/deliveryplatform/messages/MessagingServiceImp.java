@@ -114,7 +114,7 @@ public class MessagingServiceImp implements MessagingService {
         var sender = message.getSender();
         var images = message.getImages().stream()
                 .filter(Image::isConfirmed)
-                .map(img -> ImageResponse.of(img, imageService.getReadUrl(img.getId())))
+                .map(img -> imageService.getReadUrl(img.getId()))
                 .toList();
         return MessageResponse.of(message, ChatUser.of(sender, resolveAvatarUrl(sender)), images);
     }
