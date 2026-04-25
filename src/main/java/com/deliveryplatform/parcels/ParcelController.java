@@ -1,6 +1,7 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
+import com.deliveryplatform.parcels.dto.ParcelDetailedResponse;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
 import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
 import com.deliveryplatform.users.UserPrincipal;
@@ -24,7 +25,7 @@ public class ParcelController {
     private final ParcelService parcelService;
 
     @GetMapping("/{id}") // public
-    public ResponseEntity<ParcelResponse> getParcel(@PathVariable UUID id) {
+    public ResponseEntity<ParcelDetailedResponse> getParcel(@PathVariable UUID id) {
         return ResponseEntity.ok(parcelService.getParcel(id));
     }
 
@@ -46,7 +47,7 @@ public class ParcelController {
 
 
     @PostMapping
-    public ResponseEntity<ParcelResponse> createParcel(
+    public ResponseEntity<ParcelDetailedResponse> createParcel(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelCreateRequest request,
             UriComponentsBuilder uriBuilder) {
@@ -61,7 +62,7 @@ public class ParcelController {
 
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ParcelResponse> updateParcel(
+    public ResponseEntity<ParcelDetailedResponse> updateParcel(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelUpdateRequest request) {

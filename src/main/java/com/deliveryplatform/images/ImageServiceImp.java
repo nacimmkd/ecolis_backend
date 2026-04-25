@@ -91,6 +91,7 @@ public class ImageServiceImp implements ImageService {
     }
 
     private Image getByIdOrThrow(UUID id) {
+        if (id == null) return null;
         return imageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Image not found"));
     }

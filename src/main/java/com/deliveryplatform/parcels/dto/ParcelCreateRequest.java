@@ -10,6 +10,8 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 public record ParcelCreateRequest(
 
@@ -30,6 +32,10 @@ public record ParcelCreateRequest(
 
         @NotNull @Valid
         Address dropoffAddress,
+
+        UUID thumbnailImageId,
+
+        List<UUID> imageIds,
 
         @Future
         LocalDate deadlineDate

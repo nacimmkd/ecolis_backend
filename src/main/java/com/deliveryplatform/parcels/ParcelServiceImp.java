@@ -5,9 +5,13 @@ import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.images.Image;
+import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
+import com.deliveryplatform.parcels.dto.ParcelDetailedResponse;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
 import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
+import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +25,14 @@ import java.util.UUID;
 public class ParcelServiceImp implements ParcelService {
 
     private final ParcelRepository parcelRepository;
-    private final UserRepository userRepository;
+    private final UserRepository   userRepository;
     private final GeocodingService geocodingService;
+    private final ImageService     imageService;
 
     @Override
-    public ParcelResponse getParcel(UUID id) {
+    public ParcelDetailedResponse getParcel(UUID id) {
         var parcel = getParcelByIdOrThrow(id);
-        return ParcelResponse.of(parcel);
+        return toDetailedResponse(parcel);
     }
 
     @Override
@@ -40,41 +45,43 @@ public class ParcelServiceImp implements ParcelService {
     @Override
     public List<ParcelResponse> getUserParcels(UUID userId) {
         return parcelRepository.findByUserId(userId).stream()
-                .map(ParcelResponse::of)
+                .map(this::toResponse)
                 .toList();
     }
 
     @Override
     public List<ParcelResponse> getParcels() {
         return parcelRepository.findAll().stream()
-                .map(ParcelResponse::of)
+                .map(this::toResponse)
                 .toList();
     }
 
-
     @Override
     @Transactional
-    public ParcelResponse createParcel(UUID userId, ParcelCreateRequest request) {
+    public ParcelDetailedResponse createParcel(UUID userId, ParcelCreateRequest request) {
+        var user   = getUserByIdOrThrow(userId);
         var parcel = toEntity(request);
-        var user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         parcel.setUser(user);
-        if (request.requireCode() != null && request.requireCode()) {
-            parcel.setCodeOTP(CodeGeneratorUtil.generateParcelCode());
-        }
 
-        return ParcelResponse.of(parcelRepository.save(parcel));
+        updateParcelThumbnail(parcel, request.thumbnailImageId());
+        updateParcelImages(parcel, request.imageIds());
+
+        return toDetailedResponse(parcelRepository.save(parcel));
     }
 
     @Override
     @Transactional
-    public ParcelResponse updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
-        Parcel parcel = getParcelByIdOrThrow(parcelId);
+    public ParcelDetailedResponse updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
+        var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
         assertParcelIsAvailable(parcel);
-        updateParcel(parcel, request);
-        return ParcelResponse.of(parcelRepository.save(parcel));
-    }
 
+        applyUpdates(parcel, request);
+        updateParcelThumbnail(parcel, request.thumbnailImageId());
+        updateParcelImages(parcel, request.imageIds());
+
+        return toDetailedResponse(parcelRepository.save(parcel));
+    }
 
     @Override
     @Transactional
@@ -85,61 +92,101 @@ public class ParcelServiceImp implements ParcelService {
         parcelRepository.delete(parcel);
     }
 
+    // ----------------------------------------------------------------
 
-    //----------------- private methods-----------------------------
-
-    private Parcel getParcelByIdOrThrow(UUID parcelId) {
-        return parcelRepository.findById(parcelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Parcel"));
+    private ParcelResponse toResponse(Parcel parcel) {
+        var thumbnailUrl = resolveThumbnailUrl(parcel);
+        return ParcelResponse.of(parcel, thumbnailUrl);
     }
 
-
-    private void assertOwnership(Parcel parcel, UUID userId) {
-        if (!parcel.isOwner(userId)) {
-            throw new UnauthorizedActionException("User is not owner of this parcel");
-        }
+    private ParcelDetailedResponse toDetailedResponse(Parcel parcel) {
+        var thumbnailUrl = resolveThumbnailUrl(parcel);
+        var imageUrls    = resolveImageUrls(parcel);
+        return ParcelDetailedResponse.of(parcel, thumbnailUrl, imageUrls);
     }
 
-    private void assertParcelIsAvailable(Parcel parcel) {
-        if (!parcel.isAvailable()) {
-            throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
-        }
+    private String resolveThumbnailUrl(Parcel parcel) {
+        var thumbnail = parcel.getThumbnailImage();
+        if (thumbnail == null || !thumbnail.isConfirmed()) return null;
+        return imageService.getReadUrl(thumbnail.getId());
+    }
+
+    private List<String> resolveImageUrls(Parcel parcel) {
+        if (parcel.getImages() == null) return List.of();
+        return parcel.getImages().stream()
+                .filter(Image::isConfirmed)
+                .map(image -> imageService.getReadUrl(image.getId()))
+                .toList();
     }
 
     private Parcel toEntity(ParcelCreateRequest request) {
         return Parcel.builder()
-                .size(request.size())
-                .fragile(request.fragile())
                 .description(request.description())
                 .weightKg(request.weightKg())
+                .size(request.size())
+                .fragile(request.fragile())
                 .deadlineDate(request.deadlineDate())
-                .codeOTP(Boolean.TRUE.equals(request.requireCode()) ? CodeGeneratorUtil.generateParcelCode() : null)
-                .pickupAddress(
-                        geocodingService.geocode(request.pickupAddress())
-                )
-                .dropoffAddress(
-                        geocodingService.geocode(request.dropoffAddress())
-                )
+                .codeOTP(Boolean.TRUE.equals(request.requireCode())
+                        ? CodeGeneratorUtil.generateParcelCode()
+                        : null)
+                .pickupAddress(geocodingService.geocode(request.pickupAddress()))
+                .dropoffAddress(geocodingService.geocode(request.dropoffAddress()))
                 .build();
     }
 
-    private void updateParcel(Parcel parcel, ParcelUpdateRequest request) {
-        if (request.description() != null) parcel.setDescription(request.description());
-        if (request.weightKg() != null) parcel.setWeightKg(request.weightKg());
-        if (request.size() != null) parcel.setSize(request.size());
-        if (request.fragile() != null) parcel.setFragile(request.fragile());
-        if (request.deadlineDate() != null) parcel.setDeadlineDate(request.deadlineDate());
-
+    private void applyUpdates(Parcel parcel, ParcelUpdateRequest request) {
+        if (request.description()   != null) parcel.setDescription(request.description());
+        if (request.weightKg()      != null) parcel.setWeightKg(request.weightKg());
+        if (request.size()          != null) parcel.setSize(request.size());
+        if (request.fragile()       != null) parcel.setFragile(request.fragile());
+        if (request.deadlineDate()  != null) parcel.setDeadlineDate(request.deadlineDate());
         if (request.pickupAddress() != null) parcel.setPickupAddress(geocodingService.geocode(request.pickupAddress()));
-        if (request.dropoffAddress() != null)
-            parcel.setDropoffAddress(geocodingService.geocode(request.dropoffAddress()));
+        if (request.dropoffAddress()!= null) parcel.setDropoffAddress(geocodingService.geocode(request.dropoffAddress()));
 
         if (request.requireCode() != null) {
-            if (request.requireCode() && parcel.getCodeOTP() == null) {
+            if (Boolean.TRUE.equals(request.requireCode()) && parcel.getCodeOTP() == null) {
                 parcel.setCodeOTP(CodeGeneratorUtil.generateParcelCode());
-            } else if (!request.requireCode()) {
+            } else if (Boolean.FALSE.equals(request.requireCode())) {
                 parcel.setCodeOTP(null);
             }
         }
+    }
+
+    private void updateParcelThumbnail(Parcel parcel, UUID thumbnailImageId) {
+        if (thumbnailImageId == null) return;
+        var image = imageService.getImageEntity(thumbnailImageId);
+        if (image.isConfirmed()) parcel.setThumbnailImage(image);
+    }
+
+    private void updateParcelImages(Parcel parcel, List<UUID> imageIds) {
+        if (imageIds == null) return;
+        if (imageIds.isEmpty()) {
+            parcel.clearImages();
+            return;
+        }
+        var confirmedImages = imageService.getImageEntities(imageIds).stream()
+                .filter(Image::isConfirmed)
+                .toList();
+        parcel.setImages(confirmedImages);
+    }
+
+    private Parcel getParcelByIdOrThrow(UUID id) {
+        return parcelRepository.findParcelWithImagesById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
+    }
+
+    private User getUserByIdOrThrow(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    private void assertOwnership(Parcel parcel, UUID userId) {
+        if (!parcel.isOwner(userId))
+            throw new UnauthorizedActionException("User is not owner of this parcel");
+    }
+
+    private void assertParcelIsAvailable(Parcel parcel) {
+        if (!parcel.isAvailable())
+            throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
     }
 }

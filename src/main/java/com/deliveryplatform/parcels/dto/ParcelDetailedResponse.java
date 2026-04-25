@@ -1,6 +1,7 @@
 package com.deliveryplatform.parcels.dto;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.images.dto.ImageResponse;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelSize;
 import com.deliveryplatform.parcels.ParcelStatus;
@@ -9,10 +10,11 @@ import lombok.Builder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Builder
-public record ParcelResponse(
+public record ParcelDetailedResponse(
         UUID id,
         UUID userId,
         String description,
@@ -23,13 +25,14 @@ public record ParcelResponse(
         GeocodedAddress pickupAddress,
         GeocodedAddress dropoffAddress,
         ParcelStatus status,
-        String thumbnailImageUrl,
         LocalDate deadlineDate,
+        String thumbnailImageUrl,
+        List<String> imageUrls,
         OffsetDateTime createdAt
 ) {
 
-    public static ParcelResponse of(Parcel parcel, String thumbnailImageUrl) {
-        return ParcelResponse.builder()
+    public static ParcelDetailedResponse of(Parcel parcel, String thumbnailImageUrl, List<String> imageUrls) {
+        return ParcelDetailedResponse.builder()
                 .id(parcel.getId())
                 .userId(parcel.getUser().getId())
                 .description(parcel.getDescription())
@@ -41,6 +44,7 @@ public record ParcelResponse(
                 .dropoffAddress(parcel.getDropoffAddress())
                 .status(parcel.getStatus())
                 .thumbnailImageUrl(thumbnailImageUrl)
+                .imageUrls(imageUrls)
                 .deadlineDate(parcel.getDeadlineDate())
                 .createdAt(parcel.getCreatedAt())
                 .build();

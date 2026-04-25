@@ -1,14 +1,16 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.images.Image;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -52,25 +54,34 @@ public class Parcel {
 
 
     @Embedded
-    @AttributeOverride(name = "street",     column = @Column(name = "pickup_street",      nullable = false))
-    @AttributeOverride(name = "city",       column = @Column(name = "pickup_city",        nullable = false))
+    @AttributeOverride(name = "street", column = @Column(name = "pickup_street", nullable = false))
+    @AttributeOverride(name = "city", column = @Column(name = "pickup_city", nullable = false))
     @AttributeOverride(name = "postalCode", column = @Column(name = "pickup_postal_code", nullable = false))
-    @AttributeOverride(name = "country",    column = @Column(name = "pickup_country",     nullable = false))
-    @AttributeOverride(name = "latitude",   column = @Column(name = "pickup_lat"))
-    @AttributeOverride(name = "longitude",  column = @Column(name = "pickup_lng"))
+    @AttributeOverride(name = "country", column = @Column(name = "pickup_country", nullable = false))
+    @AttributeOverride(name = "latitude", column = @Column(name = "pickup_lat"))
+    @AttributeOverride(name = "longitude", column = @Column(name = "pickup_lng"))
     private GeocodedAddress pickupAddress;
 
 
     @Embedded
-    @AttributeOverride(name = "street",     column = @Column(name = "dropoff_street",      nullable = false))
-    @AttributeOverride(name = "city",       column = @Column(name = "dropoff_city",        nullable = false))
+    @AttributeOverride(name = "street", column = @Column(name = "dropoff_street", nullable = false))
+    @AttributeOverride(name = "city", column = @Column(name = "dropoff_city", nullable = false))
     @AttributeOverride(name = "postalCode", column = @Column(name = "dropoff_postal_code", nullable = false))
-    @AttributeOverride(name = "country",    column = @Column(name = "dropoff_country",     nullable = false))
-    @AttributeOverride(name = "latitude",   column = @Column(name = "dropoff_lat"))
-    @AttributeOverride(name = "longitude",  column = @Column(name = "dropoff_lng"))
+    @AttributeOverride(name = "country", column = @Column(name = "dropoff_country", nullable = false))
+    @AttributeOverride(name = "latitude", column = @Column(name = "dropoff_lat"))
+    @AttributeOverride(name = "longitude", column = @Column(name = "dropoff_lng"))
     private GeocodedAddress dropoffAddress;
 
-    @CreationTimestamp
+    @OneToOne
+    @JoinColumn(name = "thumbnail_image_id")
+    private Image thumbnailImage;
+
+    @Builder.Default
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "parcel_images", joinColumns = @JoinColumn(name = "parcel_id"), inverseJoinColumns = @JoinColumn(name = "image_id"))
+    private List<Image> images = new ArrayList<>();
+
+
     @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
@@ -83,5 +94,10 @@ public class Parcel {
     public boolean isOwner(UUID userId) {
         return this.user.getId().equals(userId);
     }
+
+    public void clearImages() {
+        images.clear();
+    }
+
 
 }
