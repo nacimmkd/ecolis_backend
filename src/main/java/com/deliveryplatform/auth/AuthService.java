@@ -9,6 +9,4 @@ public interface AuthService {
     AuthResponse refresh(String refreshToken);
 
     void logout(UUID userId);
-
-    boolean validateAccessToken(String token);
 }

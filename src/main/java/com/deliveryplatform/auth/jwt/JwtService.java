@@ -17,8 +17,6 @@ import java.util.UUID;
 public class JwtService {
 
     private final JwtConfig jwtConfig;
-    private final JwtRefreshService jwtRefreshService;
-
 
     public String generateAccessToken(UserPrincipal user) {
         return generateToken(user, jwtConfig.getAccessTokenDuration());
@@ -28,15 +26,14 @@ public class JwtService {
         return generateToken(user, jwtConfig.getRefreshTokenDuration());
     }
 
-    public boolean validateRefreshToken(String refreshToken) {
-        var userId = getUserIdFromToken(refreshToken);
-        return jwtRefreshService.isValid(userId, refreshToken) && isValidToken(refreshToken);
+    public boolean isValidToken(String token) {
+        try {
+            var claims = parseClaims(token);
+            return claims.getExpiration().after(new Date());
+        } catch (JwtException e) {
+            return false;
+        }
     }
-
-    public boolean validateAccessToken(String accessToken) {
-        return isValidToken(accessToken);
-    }
-
 
     public UUID getUserIdFromToken(String token) {
         return UUID.fromString(parseClaims(token).getSubject());
@@ -61,14 +58,6 @@ public class JwtService {
     }
     // ---------------------------------------------------------------------
 
-    private boolean isValidToken(String token) {
-        try {
-            var claims = parseClaims(token);
-            return claims.getExpiration().after(new Date());
-        } catch (JwtException e) {
-            return false;
-        }
-    }
 
     private String generateToken(UserPrincipal user, int expiration) {
         return Jwts.builder()

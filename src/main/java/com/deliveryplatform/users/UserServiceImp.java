@@ -1,6 +1,7 @@
 package com.deliveryplatform.users;
 
 import com.deliveryplatform.auth.AuthService;
+import com.deliveryplatform.caching.CachingService;
 import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +30,12 @@ public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-    private final UserVerificationService userVerificationService;
+    private final CachingService cachingService;
     private final AuthService authService;
+
+    private static final String VERIFICATION_CODE_PREFIX = "email:verify:";
+    private static final Duration VERIFICATION_CODE_TTL = Duration.ofMinutes(5);
+
 
 
     @Override
@@ -68,12 +74,14 @@ public class UserServiceImp implements UserService {
     public void sendVerificationCode(UUID id) {
         var user = getUserByIdOrThrow(id);
         if (user.isVerified()) throw new ConflictException("User is already verified");
-        if (userVerificationService.exists(user.getEmail()))
+
+        var key = VERIFICATION_CODE_PREFIX + user.getEmail();
+        if (cachingService.exists(key))
             throw new ConflictException("Verification code already sent");
 
 
         var code = CodeGeneratorUtil.generateVerificationCode();
-        userVerificationService.send(user.getEmail(), code);
+        cachingService.save(key, code , VERIFICATION_CODE_TTL);
 
         var template = EmailTemplates.confirmEmailTemplate(code);
         emailService.send(
@@ -87,7 +95,8 @@ public class UserServiceImp implements UserService {
     @Override
     @Transactional
     public void verify(String email, String code) {
-        if (!userVerificationService.verify(email, code)) {
+        var key = VERIFICATION_CODE_PREFIX + email;
+        if (!cachingService.isValid(key, code)) {
             throw new InvalidCredentialsException("Code invalid or expired");
         }
         var user = getUserByEmailOrThrow(email);

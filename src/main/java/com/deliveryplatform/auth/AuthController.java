@@ -6,7 +6,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -64,19 +63,6 @@ public class AuthController {
         var cookie = generateCookie(null, 0);
         response.addCookie(cookie);
         return ResponseEntity.noContent().build();
-    }
-
-
-    @PostMapping("/validate")
-    public ResponseEntity<Void> validateToken(
-            @RequestHeader("Authorization") String header
-    ) {
-        var token = header.replace("Bearer ", "");
-        var isValid = authService.validateAccessToken(token);
-        if (!isValid) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return ResponseEntity.ok().build();
     }
 
     //-------------------------------------------------------------------

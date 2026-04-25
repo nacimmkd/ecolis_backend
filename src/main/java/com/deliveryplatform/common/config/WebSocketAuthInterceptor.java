@@ -38,7 +38,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
         }
 
         var token = authHeader.replace("Bearer ", "");
-        if (!jwtService.validateAccessToken(token)) {
+        if (!jwtService.isValidToken(token)) {
             log.warn("[WS] Invalid token");
             return;
         }

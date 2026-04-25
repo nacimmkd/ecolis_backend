@@ -2,7 +2,7 @@ package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.jwt.JwtConfig;
 import com.deliveryplatform.auth.jwt.JwtService;
-import com.deliveryplatform.auth.jwt.JwtRefreshService;
+import com.deliveryplatform.caching.CachingService;
 import com.deliveryplatform.common.exceptions.AuthenticationException;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.AllArgsConstructor;
@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -19,20 +20,23 @@ public class AuthServiceImp implements AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final JwtRefreshService refreshTokenService;
+    private final CachingService cachingService;
     private final JwtConfig jwtConfig;
+
+    private static final String REFRESH_TOKEN_PREFIX = "REFRESH_TOKEN:";
 
 
     @Override
     public AuthResponse login(AuthRequest request) {
 
         var auth = authenticate(request.getEmail(), request.getPassword());
-        var userPrincipal = (UserPrincipal) auth.getPrincipal();
+        var principal = (UserPrincipal) auth.getPrincipal();
 
-        var accessToken = jwtService.generateAccessToken(userPrincipal);
-        var refreshToken = jwtService.generateRefreshToken(userPrincipal);
+        var accessToken = jwtService.generateAccessToken(principal);
+        var refreshToken = jwtService.generateRefreshToken(principal);
 
-        refreshTokenService.save(userPrincipal.getId(), refreshToken);
+        var key = REFRESH_TOKEN_PREFIX + principal.getId().toString();
+        cachingService.save(key, refreshToken , Duration.ofSeconds(jwtConfig.getRefreshTokenDuration()));
 
         return new AuthResponse(accessToken, refreshToken, jwtConfig.getRefreshTokenDuration());
     }
@@ -40,13 +44,14 @@ public class AuthServiceImp implements AuthService {
     @Override
     public AuthResponse refresh(String refreshToken) {
         validateRefreshTokenOrThrow(refreshToken);
-        var userPrincipal = getPrincipalFromRefreshToken(refreshToken);
+        var principal = getPrincipalFromRefreshToken(refreshToken);
 
         // Refresh Token Rotation for more security
-        var newRefreshToken = jwtService.generateRefreshToken(userPrincipal);
-        refreshTokenService.save(userPrincipal.getId(), newRefreshToken);
+        var newRefreshToken = jwtService.generateRefreshToken(principal);
+        var key = REFRESH_TOKEN_PREFIX + principal.getId().toString();
+        cachingService.save(key, newRefreshToken, Duration.ofSeconds(jwtConfig.getRefreshTokenDuration()));
 
-        var newAccessToken = jwtService.generateAccessToken(userPrincipal);
+        var newAccessToken = jwtService.generateAccessToken(principal);
         return new AuthResponse(
                 newAccessToken,
                 newRefreshToken,
@@ -56,13 +61,10 @@ public class AuthServiceImp implements AuthService {
 
     @Override
     public void logout(UUID userId) {
-        refreshTokenService.remove(userId);
+        var key = REFRESH_TOKEN_PREFIX + userId.toString();
+        cachingService.remove(key);
     }
 
-    @Override
-    public boolean validateAccessToken(String token) {
-        return jwtService.validateAccessToken(token);
-    }
 
     // --------------------------------------------------------------------
 
@@ -75,7 +77,10 @@ public class AuthServiceImp implements AuthService {
     }
 
     private void validateRefreshTokenOrThrow(String refreshToken) {
-        if (!jwtService.validateRefreshToken(refreshToken)) {
+        var userId = jwtService.getUserIdFromToken(refreshToken);
+        var key = REFRESH_TOKEN_PREFIX + userId.toString();
+        var isValid =  cachingService.isValid(key, refreshToken) && jwtService.isValidToken(refreshToken);
+        if (!isValid) {
             throw new AuthenticationException("Session expired");
         }
     }
