@@ -7,7 +7,6 @@ import com.deliveryplatform.parcels.ParcelStatus;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -24,7 +23,6 @@ public record ParcelResponse(
         GeocodedAddress dropoffAddress,
         ParcelStatus status,
         String thumbnailImageUrl,
-        LocalDate deadlineDate,
         OffsetDateTime createdAt
 ) {
 
@@ -41,7 +39,6 @@ public record ParcelResponse(
                 .dropoffAddress(parcel.getDropoffAddress())
                 .status(parcel.getStatus())
                 .thumbnailImageUrl(thumbnailImageUrl)
-                .deadlineDate(parcel.getDeadlineDate())
                 .createdAt(parcel.getCreatedAt())
                 .build();
     }

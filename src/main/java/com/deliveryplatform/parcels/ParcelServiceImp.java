@@ -125,7 +125,6 @@ public class ParcelServiceImp implements ParcelService {
                 .weightKg(request.weightKg())
                 .size(request.size())
                 .fragile(request.fragile())
-                .deadlineDate(request.deadlineDate())
                 .codeOTP(Boolean.TRUE.equals(request.requireCode())
                         ? CodeGeneratorUtil.generateParcelCode()
                         : null)
@@ -139,7 +138,6 @@ public class ParcelServiceImp implements ParcelService {
         if (request.weightKg()      != null) parcel.setWeightKg(request.weightKg());
         if (request.size()          != null) parcel.setSize(request.size());
         if (request.fragile()       != null) parcel.setFragile(request.fragile());
-        if (request.deadlineDate()  != null) parcel.setDeadlineDate(request.deadlineDate());
         if (request.pickupAddress() != null) parcel.setPickupAddress(geocodingService.geocode(request.pickupAddress()));
         if (request.dropoffAddress()!= null) parcel.setDropoffAddress(geocodingService.geocode(request.dropoffAddress()));
 

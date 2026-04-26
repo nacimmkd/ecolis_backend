@@ -49,9 +49,6 @@ public class Parcel {
     @Builder.Default
     private ParcelStatus status = ParcelStatus.PUBLISHED;
 
-    @Column(name = "deadline_date")
-    private LocalDate deadlineDate;
-
 
     @Embedded
     @AttributeOverride(name = "street", column = @Column(name = "pickup_street", nullable = false))

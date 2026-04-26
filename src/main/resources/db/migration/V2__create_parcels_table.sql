@@ -27,7 +27,6 @@ CREATE TABLE parcels (
                              CHECK (status IN ('PUBLISHED','BOOKED','PICKED_UP','IN_TRANSIT','DELIVERED','CANCELLED')),
 
                          code_otp                VARCHAR(20),
-                         deadline_date   DATE,
                          created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
                          CONSTRAINT fk_parcels_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
