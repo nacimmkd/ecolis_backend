@@ -6,6 +6,7 @@ import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.Parcel;
+import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.ParcelServiceImp;
 import com.deliveryplatform.parcels.ParcelStatus;
 import com.deliveryplatform.trips.Trip;
@@ -28,6 +29,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final BookingMapper bookingMapper;
     private final ParcelServiceImp parcelService;
+    private final ParcelRepository parcelRepository;
     private final TripService tripService;
     private final UserServiceImp userService;
 
@@ -43,25 +45,26 @@ public class BookingService {
     }
 
 
-//    @Transactional
-//    public BookingResponse create(BookingRequest request, UUID requesterId) {
-//        validateNoDuplicateBooking(request);
-//
-//        var parcel = parcelService.getParcelByIdOrThrow(request.parcelId());
-//        assertParcelOwner(parcel, requesterId);
-//
-//        var trip = tripService.getTripByIdOrThrow(request.tripId());
-//        var requester = parcel.getUser();
-//        var requested = trip.getUser();
-//        var booking = buildBooking(parcel, trip, requester , requested);
-//
-//        // For instant bookings, the parcel is immediately reserved
-//        if (trip.isInstantBooking()) {
-//            parcel.setStatus(ParcelStatus.BOOKED);
-//        }
-//
-//        return bookingMapper.toDto(bookingRepository.save(booking));
-//    }
+    @Transactional
+    public BookingResponse create(BookingRequest request, UUID requesterId) {
+        validateNoDuplicateBooking(request);
+
+        var parcel = parcelRepository.findById(request.parcelId())
+                .orElseThrow(() -> new ResourceNotFoundException("Parcel Not Found"));
+        assertParcelOwner(parcel, requesterId);
+
+        var trip = tripService.getTripByIdOrThrow(request.tripId());
+        var requester = parcel.getUser();
+        var requested = trip.getUser();
+        var booking = buildBooking(parcel, trip, requester , requested);
+
+        // For instant bookings, the parcel is immediately reserved
+        if (trip.isInstantBooking()) {
+            parcel.setStatus(ParcelStatus.BOOKED);
+        }
+
+        return bookingMapper.toDto(bookingRepository.save(booking));
+    }
 
     @Transactional
     public void accept(UUID bookingId, UUID carrierId) {
