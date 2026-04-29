@@ -3,8 +3,10 @@ package com.deliveryplatform.profiles.dto;
 import com.deliveryplatform.profiles.Profile;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public record ProfileResponse(
+        UUID profileId,
         String firstName,
         String lastName,
         String phone,
@@ -16,6 +18,7 @@ public record ProfileResponse(
 
     public static ProfileResponse of(Profile profile) {
         return new ProfileResponse(
+                profile.getId(),
                 profile.getFirstName(),
                 profile.getLastName(),
                 profile.getPhone(),
@@ -29,6 +32,7 @@ public record ProfileResponse(
 
     public static ProfileResponse of(Profile profile, String avatarUrl) {
         return new ProfileResponse(
+                profile.getId(),
                 profile.getFirstName(),
                 profile.getLastName(),
                 profile.getPhone(),

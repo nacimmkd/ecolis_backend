@@ -12,9 +12,9 @@ import java.util.UUID;
 @Repository
 public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
 
-    @Query("SELECT p FROM Parcel p WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
-    List<Parcel> findByUserId(@Param("userId") UUID userId);
+    @Query("SELECT p FROM Parcel p LEFT JOIN FETCH p.user WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
+    List<Parcel> findWithOwnerByUserId(@Param("userId") UUID userId);
 
-    @Query("SELECT p FROM Parcel p LEFT JOIN FETCH p.thumbnailImage LEFT JOIN FETCH p.images WHERE p.id = :id")
-    Optional<Parcel> findParcelWithImagesById(@Param("id") UUID id);
+    @Query("SELECT p FROM Parcel p LEFT JOIN FETCH p.thumbnailImage LEFT JOIN FETCH p.images LEFT JOIN FETCH p.user WHERE p.id = :id")
+    Optional<Parcel> findParcelWithImagesAndOwnerById(@Param("id") UUID id);
 }

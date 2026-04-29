@@ -4,6 +4,7 @@ import com.deliveryplatform.addresses.GeocodedAddress;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelSize;
 import com.deliveryplatform.parcels.ParcelStatus;
+import com.deliveryplatform.profiles.dto.UserProfileSummary;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -12,8 +13,8 @@ import java.util.UUID;
 
 @Builder
 public record ParcelResponse(
-        UUID id,
-        UUID userId,
+        UUID parcelId,
+        UserProfileSummary owner,
         String description,
         BigDecimal weightKg,
         ParcelSize size,
@@ -26,10 +27,10 @@ public record ParcelResponse(
         OffsetDateTime createdAt
 ) {
 
-    public static ParcelResponse of(Parcel parcel, String thumbnailImageUrl) {
+    public static ParcelResponse of(Parcel parcel, UserProfileSummary owner, String thumbnailImageUrl) {
         return ParcelResponse.builder()
-                .id(parcel.getId())
-                .userId(parcel.getUser().getId())
+                .parcelId(parcel.getId())
+                .owner(owner)
                 .description(parcel.getDescription())
                 .weightKg(parcel.getWeightKg())
                 .size(parcel.getSize())

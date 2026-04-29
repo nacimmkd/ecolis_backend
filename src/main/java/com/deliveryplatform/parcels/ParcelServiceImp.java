@@ -11,6 +11,7 @@ import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelDetailedResponse;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
 import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
+import com.deliveryplatform.profiles.dto.UserProfileSummary;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -44,7 +45,7 @@ public class ParcelServiceImp implements ParcelService {
 
     @Override
     public List<ParcelResponse> getUserParcels(UUID userId) {
-        return parcelRepository.findByUserId(userId).stream()
+        return parcelRepository.findWithOwnerByUserId(userId).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -96,19 +97,32 @@ public class ParcelServiceImp implements ParcelService {
 
     private ParcelResponse toResponse(Parcel parcel) {
         var thumbnailUrl = resolveThumbnailUrl(parcel);
-        return ParcelResponse.of(parcel, thumbnailUrl);
+        var userProfile = resolveOwnerProfileSummary(parcel);
+        return ParcelResponse.of(parcel, userProfile, thumbnailUrl);
     }
 
     private ParcelDetailedResponse toDetailedResponse(Parcel parcel) {
         var thumbnailUrl = resolveThumbnailUrl(parcel);
         var imageUrls    = resolveImageUrls(parcel);
-        return ParcelDetailedResponse.of(parcel, thumbnailUrl, imageUrls);
+        var userProfile = resolveOwnerProfileSummary(parcel);
+        return ParcelDetailedResponse.of(parcel, userProfile, thumbnailUrl, imageUrls);
     }
 
     private String resolveThumbnailUrl(Parcel parcel) {
         var thumbnail = parcel.getThumbnailImage();
         if (thumbnail == null || !thumbnail.isConfirmed()) return null;
         return imageService.getReadUrl(thumbnail.getId());
+    }
+
+
+    private UserProfileSummary resolveOwnerProfileSummary(Parcel parcel){
+        var profile = parcel.getUser().getProfile();
+        var avatar = profile.getAvatar();
+        if (avatar == null || !avatar.isConfirmed()) return UserProfileSummary.of(profile);
+        return UserProfileSummary.of(
+                profile,
+                imageService.getReadUrl(avatar.getId())
+        );
     }
 
     private List<String> resolveImageUrls(Parcel parcel) {
@@ -169,7 +183,7 @@ public class ParcelServiceImp implements ParcelService {
     }
 
     private Parcel getParcelByIdOrThrow(UUID id) {
-        return parcelRepository.findParcelWithImagesById(id)
+        return parcelRepository.findParcelWithImagesAndOwnerById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
     }
 
