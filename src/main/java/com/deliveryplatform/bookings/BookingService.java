@@ -10,7 +10,8 @@ import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.ParcelServiceImp;
 import com.deliveryplatform.parcels.ParcelStatus;
 import com.deliveryplatform.trips.Trip;
-import com.deliveryplatform.trips.TripService;
+import com.deliveryplatform.trips.TripRepository;
+import com.deliveryplatform.trips.TripServiceImp;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserServiceImp;
 import jakarta.transaction.Transactional;
@@ -28,10 +29,8 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final BookingMapper bookingMapper;
-    private final ParcelServiceImp parcelService;
     private final ParcelRepository parcelRepository;
-    private final TripService tripService;
-    private final UserServiceImp userService;
+    private final TripRepository tripRepository;
 
     private static final Set<BookingStatus> TERMINAL_STATUSES = Set.of(
             BookingStatus.COMPLETED,
@@ -53,9 +52,9 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel Not Found"));
         assertParcelOwner(parcel, requesterId);
 
-        var trip = tripService.getTripByIdOrThrow(request.tripId());
+        var trip = tripRepository.findById(request.tripId()).orElseThrow(() -> new ResourceNotFoundException("Trip Not Found"));
         var requester = parcel.getUser();
-        var requested = trip.getUser();
+        var requested = trip.getOwner();
         var booking = buildBooking(parcel, trip, requester , requested);
 
         // For instant bookings, the parcel is immediately reserved
@@ -157,7 +156,7 @@ public class BookingService {
     }
 
     private void assertTripOwner(Booking booking, UUID carrierId) {
-        if (!booking.getTrip().getUser().getId().equals(carrierId)) {
+        if (!booking.getTrip().getOwner().getId().equals(carrierId)) {
             throw new UnauthorizedActionException("User is not the carrier of this trip");
         }
     }
@@ -170,7 +169,7 @@ public class BookingService {
 
     private void assertCancellationAllowed(Booking booking, UUID userId) {
         boolean isSender = booking.getSender().getId().equals(userId);
-        boolean isCarrier   = booking.getTrip().getUser().getId().equals(userId);
+        boolean isCarrier   = booking.getTrip().getOwner().getId().equals(userId);
 
         if (!isSender && !isCarrier) {
             throw new UnauthorizedActionException("Only the requester or carrier can cancel a booking");

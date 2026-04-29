@@ -6,7 +6,7 @@ import com.deliveryplatform.profiles.Profile;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record UserProfileSummary(
+public record ProfileSummaryResponse(
         UUID id,
         String firstName,
         String lastName,
@@ -14,8 +14,8 @@ public record UserProfileSummary(
         BigDecimal avgRating
 ) {
 
-    public static UserProfileSummary of(Profile profile) {
-        return new UserProfileSummary(
+    public static ProfileSummaryResponse of(Profile profile) {
+        return new ProfileSummaryResponse(
                 profile.getId(),
                 profile.getFirstName(),
                 profile.getLastName(),
@@ -25,8 +25,8 @@ public record UserProfileSummary(
     }
 
 
-    public static UserProfileSummary of(Profile profile, String avatarUrl) {
-        return new UserProfileSummary(
+    public static ProfileSummaryResponse of(Profile profile, String avatarUrl) {
+        return new ProfileSummaryResponse(
                 profile.getId(),
                 profile.getFirstName(),
                 profile.getLastName(),

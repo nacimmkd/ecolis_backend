@@ -28,29 +28,25 @@ public class Trip {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User owner;
 
     @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "street",     column = @Column(name = "departure_street",      nullable = false, columnDefinition = "TEXT")),
-            @AttributeOverride(name = "city",       column = @Column(name = "departure_city",        nullable = false, length = 100)),
-            @AttributeOverride(name = "postalCode", column = @Column(name = "departure_postal_code", nullable = false, length = 20)),
-            @AttributeOverride(name = "country",    column = @Column(name = "departure_country",     nullable = false, length = 60)),
-            @AttributeOverride(name = "latitude",   column = @Column(name = "departure_lat"         )),
-            @AttributeOverride(name = "longitude",  column = @Column(name = "departure_lng"         ))
-    })
-    private GeocodedAddress departure;
+    @AttributeOverride(name = "street",     column = @Column(name = "departure_street",      nullable = false, columnDefinition = "TEXT"))
+    @AttributeOverride(name = "city",       column = @Column(name = "departure_city",        nullable = false, length = 100))
+    @AttributeOverride(name = "postalCode", column = @Column(name = "departure_postal_code", nullable = false, length = 20))
+    @AttributeOverride(name = "country",    column = @Column(name = "departure_country",     nullable = false, length = 60))
+    @AttributeOverride(name = "latitude",   column = @Column(name = "departure_lat"))
+    @AttributeOverride(name = "longitude",  column = @Column(name = "departure_lng"))
+    private GeocodedAddress departureAddress;
 
     @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "street",     column = @Column(name = "arrival_street",      nullable = false, columnDefinition = "TEXT")),
-            @AttributeOverride(name = "city",       column = @Column(name = "arrival_city",        nullable = false, length = 100)),
-            @AttributeOverride(name = "postalCode", column = @Column(name = "arrival_postal_code", nullable = false, length = 20)),
-            @AttributeOverride(name = "country",    column = @Column(name = "arrival_country",     nullable = false, length = 60)),
-            @AttributeOverride(name = "latitude",   column = @Column(name = "arrival_lat")),
-            @AttributeOverride(name = "longitude",  column = @Column(name = "arrival_lng"))
-    })
-    private GeocodedAddress arrival;
+    @AttributeOverride(name = "street",     column = @Column(name = "arrival_street",      nullable = false, columnDefinition = "TEXT"))
+    @AttributeOverride(name = "city",       column = @Column(name = "arrival_city",        nullable = false, length = 100))
+    @AttributeOverride(name = "postalCode", column = @Column(name = "arrival_postal_code", nullable = false, length = 20))
+    @AttributeOverride(name = "country",    column = @Column(name = "arrival_country",     nullable = false, length = 60))
+    @AttributeOverride(name = "latitude",   column = @Column(name = "arrival_lat"))
+    @AttributeOverride(name = "longitude",  column = @Column(name = "arrival_lng"))
+    private GeocodedAddress arrivalAddress;
 
     @Column(name = "departure_date")
     private LocalDate departureDate;
@@ -98,10 +94,11 @@ public class Trip {
     }
 
     public void addStops(List<TripStop> stops) {
-        for(var  stop : stops) {
+        for (var stop : stops) {
             addStop(stop);
         }
     }
+
     public void updateStops(List<TripStop> newStops) {
         clearStops();
         addStops(newStops);
@@ -112,7 +109,7 @@ public class Trip {
         stop.setTrip(null);
     }
 
-    public void clearStops(){
+    public void clearStops() {
         stops.clear();
     }
 

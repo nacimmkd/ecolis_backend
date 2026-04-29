@@ -11,7 +11,7 @@ import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelDetailedResponse;
 import com.deliveryplatform.parcels.dto.ParcelResponse;
 import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
-import com.deliveryplatform.profiles.dto.UserProfileSummary;
+import com.deliveryplatform.profiles.dto.ProfileSummaryResponse;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -115,11 +115,11 @@ public class ParcelServiceImp implements ParcelService {
     }
 
 
-    private UserProfileSummary resolveOwnerProfileSummary(Parcel parcel){
+    private ProfileSummaryResponse resolveOwnerProfileSummary(Parcel parcel){
         var profile = parcel.getUser().getProfile();
         var avatar = profile.getAvatar();
-        if (avatar == null || !avatar.isConfirmed()) return UserProfileSummary.of(profile);
-        return UserProfileSummary.of(
+        if (avatar == null || !avatar.isConfirmed()) return ProfileSummaryResponse.of(profile);
+        return ProfileSummaryResponse.of(
                 profile,
                 imageService.getReadUrl(avatar.getId())
         );

@@ -1,8 +1,8 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.trips.dto.StopResponse;
-import com.deliveryplatform.trips.dto.TripRequest;
+import com.deliveryplatform.trips.dto.TripStopRequest;
+import com.deliveryplatform.trips.dto.TripStopResponse;
+import com.deliveryplatform.trips.dto.TripCreateRequest;
 import com.deliveryplatform.trips.dto.TripResponse;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
@@ -21,25 +21,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TripController {
 
-    private final TripService tripService;
+    private final TripServiceImp tripService;
 
-    // ----------------------------------------------------------------
+
     // PUBLIC
-    // ----------------------------------------------------------------
 
     @GetMapping("/{id}")
     public ResponseEntity<TripResponse> getTrip(@PathVariable UUID id) {
         return ResponseEntity.ok(tripService.getTrip(id));
     }
 
-    @GetMapping("/available")
-    public ResponseEntity<List<TripResponse>> getAvailableTrips() {
-        return ResponseEntity.ok(tripService.getAvailableTrips());
-    }
-
-    // ----------------------------------------------------------------
     // USER
-    // ----------------------------------------------------------------
 
     @GetMapping("/me")
     public ResponseEntity<List<TripResponse>> getMyTrips(
@@ -51,11 +43,11 @@ public class TripController {
     @PostMapping
     public ResponseEntity<TripResponse> createTrip(
             @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody TripRequest request,
+            @Valid @RequestBody TripCreateRequest request,
             UriComponentsBuilder uriBuilder
     ) {
         var trip = tripService.createTrip(principal.getId(), request);
-        var uri  = uriBuilder.path("/api/v1/trips/{id}").build(trip.id());
+        var uri  = uriBuilder.path("/api/v1/trips/{id}").build(trip.tripId());
         return ResponseEntity.created(uri).body(trip);
     }
 
@@ -63,7 +55,7 @@ public class TripController {
     public ResponseEntity<TripResponse> updateTrip(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody TripRequest request
+            @Valid @RequestBody TripCreateRequest request
     ) {
         return ResponseEntity.ok(tripService.updateTrip(id, principal.getId(), request));
     }
@@ -78,18 +70,15 @@ public class TripController {
     }
 
 
-    // ----------------------------------------------------------------
     // STOPS
-    // ----------------------------------------------------------------
-
 
     @PostMapping("/{tripId}/stops")
-    public StopResponse addStop(
+    public TripStopResponse addStop(
             @PathVariable UUID tripId,
-            @RequestBody Address address,
+            @RequestBody TripStopRequest stopRequest,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return tripService.addStop(tripId, principal.getId(), address);
+        return tripService.addStop(tripId, principal.getId(), stopRequest);
     }
 
 
@@ -105,21 +94,19 @@ public class TripController {
 
 
     @PutMapping("/{tripId}/stops/{stopId}")
-    public ResponseEntity<StopResponse> updateTripStop(
+    public ResponseEntity<TripStopResponse> updateTripStop(
             @PathVariable UUID tripId,
             @PathVariable UUID stopId,
-            @RequestBody Address address,
+            @RequestBody TripStopRequest stopRequest,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(
-                tripService.updateStop(stopId, tripId, principal.getId(), address)
+                tripService.updateStop(stopId, tripId, principal.getId(), stopRequest)
         );
     }
 
 
 
-    // ----------------------------------------------------------------
     // ADMIN
-    // ----------------------------------------------------------------
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
