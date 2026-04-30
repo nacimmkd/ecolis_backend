@@ -3,22 +3,22 @@ package com.deliveryplatform.trips;
 import com.deliveryplatform.trips.dto.TripStopRequest;
 import com.deliveryplatform.trips.dto.TripStopResponse;
 import com.deliveryplatform.trips.dto.TripCreateRequest;
-import com.deliveryplatform.trips.dto.TripResponse;
+import com.deliveryplatform.trips.dto.TripDetailedResponse;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface TripService {
 
-    TripResponse getTrip(UUID id);
+    TripDetailedResponse getTrip(UUID id);
 
-    List<TripResponse> getUserTrips(UUID userId);
+    List<TripDetailedResponse> getUserTrips(UUID userId);
 
-    List<TripResponse> getAllTrips();
+    List<TripDetailedResponse> getAllTrips();
 
-    TripResponse createTrip(UUID userId, TripCreateRequest request);
+    TripDetailedResponse createTrip(UUID userId, TripCreateRequest request);
 
-    TripResponse updateTrip(UUID tripId, UUID userId, TripCreateRequest request);
+    TripDetailedResponse updateTrip(UUID tripId, UUID userId, TripCreateRequest request);
 
     void deleteTrip(UUID tripId, UUID userId);
 

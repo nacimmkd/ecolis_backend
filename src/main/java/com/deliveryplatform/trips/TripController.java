@@ -3,7 +3,7 @@ package com.deliveryplatform.trips;
 import com.deliveryplatform.trips.dto.TripStopRequest;
 import com.deliveryplatform.trips.dto.TripStopResponse;
 import com.deliveryplatform.trips.dto.TripCreateRequest;
-import com.deliveryplatform.trips.dto.TripResponse;
+import com.deliveryplatform.trips.dto.TripDetailedResponse;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,21 +27,21 @@ public class TripController {
     // PUBLIC
 
     @GetMapping("/{id}")
-    public ResponseEntity<TripResponse> getTrip(@PathVariable UUID id) {
+    public ResponseEntity<TripDetailedResponse> getTrip(@PathVariable UUID id) {
         return ResponseEntity.ok(tripService.getTrip(id));
     }
 
     // USER
 
     @GetMapping("/me")
-    public ResponseEntity<List<TripResponse>> getMyTrips(
+    public ResponseEntity<List<TripDetailedResponse>> getMyTrips(
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         return ResponseEntity.ok(tripService.getUserTrips(principal.getId()));
     }
 
     @PostMapping
-    public ResponseEntity<TripResponse> createTrip(
+    public ResponseEntity<TripDetailedResponse> createTrip(
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody TripCreateRequest request,
             UriComponentsBuilder uriBuilder
@@ -52,7 +52,7 @@ public class TripController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<TripResponse> updateTrip(
+    public ResponseEntity<TripDetailedResponse> updateTrip(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody TripCreateRequest request
@@ -110,7 +110,7 @@ public class TripController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TripResponse>> getAllTrips() {
+    public ResponseEntity<List<TripDetailedResponse>> getAllTrips() {
         return ResponseEntity.ok(tripService.getAllTrips());
     }
 

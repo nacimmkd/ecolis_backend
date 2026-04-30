@@ -10,7 +10,7 @@ import com.deliveryplatform.profiles.dto.ProfileSummaryResponse;
 import com.deliveryplatform.trips.dto.TripStopRequest;
 import com.deliveryplatform.trips.dto.TripStopResponse;
 import com.deliveryplatform.trips.dto.TripCreateRequest;
-import com.deliveryplatform.trips.dto.TripResponse;
+import com.deliveryplatform.trips.dto.TripDetailedResponse;
 import com.deliveryplatform.users.UserServiceImp;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,19 +33,19 @@ public class TripServiceImp implements TripService {
 
 
     @Override
-    public TripResponse getTrip(UUID tripId) {
+    public TripDetailedResponse getTrip(UUID tripId) {
         return buildTripResponse(getTripByIdOrThrow(tripId));
     }
 
     @Override
-    public List<TripResponse> getUserTrips(UUID currentUserId) {
+    public List<TripDetailedResponse> getUserTrips(UUID currentUserId) {
         return tripRepository.findByOwnerId(currentUserId).stream()
                 .map(this::buildTripResponse)
                 .toList();
     }
 
     @Override
-    public List<TripResponse> getAllTrips() {
+    public List<TripDetailedResponse> getAllTrips() {
         return tripRepository.findAll().stream()
                 .map(this::buildTripResponse)
                 .toList();
@@ -53,7 +53,7 @@ public class TripServiceImp implements TripService {
 
     @Override
     @Transactional
-    public TripResponse createTrip(UUID currentUserId, TripCreateRequest request) {
+    public TripDetailedResponse createTrip(UUID currentUserId, TripCreateRequest request) {
         var owner = userService.getUserByIdOrThrow(currentUserId);
 
         var departure = geocodingService.geocode(request.departureAddress());
@@ -68,7 +68,7 @@ public class TripServiceImp implements TripService {
 
     @Override
     @Transactional
-    public TripResponse updateTrip(UUID tripId, UUID currentUserId, TripCreateRequest request) {
+    public TripDetailedResponse updateTrip(UUID tripId, UUID currentUserId, TripCreateRequest request) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
         assertTripInStatusPublished(trip);
@@ -142,7 +142,7 @@ public class TripServiceImp implements TripService {
 
     // PRIVATE ————————————————————————————————————————————————————————————
 
-    private TripResponse buildTripResponse(Trip trip) {
+    private TripDetailedResponse buildTripResponse(Trip trip) {
         var profile        = trip.getOwner().getProfile();
         var avatarUrl = profile.getAvatar() != null ? imageService.getReadUrl(profile.getAvatar().getId()) : null;
         var profileSummary = ProfileSummaryResponse.of(
@@ -153,7 +153,7 @@ public class TripServiceImp implements TripService {
                 .map(TripStopResponse::of)
                 .toList();
 
-        return TripResponse.of(trip, profileSummary, stopsResponse);
+        return TripDetailedResponse.of(trip, profileSummary, stopsResponse);
     }
 
     private Trip buildTripEntity(TripCreateRequest request,

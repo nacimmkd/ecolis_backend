@@ -9,7 +9,7 @@ import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelDetailedResponse;
-import com.deliveryplatform.parcels.dto.ParcelResponse;
+import com.deliveryplatform.parcels.dto.ParcelSummaryResponse;
 import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
 import com.deliveryplatform.profiles.dto.ProfileSummaryResponse;
 import com.deliveryplatform.users.User;
@@ -45,14 +45,14 @@ public class ParcelServiceImp implements ParcelService {
     }
 
     @Override
-    public List<ParcelResponse> getUserParcels(UUID userId) {
+    public List<ParcelSummaryResponse> getUserParcels(UUID userId) {
         return parcelRepository.findWithOwnerByUserId(userId).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Override
-    public List<ParcelResponse> getParcels() {
+    public List<ParcelSummaryResponse> getParcels() {
         return parcelRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
@@ -108,10 +108,10 @@ public class ParcelServiceImp implements ParcelService {
 
     // ----------------------------------------------------------------
 
-    private ParcelResponse toResponse(Parcel parcel) {
+    private ParcelSummaryResponse toResponse(Parcel parcel) {
         var thumbnailUrl = resolveThumbnailUrl(parcel);
         var userProfile = resolveOwnerProfileSummary(parcel);
-        return ParcelResponse.of(parcel, userProfile, thumbnailUrl);
+        return ParcelSummaryResponse.of(parcel, userProfile, thumbnailUrl);
     }
 
     private ParcelDetailedResponse toDetailedResponse(Parcel parcel) {

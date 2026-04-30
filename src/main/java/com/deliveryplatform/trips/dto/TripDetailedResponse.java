@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Builder
-public record TripResponse(
+public record TripDetailedResponse(
         UUID tripId,
         ProfileSummaryResponse owner,
         GeocodedAddress departureAddress,
@@ -30,8 +30,8 @@ public record TripResponse(
         List<TripStopResponse> stops
 ) {
 
-    public static TripResponse of(Trip trip, ProfileSummaryResponse owner, List<TripStopResponse> stops) {
-        return TripResponse.builder()
+    public static TripDetailedResponse of(Trip trip, ProfileSummaryResponse owner, List<TripStopResponse> stops) {
+        return TripDetailedResponse.builder()
                 .tripId(trip.getId())
                 .owner(owner)
                 .departureAddress(trip.getDepartureAddress())

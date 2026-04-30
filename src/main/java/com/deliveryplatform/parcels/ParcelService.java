@@ -2,7 +2,7 @@ package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelDetailedResponse;
-import com.deliveryplatform.parcels.dto.ParcelResponse;
+import com.deliveryplatform.parcels.dto.ParcelSummaryResponse;
 import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
 
 import java.util.List;
@@ -14,9 +14,9 @@ public interface ParcelService {
 
     String getConfirmationCode(UUID parcelId, UUID userId);
 
-    List<ParcelResponse> getUserParcels(UUID userId);
+    List<ParcelSummaryResponse> getUserParcels(UUID userId);
 
-    List<ParcelResponse> getParcels();
+    List<ParcelSummaryResponse> getParcels();
 
     ParcelDetailedResponse createParcel(UUID userId, ParcelCreateRequest request);
 

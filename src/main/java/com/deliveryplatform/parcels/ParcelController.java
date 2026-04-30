@@ -2,7 +2,7 @@ package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelDetailedResponse;
-import com.deliveryplatform.parcels.dto.ParcelResponse;
+import com.deliveryplatform.parcels.dto.ParcelSummaryResponse;
 import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
@@ -30,7 +30,7 @@ public class ParcelController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<ParcelResponse>> getMyParcels(
+    public ResponseEntity<List<ParcelSummaryResponse>> getMyParcels(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId()));
     }
@@ -84,7 +84,7 @@ public class ParcelController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<ParcelResponse>> getParcels() {
+    public ResponseEntity<List<ParcelSummaryResponse>> getParcels() {
         return ResponseEntity.ok(parcelService.getParcels());
     }
 

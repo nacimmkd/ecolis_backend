@@ -12,10 +12,9 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Builder
-public record ParcelResponse(
+public record ParcelSummaryResponse(
         UUID parcelId,
         ProfileSummaryResponse owner,
-        String description,
         BigDecimal weightKg,
         ParcelSize size,
         boolean fragile,
@@ -27,11 +26,10 @@ public record ParcelResponse(
         OffsetDateTime createdAt
 ) {
 
-    public static ParcelResponse of(Parcel parcel, ProfileSummaryResponse owner, String thumbnailImageUrl) {
-        return ParcelResponse.builder()
+    public static ParcelSummaryResponse of(Parcel parcel, ProfileSummaryResponse owner, String thumbnailImageUrl) {
+        return ParcelSummaryResponse.builder()
                 .parcelId(parcel.getId())
                 .owner(owner)
-                .description(parcel.getDescription())
                 .weightKg(parcel.getWeightKg())
                 .size(parcel.getSize())
                 .fragile(parcel.isFragile())

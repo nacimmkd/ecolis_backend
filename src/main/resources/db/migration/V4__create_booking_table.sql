@@ -2,20 +2,31 @@ CREATE TABLE bookings (
                           id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                           trip_id         UUID NOT NULL,
                           parcel_id       UUID NOT NULL,
-                          sender_id    UUID NOT NULL,
-                          carrier_id    UUID NOT NULL,
-                          "status"                VARCHAR(20)   NOT NULL DEFAULT 'PENDING'
-                              CHECK ("status" IN ('PENDING', 'ACCEPTED', 'REJECTED', 'PAID','COMPLETED' ,'CANCELLED', 'DISPUTED')),
-                          price           NUMERIC(8, 2),
+                          status             VARCHAR(20)    NOT NULL DEFAULT 'CONFIRMED'
+                              CHECK (status IN ('CONFIRMED', 'PAID', 'COMPLETED', 'CANCELLED')),
+                          price           NUMERIC(10, 2),
 
-                          accepted_at     TIMESTAMPTZ,
+                          confirmed_at     TIMESTAMPTZ DEFAULT NOW(),
+                          paid_at          TIMESTAMPTZ,
                           completed_at    TIMESTAMPTZ,
-                          created_at      TIMESTAMPTZ DEFAULT NOW(),
+                          cancelled_at    TIMESTAMPTZ,
 
                           UNIQUE (trip_id, parcel_id),
 
-                          CONSTRAINT fk_booking_trip FOREIGN KEY (trip_id) REFERENCES trips(id),
-                          CONSTRAINT fk_booking_parcel FOREIGN KEY (parcel_id) REFERENCES parcels(id),
-                          CONSTRAINT fk_booking_sender FOREIGN KEY (sender_id) REFERENCES users(id),
-                          CONSTRAINT fk_booking_carrier FOREIGN KEY (carrier_id) REFERENCES users(id)
+                          CONSTRAINT fk_booking_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE RESTRICT,
+                          CONSTRAINT fk_booking_parcel FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE RESTRICT
+);
+
+
+CREATE TABLE booking_requests (
+                                  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                  trip_id          UUID NOT NULL REFERENCES trips(id)   ON DELETE RESTRICT,
+                                  parcel_id        UUID NOT NULL REFERENCES parcels(id) ON DELETE RESTRICT,
+                                  status           VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
+                                      CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED')),
+                                  rejection_reason TEXT,
+                                  responded_at     TIMESTAMPTZ,
+                                  requested_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+                                  CONSTRAINT uq_booking_request_trip_parcel UNIQUE (trip_id, parcel_id)
 );
