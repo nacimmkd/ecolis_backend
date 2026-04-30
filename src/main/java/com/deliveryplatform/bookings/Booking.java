@@ -1,7 +1,6 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.parcels.Parcel;
-import com.deliveryplatform.reviews.Review;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -13,12 +12,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "bookings",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uq_booking_trip_parcel", columnNames = {"trip_id", "parcel_id"})
-        }
-)
+@Table(name = "bookings")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,51 +25,77 @@ public class Booking {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "trip_id")
+    @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parcel_id")
+    @JoinColumn(name = "parcel_id", nullable = false)
     private Parcel parcel;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
-    private User sender;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "carrier_id")
-    private User carrier;
-
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     @Builder.Default
-    private BookingStatus status = BookingStatus.PENDING;
+    private BookingStatus status = BookingStatus.CONFIRMED;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "accepted_at")
-    private OffsetDateTime acceptedAt;
+    @Column(name = "confirmed_at", columnDefinition = "TIMESTAMPTZ")
+    @Builder.Default
+    private OffsetDateTime confirmedAt = OffsetDateTime.now();
 
-    @Column(name = "completed_at")
+    @Column(name = "paid_at", columnDefinition = "TIMESTAMPTZ")
+    private OffsetDateTime paidAt;
+
+    @Column(name = "completed_at", columnDefinition = "TIMESTAMPTZ")
     private OffsetDateTime completedAt;
 
-    @Column(name = "created_at", updatable = false)
-    @Builder.Default
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    @Column(name = "cancelled_at", columnDefinition = "TIMESTAMPTZ")
+    private OffsetDateTime cancelledAt;
 
+    // ----------------------------------------------------------------
 
-    public boolean isCompleted(){
-        return BookingStatus.COMPLETED.equals(status);
+    public static Booking fromRequest(BookingRequest request) {
+        return Booking.builder()
+                .trip(request.getTrip())
+                .parcel(request.getParcel())
+                .price(request.getPrice())
+                .build();
+    }
+
+    public void pay() {
+        this.status = BookingStatus.PAID;
+        this.paidAt = OffsetDateTime.now();
+    }
+
+    public void complete() {
+        this.status = BookingStatus.COMPLETED;
+        this.completedAt = OffsetDateTime.now();
+    }
+
+    public void cancel() {
+        this.status = BookingStatus.CANCELLED;
+        this.cancelledAt = OffsetDateTime.now();
+    }
+
+    public boolean isCompleted() {
+        return BookingStatus.COMPLETED.equals(this.status);
     }
 
     public boolean involves(UUID userId) {
-        return this.sender.getId().equals(userId) || this.carrier.getId().equals(userId);
+        return this.trip.getOwner().getId().equals(userId)
+                || this.parcel.getOwner().getId().equals(userId);
     }
 
     public User resolveParticipant(UUID userId) {
-        return this.sender.getId().equals(userId) ? this.sender : this.carrier;
+        var parcelOwner = this.parcel.getOwner();
+        var tripOwner   = this.trip.getOwner();
+        return parcelOwner.getId().equals(userId) ? parcelOwner : tripOwner;
     }
 
     public User resolveOtherParticipant(UUID userId) {
-        return this.sender.getId().equals(userId) ? this.carrier : this.sender;
+        var parcelOwner = this.parcel.getOwner();
+        var tripOwner   = this.trip.getOwner();
+        return parcelOwner.getId().equals(userId) ? tripOwner : parcelOwner;
     }
 }

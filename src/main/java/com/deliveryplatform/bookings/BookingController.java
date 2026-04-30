@@ -1,6 +1,7 @@
 package com.deliveryplatform.bookings;
 
-import com.deliveryplatform.bookings.dto.BookingRequest;
+import com.deliveryplatform.bookings.dto.BookingRequestCreateRequest;
+import com.deliveryplatform.bookings.dto.BookingRequestResponse;
 import com.deliveryplatform.bookings.dto.BookingResponse;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -19,38 +20,65 @@ public class BookingController {
 
 
     @GetMapping("/{id}")
-    public BookingResponse getBooking(@PathVariable UUID id){
-        return bookingService.getBookingById(id);
-    }
-
-    @PostMapping
-    public BookingResponse create(
-            @RequestBody BookingRequest request,
-            @AuthenticationPrincipal UserPrincipal user) {
-        return bookingService.create(request , user.getId());
-    }
-
-    @PatchMapping("/{id}/accept")
-    public ResponseEntity<Void> accept(
+    public BookingResponse getBooking(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.accept(id, user.getId());
+        return bookingService.getBooking(id, user.getId());
+    }
+
+    @GetMapping("/requests/{id}")
+    public BookingRequestResponse getBookingRequest(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        return bookingService.getBookingRequest(id, user.getId());
+    }
+
+
+    @PostMapping("/requests")
+    public BookingRequestResponse createRequest(
+            @RequestBody BookingRequestCreateRequest request,
+            @AuthenticationPrincipal UserPrincipal user) {
+        return bookingService.createRequest(request, user.getId());
+    }
+
+    @PatchMapping("/requests/{id}/cancel")
+    public ResponseEntity<Void> cancelRequest(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        bookingService.cancelRequest(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/reject")
-    public ResponseEntity<Void> reject(
+
+    @PatchMapping("/requests/{id}/accept")
+    public BookingResponse acceptRequest(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.reject(id, user.getId());
+        return bookingService.acceptRequest(id, user.getId());
+    }
+
+    @PatchMapping("/requests/{id}/reject")
+    public ResponseEntity<Void> rejectRequest(
+            @PathVariable UUID id,
+            @RequestParam(required = false) String reason,
+            @AuthenticationPrincipal UserPrincipal user) {
+        bookingService.rejectRequest(id, user.getId(), reason);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancel(
+    public ResponseEntity<Void> cancelBooking(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.cancel(id, user.getId());
+        bookingService.cancelBooking(id, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/pay")
+    public ResponseEntity<Void> pay(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        bookingService.pay(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -61,6 +89,4 @@ public class BookingController {
         bookingService.complete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
-
-
 }
