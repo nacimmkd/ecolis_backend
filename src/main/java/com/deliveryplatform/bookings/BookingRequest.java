@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -36,9 +35,6 @@ public class BookingRequest {
     @Builder.Default
     private BookingRequestStatus status = BookingRequestStatus.PENDING;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
-
     @Column(name = "rejection_reason")
     private String rejectionReason;
 
@@ -46,7 +42,7 @@ public class BookingRequest {
     private OffsetDateTime respondedAt;
 
     @CreationTimestamp
-    @Column(name = "requested_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ")
+    @Column(name = "requested_at", nullable = false, updatable = false)
     private OffsetDateTime requestedAt;
 
     // ----------------------------------------------------------------
@@ -55,7 +51,6 @@ public class BookingRequest {
         return BookingRequest.builder()
                 .trip(trip)
                 .parcel(parcel)
-                .price(parcel.getWeightKg().multiply(trip.getPricePerKg()))
                 .build();
     }
 
@@ -79,13 +74,8 @@ public class BookingRequest {
         return BookingRequestStatus.PENDING.equals(this.status);
     }
 
-    public boolean isTerminal() {
-        return status == BookingRequestStatus.ACCEPTED
-                || status == BookingRequestStatus.REJECTED
-                || status == BookingRequestStatus.CANCELLED;
-    }
-
     public UUID getSenderId()  { return this.parcel.getOwner().getId(); }
+
     public UUID getCarrierId() { return this.trip.getOwner().getId();   }
 
     public boolean involves(UUID userId) {

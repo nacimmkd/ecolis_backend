@@ -5,7 +5,6 @@ import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -59,7 +58,7 @@ public class Booking {
         return Booking.builder()
                 .trip(request.getTrip())
                 .parcel(request.getParcel())
-                .price(request.getPrice())
+                .price(request.getParcel().getWeightKg().multiply(request.getTrip().getPricePerKg()))
                 .build();
     }
 
