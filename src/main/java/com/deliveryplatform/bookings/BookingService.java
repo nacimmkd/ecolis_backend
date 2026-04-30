@@ -7,13 +7,10 @@ import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelRepository;
-import com.deliveryplatform.parcels.ParcelServiceImp;
 import com.deliveryplatform.parcels.ParcelStatus;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.trips.TripRepository;
-import com.deliveryplatform.trips.TripServiceImp;
 import com.deliveryplatform.users.User;
-import com.deliveryplatform.users.UserServiceImp;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,7 +50,7 @@ public class BookingService {
         assertParcelOwner(parcel, requesterId);
 
         var trip = tripRepository.findById(request.tripId()).orElseThrow(() -> new ResourceNotFoundException("Trip Not Found"));
-        var requester = parcel.getUser();
+        var requester = parcel.getOwner();
         var requested = trip.getOwner();
         var booking = buildBooking(parcel, trip, requester , requested);
 
@@ -150,7 +147,7 @@ public class BookingService {
     }
 
     private void assertParcelOwner(Parcel parcel, UUID requesterId) {
-        if (!parcel.getUser().getId().equals(requesterId)) {
+        if (!parcel.getOwner().getId().equals(requesterId)) {
             throw new UnauthorizedActionException("Requester is not the owner of the parcel");
         }
     }

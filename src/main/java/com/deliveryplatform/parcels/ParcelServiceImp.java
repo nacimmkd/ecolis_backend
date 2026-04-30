@@ -61,9 +61,9 @@ public class ParcelServiceImp implements ParcelService {
     @Override
     @Transactional
     public ParcelDetailedResponse createParcel(UUID userId, ParcelCreateRequest request) {
-        var user   = getUserByIdOrThrow(userId);
+        var owner   = getUserByIdOrThrow(userId);
         var parcel = toEntity(request);
-        parcel.setUser(user);
+        parcel.setOwner(owner);
 
         updateParcelThumbnail(parcel, request.thumbnailImageId());
         updateParcelImages(parcel, request.imageIds());
@@ -129,7 +129,7 @@ public class ParcelServiceImp implements ParcelService {
 
 
     private ProfileSummaryResponse resolveOwnerProfileSummary(Parcel parcel){
-        var profile = parcel.getUser().getProfile();
+        var profile = parcel.getOwner().getProfile();
         var avatar = profile.getAvatar();
         if (avatar == null || !avatar.isConfirmed()) return ProfileSummaryResponse.of(profile);
         return ProfileSummaryResponse.of(
@@ -185,14 +185,10 @@ public class ParcelServiceImp implements ParcelService {
 
     private void updateParcelImages(Parcel parcel, List<UUID> imageIds) {
         if (imageIds == null) return;
-        if (imageIds.isEmpty()) {
-            parcel.clearImages();
-            return;
-        }
-        var confirmedImages = imageService.getImageEntities(imageIds).stream()
-                .filter(Image::isConfirmed)
-                .toList();
-        parcel.setImages(confirmedImages);
+        parcel.clearImages();
+        imageService.getImageEntities(imageIds).forEach(image -> {
+            if (image.isConfirmed()) parcel.addImage(image);
+        });
     }
 
     private Parcel getParcelByIdOrThrow(UUID id) {

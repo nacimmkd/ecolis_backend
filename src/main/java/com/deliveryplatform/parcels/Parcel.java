@@ -5,6 +5,7 @@ import com.deliveryplatform.images.Image;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@SQLRestriction("deleted = false")
 public class Parcel {
 
     @Id
@@ -27,7 +29,7 @@ public class Parcel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private User owner;
 
     private String description;
 
@@ -72,8 +74,7 @@ public class Parcel {
     @JoinColumn(name = "thumbnail_image_id")
     private Image thumbnailImage;
 
-    @Builder.Default
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "parcel_images", joinColumns = @JoinColumn(name = "parcel_id"), inverseJoinColumns = @JoinColumn(name = "image_id"))
     private List<Image> images = new ArrayList<>();
 
@@ -95,7 +96,7 @@ public class Parcel {
     }
 
     public boolean isOwner(UUID userId) {
-        return this.user.getId().equals(userId);
+        return this.owner.getId().equals(userId);
     }
 
     public void clearImages() { images.clear();}
@@ -106,6 +107,10 @@ public class Parcel {
         // images
         this.thumbnailImage = null;
         this.images.clear();
+    }
+
+    public void addImage(Image image) {
+        this.images.add(image);
     }
 
 
