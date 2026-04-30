@@ -2,15 +2,11 @@ package com.deliveryplatform.users;
 
 
 import com.deliveryplatform.profiles.Profile;
-import com.deliveryplatform.trips.Trip;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -43,7 +39,7 @@ public class User {
 
     @Column(name = "deleted")
     @Builder.Default
-    private boolean isDeleted = false;
+    private boolean deleted = false;
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
@@ -54,6 +50,12 @@ public class User {
     public void setProfile(Profile profile) {
         this.profile = profile;
         profile.setUser(this);
+    }
+
+    public void softDelete(){
+        this.deleted = true;
+        this.setEmail("_deleted_" + UUID.randomUUID() + "_" + this.getEmail());
+        this.setDeletedAt(OffsetDateTime.now());
     }
 
 }

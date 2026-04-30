@@ -28,6 +28,8 @@ CREATE TABLE parcels (
 
                          code_otp                VARCHAR(20),
                          created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                         deleted               BOOLEAN       DEFAULT FALSE,
+                         deleted_at            TIMESTAMPTZ,
 
                          CONSTRAINT fk_parcels_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 );

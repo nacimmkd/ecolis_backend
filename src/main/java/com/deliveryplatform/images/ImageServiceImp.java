@@ -78,6 +78,16 @@ public class ImageServiceImp implements ImageService {
     }
 
 
+    @Override
+    public void removeAll(List<UUID> imageIds) {
+        if (imageIds == null || imageIds.isEmpty()) return;
+
+        var images = imageRepository.findAllById(imageIds);
+        images.forEach(image -> s3StorageService.delete(image.getKey()));
+        imageRepository.deleteAll(images);
+    }
+
+
     // ------------------------------------------------------
 
     private MediaType resolveMediaType(String content) {

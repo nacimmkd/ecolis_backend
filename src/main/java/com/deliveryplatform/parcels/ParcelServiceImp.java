@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -75,7 +76,7 @@ public class ParcelServiceImp implements ParcelService {
     public ParcelDetailedResponse updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
-        assertParcelIsAvailable(parcel);
+        assertParcelIsInStatusAvailable(parcel);
 
         applyUpdates(parcel, request);
         updateParcelThumbnail(parcel, request.thumbnailImageId());
@@ -89,8 +90,20 @@ public class ParcelServiceImp implements ParcelService {
     public void deleteParcel(UUID parcelId, UUID userId) {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
-        assertParcelIsAvailable(parcel);
-        parcelRepository.delete(parcel);
+        assertParcelIsInStatusAvailable(parcel);
+
+        // remove parcel images
+        var imageIds = parcel.getImages().stream()
+                .map(Image::getId)
+                .collect(Collectors.toList());
+
+        if (parcel.getThumbnailImage() != null) {
+            imageIds.add(parcel.getThumbnailImage().getId());
+        }
+
+        parcel.softDelete();
+        imageService.removeAll(imageIds);
+        parcelRepository.save(parcel);
     }
 
     // ----------------------------------------------------------------
@@ -197,7 +210,7 @@ public class ParcelServiceImp implements ParcelService {
             throw new UnauthorizedActionException("User is not owner of this parcel");
     }
 
-    private void assertParcelIsAvailable(Parcel parcel) {
+    private void assertParcelIsInStatusAvailable(Parcel parcel) {
         if (!parcel.isAvailable())
             throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
     }

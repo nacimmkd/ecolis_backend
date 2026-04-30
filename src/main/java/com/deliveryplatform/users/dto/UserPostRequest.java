@@ -27,7 +27,7 @@ public record UserPostRequest(
                 .password(userRequest.password)
                 .isVerified(false)
                 .role(Role.USER)
-                .isDeleted(false)
+                .deleted(false)
                 .build();
     }
 }

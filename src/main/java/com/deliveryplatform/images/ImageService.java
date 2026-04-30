@@ -15,4 +15,5 @@ public interface ImageService {
     String getReadUrl(UUID id);
     ImageResponse confirmUpload(String key, UUID uploadedBy);
     void remove(UUID imageId, UUID userId);
+    void removeAll(List<UUID> imageIds);
 }

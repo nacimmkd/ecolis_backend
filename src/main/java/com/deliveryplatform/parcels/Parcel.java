@@ -82,6 +82,13 @@ public class Parcel {
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
+    @Column(name = "deleted")
+    @Builder.Default
+    private boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
 
     public boolean isAvailable() {
         return this.status == ParcelStatus.PUBLISHED;
@@ -91,8 +98,14 @@ public class Parcel {
         return this.user.getId().equals(userId);
     }
 
-    public void clearImages() {
-        images.clear();
+    public void clearImages() { images.clear();}
+
+    public void softDelete() {
+        this.deleted = true;
+        this.deletedAt = OffsetDateTime.now();
+        // images
+        this.thumbnailImage = null;
+        this.images.clear();
     }
 
 

@@ -19,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -118,11 +117,8 @@ public class UserServiceImp implements UserService {
     @Transactional
     public void softDelete(UUID id) {
         User user = getUserByIdOrThrow(id);
-
-        user.setDeleted(true);
-        user.setEmail("_deleted_" + UUID.randomUUID() + "_" + user.getEmail());
-        user.setDeletedAt(OffsetDateTime.now());
-
+        user.softDelete();
+        // delete related things later (profile, parcels,trips ...)
         authService.logout(user.getId());
         userRepository.save(user);
     }
