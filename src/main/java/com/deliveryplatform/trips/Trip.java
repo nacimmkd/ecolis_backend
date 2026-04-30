@@ -5,8 +5,10 @@ import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("deleted = false")
 public class Trip {
 
     @Id
@@ -88,20 +91,22 @@ public class Trip {
     private List<TripStop> stops = new ArrayList<>();
 
 
+    @Builder.Default
+    private boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
+
     public void addStop(TripStop stop) {
         stops.add(stop);
         stop.setTrip(this);
     }
 
-    public void addStops(List<TripStop> stops) {
-        for (var stop : stops) {
-            addStop(stop);
-        }
-    }
-
     public void updateStops(List<TripStop> newStops) {
-        clearStops();
-        addStops(newStops);
+        this.stops.clear();
+        newStops.forEach(stop -> stop.setTrip(this));
+        this.stops.addAll(newStops);
     }
 
     public void removeStop(TripStop stop) {
@@ -109,13 +114,18 @@ public class Trip {
         stop.setTrip(null);
     }
 
-    public void clearStops() {
-        stops.clear();
-    }
-
     public void reorderStops() {
         for (int i = 0; i < stops.size(); i++) {
             stops.get(i).setStopOrder(i + 1);
         }
+    }
+
+    public void softDelete(){
+        this.stops.forEach(stop -> {
+            stop.setDeleted(true);
+            stop.setDeletedAt(OffsetDateTime.now());
+        });
+        this.deleted = true;
+        this.deletedAt = OffsetDateTime.now();
     }
 }

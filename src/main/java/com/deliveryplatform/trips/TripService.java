@@ -22,8 +22,6 @@ public interface TripService {
 
     void deleteTrip(UUID tripId, UUID userId);
 
-    void updateStatus(UUID tripId, TripStatus status);
-
     TripStopResponse addStop(UUID tripId, UUID userId, TripStopRequest request);
 
     TripStopResponse updateStop(UUID stopId, UUID tripId, UUID userId, TripStopRequest request);

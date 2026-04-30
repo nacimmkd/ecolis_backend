@@ -99,17 +99,9 @@ public class TripServiceImp implements TripService {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
         assertTripInStatusPublished(trip);
-        tripRepository.delete(trip);
-    }
-
-    @Override
-    @Transactional
-    public void updateStatus(UUID tripId, TripStatus status) {
-        var trip = getTripByIdOrThrow(tripId);
-        trip.setStatus(status);
+        trip.softDelete();
         tripRepository.save(trip);
     }
-
 
     @Override
     @Transactional

@@ -5,6 +5,9 @@ import com.deliveryplatform.trips.dto.TripStopRequest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
@@ -14,6 +17,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("deleted = false")
 public class TripStop {
 
     @Id
@@ -30,6 +34,12 @@ public class TripStop {
 
     @Embedded
     private GeocodedAddress address;
+
+    @Builder.Default
+    private boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
 
 
     public static TripStop of(TripStopRequest request, GeocodedAddress address) {

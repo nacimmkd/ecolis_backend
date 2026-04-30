@@ -29,6 +29,8 @@ CREATE TABLE "trips" (
                          instant_booking       BOOLEAN NOT NULL DEFAULT FALSE,
                          notes                 TEXT,
                          created_at            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+                         deleted               BOOLEAN       DEFAULT FALSE,
+                         deleted_at            TIMESTAMPTZ,
 
                          PRIMARY KEY (id),
                          FOREIGN KEY (user_id) REFERENCES "users"(id) ON DELETE RESTRICT
@@ -47,8 +49,9 @@ CREATE TABLE "trip_stops" (
                               country      VARCHAR(60)   NOT NULL,
                               latitude     DOUBLE PRECISION,
                               longitude    DOUBLE PRECISION,
+                              deleted               BOOLEAN       DEFAULT FALSE,
+                              deleted_at            TIMESTAMPTZ,
 
                               PRIMARY KEY (id),
-                              FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE ON UPDATE CASCADE,
-                              UNIQUE (trip_id, stop_order)
+                              FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE ON UPDATE CASCADE
 );

@@ -51,7 +51,7 @@ public class TripController {
         return ResponseEntity.created(uri).body(trip);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<TripResponse> updateTrip(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
@@ -93,7 +93,7 @@ public class TripController {
     }
 
 
-    @PutMapping("/{tripId}/stops/{stopId}")
+    @PatchMapping("/{tripId}/stops/{stopId}")
     public ResponseEntity<TripStopResponse> updateTripStop(
             @PathVariable UUID tripId,
             @PathVariable UUID stopId,
@@ -112,16 +112,6 @@ public class TripController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<TripResponse>> getAllTrips() {
         return ResponseEntity.ok(tripService.getAllTrips());
-    }
-
-    @PutMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> updateStatus(
-            @PathVariable UUID id,
-            @RequestParam TripStatus status
-    ) {
-        tripService.updateStatus(id, status);
-        return ResponseEntity.noContent().build();
     }
 
 
