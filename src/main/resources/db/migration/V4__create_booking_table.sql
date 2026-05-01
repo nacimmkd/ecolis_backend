@@ -6,6 +6,9 @@ CREATE TABLE bookings (
                               CHECK (status IN ('CONFIRMED', 'PAID', 'COMPLETED', 'CANCELLED')),
                           price           NUMERIC(10, 2),
 
+                          pickup_code      VARCHAR(20),
+                          dropoff_code     VARCHAR(20),
+
                           confirmed_at     TIMESTAMPTZ DEFAULT NOW(),
                           paid_at          TIMESTAMPTZ,
                           completed_at    TIMESTAMPTZ,

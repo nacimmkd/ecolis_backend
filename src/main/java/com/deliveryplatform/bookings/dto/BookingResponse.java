@@ -2,6 +2,7 @@ package com.deliveryplatform.bookings.dto;
 
 import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingStatus;
+import com.deliveryplatform.parcels.dto.ParcelSummaryResponse;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -10,7 +11,7 @@ import java.util.UUID;
 public record BookingResponse(
         UUID bookingId,
         UUID tripId,
-        UUID parcelId,
+        ParcelSummaryResponse parcel,
         BigDecimal price,
         BookingStatus status,
         OffsetDateTime confirmedAt,
@@ -19,11 +20,11 @@ public record BookingResponse(
         OffsetDateTime cancelledAt
 ) {
 
-    public static BookingResponse of(Booking booking) {
+    public static BookingResponse of(Booking booking, ParcelSummaryResponse parcel) {
         return new BookingResponse(
                 booking.getId(),
                 booking.getTrip().getId(),
-                booking.getParcel().getId(),
+                parcel,
                 booking.getPrice(),
                 booking.getStatus(),
                 booking.getConfirmedAt(),

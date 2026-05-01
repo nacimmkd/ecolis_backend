@@ -7,15 +7,21 @@ import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.ParcelStatus;
+import com.deliveryplatform.parcels.dto.ParcelSummaryResponse;
+import com.deliveryplatform.profiles.Profile;
+import com.deliveryplatform.profiles.dto.ProfileSummaryResponse;
 import com.deliveryplatform.trips.TripRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -25,40 +31,14 @@ public class BookingServiceImp implements BookingService {
     private final BookingRequestRepository bookingRequestRepository;
     private final ParcelRepository parcelRepository;
     private final TripRepository tripRepository;
+    private final ImageService imageService;
 
-
-    @Override
-    public BookingResponse getBooking(UUID bookingId, UUID currentUserId) {
-        var booking = getBookingByIdOrThrow(bookingId);
-        assertInvolves(booking.involves(currentUserId));
-        return BookingResponse.of(booking);
-    }
 
     @Override
     public BookingRequestResponse getBookingRequest(UUID requestId, UUID currentUserId) {
         var request = getRequestByIdOrThrow(requestId);
         assertInvolves(request.involves(currentUserId));
-        return BookingRequestResponse.of(request);
-    }
-
-    @Override
-    public List<BookingRequestResponse> getTripRequests(UUID tripId, UUID currentUserId) {
-        var trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
-        assertCarrier(trip.getOwner().getId(), currentUserId);
-        return bookingRequestRepository.findByTripId(tripId).stream()
-                .map(BookingRequestResponse::of)
-                .toList();
-    }
-
-    @Override
-    public List<BookingRequestResponse> getParcelRequests(UUID parcelId, UUID currentUserId) {
-        var parcel = parcelRepository.findById(parcelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
-        assertParcelOwner(parcel.getOwner().getId(), currentUserId);
-        return bookingRequestRepository.findByParcelId(parcelId).stream()
-                .map(BookingRequestResponse::of)
-                .toList();
+        return buildBookingRequestResponse(request);
     }
 
 
@@ -78,7 +58,6 @@ public class BookingServiceImp implements BookingService {
 
         var bookingRequest = BookingRequest.create(trip, parcel);
 
-        // if trip is instant booking we accept and create booking
         if (trip.isInstantBooking()) {
             bookingRequest.accept();
             parcel.setStatus(ParcelStatus.BOOKED);
@@ -88,21 +67,18 @@ public class BookingServiceImp implements BookingService {
             bookingRequestRepository.save(bookingRequest);
         }
 
-        return BookingRequestResponse.of(bookingRequest);
+        return buildBookingRequestResponse(bookingRequest);
     }
 
     @Override
     @Transactional
     public void cancelRequest(UUID requestId, UUID userId) {
         var request = getRequestByIdOrThrow(requestId);
-
         assertInvolves(request.involves(userId));
         assertRequestIsPending(request);
-
         request.cancel();
         bookingRequestRepository.save(request);
     }
-
 
     @Override
     @Transactional
@@ -116,29 +92,34 @@ public class BookingServiceImp implements BookingService {
         request.getParcel().setStatus(ParcelStatus.BOOKED);
         bookingRequestRepository.save(request);
 
-        return BookingResponse.of(bookingRepository.save(Booking.fromRequest(request)));
+        var booking = bookingRepository.save(Booking.fromRequest(request));
+        return buildBookingResponse(booking);
     }
 
     @Override
     @Transactional
     public void rejectRequest(UUID requestId, UUID carrierId, String reason) {
         var request = getRequestByIdOrThrow(requestId);
-
         assertCarrier(request.getCarrierId(), carrierId);
         assertRequestIsPending(request);
-
         request.reject(reason);
         bookingRequestRepository.save(request);
+    }
+
+
+    @Override
+    public BookingResponse getBooking(UUID bookingId, UUID currentUserId) {
+        var booking = getBookingByIdOrThrow(bookingId);
+        assertInvolves(booking.involves(currentUserId));
+        return buildBookingResponse(booking);
     }
 
     @Override
     @Transactional
     public void cancelBooking(UUID bookingId, UUID userId) {
         var booking = getBookingByIdOrThrow(bookingId);
-
         assertInvolves(booking.involves(userId));
         assertBookingInStatus(booking, BookingStatus.CONFIRMED, "Only CONFIRMED bookings can be cancelled");
-
         booking.cancel();
         booking.getParcel().setStatus(ParcelStatus.PUBLISHED);
         bookingRepository.save(booking);
@@ -148,10 +129,8 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public void pay(UUID bookingId, UUID senderId) {
         var booking = getBookingByIdOrThrow(bookingId);
-
         assertSender(booking.getParcel().getOwner().getId(), senderId);
         assertBookingInStatus(booking, BookingStatus.CONFIRMED, "Only CONFIRMED bookings can be paid");
-
         booking.pay();
         bookingRepository.save(booking);
     }
@@ -160,17 +139,54 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public void complete(UUID bookingId, UUID carrierId) {
         var booking = getBookingByIdOrThrow(bookingId);
-
         assertCarrier(booking.getTrip().getOwner().getId(), carrierId);
         assertBookingInStatus(booking, BookingStatus.PAID, "Only PAID bookings can be completed");
-
         booking.complete();
         booking.getParcel().setStatus(ParcelStatus.DELIVERED);
         bookingRepository.save(booking);
     }
 
+    // PRIVATE ─────────────────────────────────────────────────────────────────
 
-    // PRIVATE ----------------------------------------------------------------------------
+    private BookingResponse buildBookingResponse(Booking booking) {
+        var parcel = booking.getParcel();
+        var parcelOwner = parcel.getOwner();
+        var profile = parcelOwner.getProfile();
+
+        String avatarUrl = Optional.ofNullable(profile)
+                .map(Profile::getAvatar)
+                .map(avatar -> imageService.getReadUrl(avatar.getId()))
+                .orElse(null);
+
+        String thumbnailUrl = Optional.ofNullable(parcel.getThumbnailImage())
+                .map(img -> imageService.getReadUrl(img.getId()))
+                .orElse(null);
+
+        var userProfileResponse = ProfileSummaryResponse.of(profile, avatarUrl);
+        var parcelResponse = ParcelSummaryResponse.of(parcel, userProfileResponse, thumbnailUrl);
+
+        return BookingResponse.of(booking, parcelResponse);
+    }
+
+    private BookingRequestResponse buildBookingRequestResponse(BookingRequest request) {
+        var parcel = request.getParcel();
+        var parcelOwner = parcel.getOwner();
+        var profile = parcelOwner.getProfile();
+
+        String avatarUrl = Optional.ofNullable(profile)
+                .map(Profile::getAvatar)
+                .map(avatar -> imageService.getReadUrl(avatar.getId()))
+                .orElse(null);
+
+        String thumbnailUrl = Optional.ofNullable(parcel.getThumbnailImage())
+                .map(img -> imageService.getReadUrl(img.getId()))
+                .orElse(null);
+
+        var userProfileResponse = ProfileSummaryResponse.of(profile, avatarUrl);
+        var parcelResponse = ParcelSummaryResponse.of(parcel, userProfileResponse, thumbnailUrl);
+
+        return BookingRequestResponse.of(request, parcelResponse);
+    }
 
     private Booking getBookingByIdOrThrow(UUID id) {
         return bookingRepository.findById(id)
@@ -189,46 +205,39 @@ public class BookingServiceImp implements BookingService {
     }
 
     private void assertParcelOwner(UUID ownerId, UUID requesterId) {
-        if (!ownerId.equals(requesterId)) {
+        if (!ownerId.equals(requesterId))
             throw new UnauthorizedActionException("You are not the owner of this parcel");
-        }
     }
 
     private void assertParcelAvailable(ParcelStatus status) {
-        if (!ParcelStatus.PUBLISHED.equals(status)) {
+        if (!ParcelStatus.PUBLISHED.equals(status))
             throw new InvalidDomainStateException("Parcel is not available for booking");
-        }
     }
 
     private void assertCarrier(UUID carrierId, UUID userId) {
-        if (!carrierId.equals(userId)) {
+        if (!carrierId.equals(userId))
             throw new UnauthorizedActionException("You are not the carrier of this trip");
-        }
     }
 
     private void assertSender(UUID senderId, UUID userId) {
-        if (!senderId.equals(userId)) {
+        if (!senderId.equals(userId))
             throw new UnauthorizedActionException("You are not the sender of this booking");
-        }
     }
 
     private void assertInvolves(boolean involves) {
-        if (!involves) {
+        if (!involves)
             throw new UnauthorizedActionException("You are not involved in this booking");
-        }
     }
 
     private void assertRequestIsPending(BookingRequest request) {
-        if (!request.isPending()) {
+        if (!request.isPending())
             throw new InvalidDomainStateException(
                     "Booking request is not pending, current status: " + request.getStatus()
             );
-        }
     }
 
     private void assertBookingInStatus(Booking booking, BookingStatus expected, String message) {
-        if (!booking.getStatus().equals(expected)) {
+        if (!booking.getStatus().equals(expected))
             throw new InvalidDomainStateException(message);
-        }
     }
 }

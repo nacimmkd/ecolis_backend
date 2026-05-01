@@ -13,10 +13,6 @@ public interface BookingService {
 
     BookingRequestResponse getBookingRequest(UUID requestId, UUID currentUserId);
 
-    List<BookingRequestResponse> getTripRequests(UUID tripId, UUID currentUserId);
-
-    List<BookingRequestResponse> getParcelRequests(UUID parcelId, UUID currentUserId);
-
     BookingRequestResponse createRequest(BookingRequestCreateRequest dto, UUID senderId);
 
     void cancelRequest(UUID requestId, UUID userId);

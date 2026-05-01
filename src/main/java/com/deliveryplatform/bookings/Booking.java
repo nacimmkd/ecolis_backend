@@ -39,6 +39,12 @@ public class Booking {
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "pickup_code")
+    private String pickupCode;
+
+    @Column(name = "dropoff_code")
+    private String dropOffCode;
+
     @Column(name = "confirmed_at", columnDefinition = "TIMESTAMPTZ")
     @Builder.Default
     private OffsetDateTime confirmedAt = OffsetDateTime.now();
