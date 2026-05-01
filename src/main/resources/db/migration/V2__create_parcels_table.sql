@@ -26,7 +26,6 @@ CREATE TABLE parcels (
                          status              VARCHAR(20) NOT NULL DEFAULT 'PUBLISHED'
                              CHECK (status IN ('PUBLISHED','BOOKED','PICKED_UP','IN_TRANSIT','DELIVERED','CANCELLED')),
 
-                         code_otp                VARCHAR(20),
                          created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                          deleted               BOOLEAN       DEFAULT FALSE,
                          deleted_at            TIMESTAMPTZ,

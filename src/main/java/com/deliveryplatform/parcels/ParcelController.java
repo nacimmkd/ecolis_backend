@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -33,16 +32,6 @@ public class ParcelController {
     public ResponseEntity<List<ParcelSummaryResponse>> getMyParcels(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId()));
-    }
-
-    @GetMapping("/{id}/confirmation-code") // private
-    public ResponseEntity<Map<String,String>> getConfirmationCode(
-            @PathVariable UUID id,
-            @AuthenticationPrincipal UserPrincipal user
-    ) {
-        return ResponseEntity.ok(
-                Map.of("codeOTP",parcelService.getConfirmationCode(id,user.getId())
-                ));
     }
 
 

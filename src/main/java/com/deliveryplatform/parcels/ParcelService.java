@@ -12,8 +12,6 @@ public interface ParcelService {
 
     ParcelDetailedResponse getParcel(UUID id);
 
-    String getConfirmationCode(UUID parcelId, UUID userId);
-
     List<ParcelSummaryResponse> getUserParcels(UUID userId);
 
     List<ParcelSummaryResponse> getParcels();

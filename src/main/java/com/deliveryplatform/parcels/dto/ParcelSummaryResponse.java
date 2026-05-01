@@ -18,7 +18,6 @@ public record ParcelSummaryResponse(
         BigDecimal weightKg,
         ParcelSize size,
         boolean fragile,
-        boolean requireCode,
         GeocodedAddress pickupAddress,
         GeocodedAddress dropoffAddress,
         ParcelStatus status,
@@ -33,7 +32,6 @@ public record ParcelSummaryResponse(
                 .weightKg(parcel.getWeightKg())
                 .size(parcel.getSize())
                 .fragile(parcel.isFragile())
-                .requireCode(parcel.getCodeOTP() != null)
                 .pickupAddress(parcel.getPickupAddress())
                 .dropoffAddress(parcel.getDropoffAddress())
                 .status(parcel.getStatus())

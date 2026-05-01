@@ -21,8 +21,6 @@ public record ParcelUpdateRequest(
 
         Boolean fragile,
 
-        Boolean requireCode,
-
         @Valid Address pickupAddress,
 
         @Valid Address dropoffAddress,

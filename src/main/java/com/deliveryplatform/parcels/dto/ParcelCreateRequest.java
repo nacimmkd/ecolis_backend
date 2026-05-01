@@ -23,8 +23,6 @@ public record ParcelCreateRequest(
 
         boolean fragile,
 
-        Boolean requireCode,
-
         @NotNull @Valid
         Address pickupAddress,
 

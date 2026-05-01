@@ -37,12 +37,6 @@ public class ParcelServiceImp implements ParcelService {
         return toDetailedResponse(parcel);
     }
 
-    @Override
-    public String getConfirmationCode(UUID parcelId, UUID userId) {
-        var parcel = getParcelByIdOrThrow(parcelId);
-        assertOwnership(parcel, userId);
-        return parcel.getCodeOTP();
-    }
 
     @Override
     public List<ParcelSummaryResponse> getUserParcels(UUID userId) {
@@ -152,9 +146,6 @@ public class ParcelServiceImp implements ParcelService {
                 .weightKg(request.weightKg())
                 .size(request.size())
                 .fragile(request.fragile())
-                .codeOTP(Boolean.TRUE.equals(request.requireCode())
-                        ? CodeGeneratorUtil.generateParcelCode()
-                        : null)
                 .pickupAddress(geocodingService.geocode(request.pickupAddress()))
                 .dropoffAddress(geocodingService.geocode(request.dropoffAddress()))
                 .build();
@@ -167,14 +158,6 @@ public class ParcelServiceImp implements ParcelService {
         if (request.fragile()       != null) parcel.setFragile(request.fragile());
         if (request.pickupAddress() != null) parcel.setPickupAddress(geocodingService.geocode(request.pickupAddress()));
         if (request.dropoffAddress()!= null) parcel.setDropoffAddress(geocodingService.geocode(request.dropoffAddress()));
-
-        if (request.requireCode() != null) {
-            if (Boolean.TRUE.equals(request.requireCode()) && parcel.getCodeOTP() == null) {
-                parcel.setCodeOTP(CodeGeneratorUtil.generateParcelCode());
-            } else if (Boolean.FALSE.equals(request.requireCode())) {
-                parcel.setCodeOTP(null);
-            }
-        }
     }
 
     private void updateParcelThumbnail(Parcel parcel, UUID thumbnailImageId) {
