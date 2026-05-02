@@ -1,37 +1,19 @@
 package com.deliveryplatform.profiles.dto;
 
 
-import com.deliveryplatform.profiles.Profile;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 
 public record ProfileSummaryResponse(
-        UUID id,
+        UUID profileId,
         String firstName,
         String lastName,
-        String avatarUrl,
-        BigDecimal avgRating
+        BigDecimal avgRating,
+        String avatarUrl
 ) {
 
-    public static ProfileSummaryResponse of(Profile profile) {
-        return new ProfileSummaryResponse(
-                profile.getId(),
-                profile.getFirstName(),
-                profile.getLastName(),
-                null,
-                profile.getAvgRating()
-        );
-    }
-
-
-    public static ProfileSummaryResponse of(Profile profile, String avatarUrl) {
-        return new ProfileSummaryResponse(
-                profile.getId(),
-                profile.getFirstName(),
-                profile.getLastName(),
-                avatarUrl,
-                profile.getAvgRating()
-        );
+    public ProfileSummaryResponse withAvatarUrl(String avatarUrl) {
+        return new ProfileSummaryResponse(profileId, firstName, lastName,
+                avgRating, avatarUrl);
     }
 }

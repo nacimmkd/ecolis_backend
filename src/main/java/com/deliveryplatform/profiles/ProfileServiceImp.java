@@ -3,7 +3,6 @@ package com.deliveryplatform.profiles;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.dto.ProfilePatchRequest;
-import com.deliveryplatform.profiles.dto.ProfilePostRequest;
 import com.deliveryplatform.profiles.dto.ProfileResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,54 +15,44 @@ import java.util.UUID;
 public class ProfileServiceImp implements ProfileService {
 
     private final ProfileRepository profileRepository;
+    private final ProfileResolver profileResolver;
     private final ImageService imageService;
 
     @Override
     public ProfileResponse getUserProfile(UUID userId) {
-        var profile = getByIdOrThrow(userId); // userId and profileId are the same
-
-        if (profile.getAvatar() != null && profile.getAvatar().isConfirmed()) {
-            var avatarUrl = imageService.getReadUrl(profile.getAvatar().getId());
-            return ProfileResponse.of(profile, avatarUrl);
-        }
-
-        return ProfileResponse.of(profile);
+        return profileResolver.resolve(getByIdOrThrow(userId));
     }
 
     @Override
     @Transactional
     public ProfileResponse updateProfile(UUID userId, ProfilePatchRequest request) {
-        var profile = getByIdOrThrow(userId); // userId and profileId are the same
+        var profile = getByIdOrThrow(userId);
 
-        if(request.firstName() != null) profile.setFirstName(request.firstName());
-        if(request.lastName() != null) profile.setLastName(request.lastName());
-        if(request.phone() != null) profile.setPhone(request.phone());
+        if (request.firstName() != null) profile.setFirstName(request.firstName());
+        if (request.lastName() != null)  profile.setLastName(request.lastName());
+        if (request.phone() != null)     profile.setPhone(request.phone());
 
         profileRepository.save(profile);
-        return ProfileResponse.of(profile);
+        return profileResolver.resolve(profile);
     }
 
     @Override
     @Transactional
     public ProfileResponse updateAvatar(UUID userId, UUID imageId) {
-        var profile = getByIdOrThrow(userId); // userId and profileId are the same
+        var profile = getByIdOrThrow(userId);
         var image = imageService.getImageEntity(imageId);
 
-        if (!image.isConfirmed()) {
-            throw new IllegalStateException("Image not confirmed yet");
-        }
+        if (!image.isConfirmed()) throw new IllegalStateException("Image not confirmed yet");
 
         profile.setAvatar(image);
         profileRepository.save(profile);
-
-        var url = imageService.getReadUrl(imageId);
-        return ProfileResponse.of(profile, url);
+        return profileResolver.resolve(profile);
     }
 
     @Override
     @Transactional
     public void removeAvatar(UUID userId) {
-        var profile = getByIdOrThrow(userId); // userId and profileId are the same
+        var profile = getByIdOrThrow(userId);
         assertAvatarExists(profile);
         var avatarId = profile.getAvatar().getId();
         profile.setAvatar(null);
@@ -79,9 +68,7 @@ public class ProfileServiceImp implements ProfileService {
     }
 
     private void assertAvatarExists(Profile profile) {
-        if (profile.getAvatar() == null || !profile.getAvatar().isConfirmed()) {
+        if (profile.getAvatar() == null || !profile.getAvatar().isConfirmed())
             throw new ResourceNotFoundException("User doesn't have an avatar");
-        }
     }
-
 }

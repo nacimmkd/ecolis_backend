@@ -2,7 +2,6 @@ package com.deliveryplatform.profiles;
 
 import com.deliveryplatform.profiles.dto.ProfileAvatarRequest;
 import com.deliveryplatform.profiles.dto.ProfilePatchRequest;
-import com.deliveryplatform.profiles.dto.ProfilePostRequest;
 import com.deliveryplatform.profiles.dto.ProfileResponse;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;

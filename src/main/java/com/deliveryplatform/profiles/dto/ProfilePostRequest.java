@@ -1,31 +1,17 @@
 package com.deliveryplatform.profiles.dto;
 
 import com.deliveryplatform.common.validations.Phone;
-import com.deliveryplatform.profiles.Profile;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 
 public record ProfilePostRequest(
-        @NotBlank(message = "Invalid firstname") @Size(max = 100)
+        @NotBlank(message = "Invalid firstname") @Size(max = 30)
         String firstName,
 
-        @NotBlank(message = "Invalid lastname") @Size(max = 100)
+        @NotBlank(message = "Invalid lastname") @Size(max = 30)
         String lastName,
 
         @Phone
         String phone
-) {
-
-    public static Profile toEntity(ProfilePostRequest request) {
-        return Profile.builder()
-                .firstName(request.firstName)
-                .lastName(request.lastName)
-                .phone(request.phone)
-                .avgRating(null)
-                .totalDeliveries(0)
-                .totalOrders(0)
-                .avatar(null)
-                .build();
-    }
-}
+) {}
