@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Builder
 public record UserResponse(
-        UUID id,
+        UUID userId,
         String email,
         Role role,
         boolean isVerified,
@@ -20,16 +20,8 @@ public record UserResponse(
         OffsetDateTime deletedAt
 ) {
 
-    public static UserResponse of(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .isVerified(user.isVerified())
-                .isDeleted(user.isDeleted())
-                .profile(user.getProfile() != null ? ProfileResponse.of(user.getProfile()) : null)
-                .registeredAt(user.getRegisteredAt())
-                .deletedAt(user.getDeletedAt())
-                .build();
+    public UserResponse withProfile(ProfileResponse profile) {
+        return new UserResponse(userId, email, role, isVerified,
+                isDeleted, profile, registeredAt, deletedAt);
     }
 }

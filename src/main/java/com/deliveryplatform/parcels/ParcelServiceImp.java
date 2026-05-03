@@ -1,7 +1,6 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.addresses.GeocodingService;
-import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
@@ -11,7 +10,6 @@ import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelDetailedResponse;
 import com.deliveryplatform.parcels.dto.ParcelSummaryResponse;
 import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
-import com.deliveryplatform.profiles.dto.ProfileSummaryResponse;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -30,39 +28,38 @@ public class ParcelServiceImp implements ParcelService {
     private final UserRepository   userRepository;
     private final GeocodingService geocodingService;
     private final ImageService     imageService;
+    private final ParcelMapper     parcelMapper;
+    private final ParcelResolver   parcelResolver;
 
     @Override
     public ParcelDetailedResponse getParcel(UUID id) {
-        var parcel = getParcelByIdOrThrow(id);
-        return toDetailedResponse(parcel);
+        return parcelResolver.resolveDetailed(getParcelByIdOrThrow(id));
     }
-
 
     @Override
     public List<ParcelSummaryResponse> getUserParcels(UUID userId) {
         return parcelRepository.findWithOwnerByUserId(userId).stream()
-                .map(this::toResponse)
+                .map(parcelResolver::resolveSummary)
                 .toList();
     }
 
     @Override
     public List<ParcelSummaryResponse> getParcels() {
         return parcelRepository.findAll().stream()
-                .map(this::toResponse)
+                .map(parcelResolver::resolveSummary)
                 .toList();
     }
 
     @Override
     @Transactional
     public ParcelDetailedResponse createParcel(UUID userId, ParcelCreateRequest request) {
-        var owner   = getUserByIdOrThrow(userId);
-        var parcel = toEntity(request);
+        var owner  = getUserByIdOrThrow(userId);
+        var parcel = parcelMapper.toEntity(request);
         parcel.setOwner(owner);
-
         updateParcelThumbnail(parcel, request.thumbnailImageId());
         updateParcelImages(parcel, request.imageIds());
 
-        return toDetailedResponse(parcelRepository.save(parcel));
+        return parcelResolver.resolveDetailed(parcelRepository.save(parcel));
     }
 
     @Override
@@ -76,7 +73,7 @@ public class ParcelServiceImp implements ParcelService {
         updateParcelThumbnail(parcel, request.thumbnailImageId());
         updateParcelImages(parcel, request.imageIds());
 
-        return toDetailedResponse(parcelRepository.save(parcel));
+        return parcelResolver.resolveDetailed(parcelRepository.save(parcel));
     }
 
     @Override
@@ -86,14 +83,12 @@ public class ParcelServiceImp implements ParcelService {
         assertOwnership(parcel, userId);
         assertParcelIsInStatusAvailable(parcel);
 
-        // remove parcel images
         var imageIds = parcel.getImages().stream()
                 .map(Image::getId)
                 .collect(Collectors.toList());
 
-        if (parcel.getThumbnailImage() != null) {
+        if (parcel.getThumbnailImage() != null)
             imageIds.add(parcel.getThumbnailImage().getId());
-        }
 
         parcel.softDelete();
         imageService.removeAll(imageIds);
@@ -102,62 +97,14 @@ public class ParcelServiceImp implements ParcelService {
 
     // ----------------------------------------------------------------
 
-    private ParcelSummaryResponse toResponse(Parcel parcel) {
-        var thumbnailUrl = resolveThumbnailUrl(parcel);
-        var userProfile = resolveOwnerProfileSummary(parcel);
-        return ParcelSummaryResponse.of(parcel, userProfile, thumbnailUrl);
-    }
-
-    private ParcelDetailedResponse toDetailedResponse(Parcel parcel) {
-        var thumbnailUrl = resolveThumbnailUrl(parcel);
-        var imageUrls    = resolveImageUrls(parcel);
-        var userProfile = resolveOwnerProfileSummary(parcel);
-        return ParcelDetailedResponse.of(parcel, userProfile, thumbnailUrl, imageUrls);
-    }
-
-    private String resolveThumbnailUrl(Parcel parcel) {
-        var thumbnail = parcel.getThumbnailImage();
-        if (thumbnail == null || !thumbnail.isConfirmed()) return null;
-        return imageService.getReadUrl(thumbnail.getId());
-    }
-
-
-    private ProfileSummaryResponse resolveOwnerProfileSummary(Parcel parcel){
-        var profile = parcel.getOwner().getProfile();
-        var avatar = profile.getAvatar();
-        if (avatar == null || !avatar.isConfirmed()) return ProfileSummaryResponse.of(profile);
-        return ProfileSummaryResponse.of(
-                profile,
-                imageService.getReadUrl(avatar.getId())
-        );
-    }
-
-    private List<String> resolveImageUrls(Parcel parcel) {
-        if (parcel.getImages() == null) return List.of();
-        return parcel.getImages().stream()
-                .filter(Image::isConfirmed)
-                .map(image -> imageService.getReadUrl(image.getId()))
-                .toList();
-    }
-
-    private Parcel toEntity(ParcelCreateRequest request) {
-        return Parcel.builder()
-                .description(request.description())
-                .weightKg(request.weightKg())
-                .size(request.size())
-                .fragile(request.fragile())
-                .pickupAddress(geocodingService.geocode(request.pickupAddress()))
-                .dropoffAddress(geocodingService.geocode(request.dropoffAddress()))
-                .build();
-    }
 
     private void applyUpdates(Parcel parcel, ParcelUpdateRequest request) {
-        if (request.description()   != null) parcel.setDescription(request.description());
-        if (request.weightKg()      != null) parcel.setWeightKg(request.weightKg());
-        if (request.size()          != null) parcel.setSize(request.size());
-        if (request.fragile()       != null) parcel.setFragile(request.fragile());
-        if (request.pickupAddress() != null) parcel.setPickupAddress(geocodingService.geocode(request.pickupAddress()));
-        if (request.dropoffAddress()!= null) parcel.setDropoffAddress(geocodingService.geocode(request.dropoffAddress()));
+        if (request.description()    != null) parcel.setDescription(request.description());
+        if (request.weightKg()       != null) parcel.setWeightKg(request.weightKg());
+        if (request.size()           != null) parcel.setSize(request.size());
+        if (request.fragile()        != null) parcel.setFragile(request.fragile());
+        if (request.pickupAddress()  != null) parcel.setPickupAddress(geocodingService.geocode(request.pickupAddress()));
+        if (request.dropoffAddress() != null) parcel.setDropoffAddress(geocodingService.geocode(request.dropoffAddress()));
     }
 
     private void updateParcelThumbnail(Parcel parcel, UUID thumbnailImageId) {

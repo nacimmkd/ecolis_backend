@@ -45,22 +45,22 @@ public class Booking {
     @Column(name = "dropoff_code")
     private String dropOffCode;
 
-    @Column(name = "confirmed_at", columnDefinition = "TIMESTAMPTZ")
+    @Column(name = "confirmed_at")
     @Builder.Default
     private OffsetDateTime confirmedAt = OffsetDateTime.now();
 
-    @Column(name = "paid_at", columnDefinition = "TIMESTAMPTZ")
+    @Column(name = "paid_at")
     private OffsetDateTime paidAt;
 
-    @Column(name = "completed_at", columnDefinition = "TIMESTAMPTZ")
+    @Column(name = "completed_at")
     private OffsetDateTime completedAt;
 
-    @Column(name = "cancelled_at", columnDefinition = "TIMESTAMPTZ")
+    @Column(name = "cancelled_at")
     private OffsetDateTime cancelledAt;
 
     // ----------------------------------------------------------------
 
-    public static Booking fromRequest(BookingRequest request) {
+    public static Booking createFromRequest(BookingRequest request) {
         return Booking.builder()
                 .trip(request.getTrip())
                 .parcel(request.getParcel())

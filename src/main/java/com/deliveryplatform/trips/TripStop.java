@@ -1,7 +1,6 @@
 package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
-import com.deliveryplatform.trips.dto.TripStopRequest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,14 +39,5 @@ public class TripStop {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
-
-
-    public static TripStop of(TripStopRequest request, GeocodedAddress address) {
-        return TripStop.builder()
-                .id(null)
-                .stopOrder(request.stopOrder())
-                .address(address)
-                .build();
-    }
 
 }

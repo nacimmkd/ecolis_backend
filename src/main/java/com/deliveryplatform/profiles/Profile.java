@@ -35,12 +35,15 @@ public class Profile {
     private Image avatar;
 
     @Column(name = "avg_rating", precision = 2, scale = 1)
+    @Builder.Default
     private BigDecimal avgRating = null;
 
     @Column(name = "total_deliveries")
+    @Builder.Default
     private int totalDeliveries = 0;
 
     @Column(name = "total_orders")
+    @Builder.Default
     private int totalOrders = 0;
 
     @OneToOne(fetch = FetchType.LAZY)

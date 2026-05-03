@@ -1,8 +1,6 @@
 package com.deliveryplatform.users.dto;
 
 import com.deliveryplatform.profiles.dto.ProfilePostRequest;
-import com.deliveryplatform.users.Role;
-import com.deliveryplatform.users.User;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,16 +16,4 @@ public record UserPostRequest(
         String password,
 
         @Valid ProfilePostRequest profile
-) {
-
-    public static User toEntity(UserPostRequest userRequest) {
-        return User.builder()
-                .id(null)
-                .email(userRequest.email)
-                .password(userRequest.password)
-                .isVerified(false)
-                .role(Role.USER)
-                .deleted(false)
-                .build();
-    }
-}
+) {}

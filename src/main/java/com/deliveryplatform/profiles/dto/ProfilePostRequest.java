@@ -4,6 +4,8 @@ import com.deliveryplatform.common.validations.Phone;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 
 public record ProfilePostRequest(
         @NotBlank(message = "Invalid firstname") @Size(max = 30)
@@ -13,5 +15,7 @@ public record ProfilePostRequest(
         String lastName,
 
         @Phone
-        String phone
+        String phone,
+
+        UUID avatarId
 ) {}

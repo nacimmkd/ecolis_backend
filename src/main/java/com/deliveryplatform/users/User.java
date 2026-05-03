@@ -31,7 +31,7 @@ public class User {
 
     @Column(name = "is_verified")
     @Builder.Default
-    private boolean isVerified = true;
+    private boolean isVerified = true; // just for dev, to be changed later
 
     @Column(name = "registered_at")
     @Builder.Default
@@ -48,8 +48,10 @@ public class User {
     private Profile profile;
 
     public void setProfile(Profile profile) {
-        this.profile = profile;
-        profile.setUser(this);
+        if (profile != null) {
+            this.profile = profile;
+            profile.setUser(this);
+        }
     }
 
     public void softDelete(){

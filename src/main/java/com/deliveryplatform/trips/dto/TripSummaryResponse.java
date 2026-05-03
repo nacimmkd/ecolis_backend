@@ -22,4 +22,23 @@ public record TripSummaryResponse(
         boolean instantBooking,
         TripStatus status,
         OffsetDateTime createdAt
-){}
+) {
+
+    public TripSummaryResponse withOwner(ProfileSummaryResponse owner) {
+        return new TripSummaryResponse(tripId, owner, departureAddress, arrivalAddress,
+                departureDate, arrivalDate, availableVolumeCm3, availableWeightKg,
+                pricePerKg, instantBooking, status, createdAt);
+    }
+
+    public TripSummaryResponse withDepartureAddress(GeocodedAddress departureAddress) {
+        return new TripSummaryResponse(tripId, owner, departureAddress, arrivalAddress,
+                departureDate, arrivalDate, availableVolumeCm3, availableWeightKg,
+                pricePerKg, instantBooking, status, createdAt);
+    }
+
+    public TripSummaryResponse withArrivalAddress(GeocodedAddress arrivalAddress) {
+        return new TripSummaryResponse(tripId, owner, departureAddress, arrivalAddress,
+                departureDate, arrivalDate, availableVolumeCm3, availableWeightKg,
+                pricePerKg, instantBooking, status, createdAt);
+    }
+}

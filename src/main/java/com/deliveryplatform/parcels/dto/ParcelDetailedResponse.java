@@ -1,7 +1,6 @@
 package com.deliveryplatform.parcels.dto;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
-import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelSize;
 import com.deliveryplatform.parcels.ParcelStatus;
 import com.deliveryplatform.profiles.dto.ProfileSummaryResponse;
@@ -14,7 +13,7 @@ import java.util.UUID;
 
 @Builder
 public record ParcelDetailedResponse(
-        UUID id,
+        UUID parcelId,
         ProfileSummaryResponse owner,
         String description,
         BigDecimal weightKg,
@@ -28,20 +27,18 @@ public record ParcelDetailedResponse(
         OffsetDateTime createdAt
 ) {
 
-    public static ParcelDetailedResponse of(Parcel parcel, ProfileSummaryResponse owner, String thumbnailImageUrl, List<String> imageUrls) {
-        return ParcelDetailedResponse.builder()
-                .id(parcel.getId())
-                .owner(owner)
-                .description(parcel.getDescription())
-                .weightKg(parcel.getWeightKg())
-                .size(parcel.getSize())
-                .fragile(parcel.isFragile())
-                .pickupAddress(parcel.getPickupAddress())
-                .dropoffAddress(parcel.getDropoffAddress())
-                .status(parcel.getStatus())
-                .thumbnailImageUrl(thumbnailImageUrl)
-                .imageUrls(imageUrls)
-                .createdAt(parcel.getCreatedAt())
-                .build();
+    public ParcelDetailedResponse withOwner(ProfileSummaryResponse owner) {
+        return new ParcelDetailedResponse(parcelId, owner, description, weightKg, size, fragile,
+                pickupAddress, dropoffAddress, status, thumbnailImageUrl, imageUrls, createdAt);
+    }
+
+    public ParcelDetailedResponse withThumbnailImageUrl(String thumbnailImageUrl) {
+        return new ParcelDetailedResponse(parcelId, owner, description, weightKg, size, fragile,
+                pickupAddress, dropoffAddress, status, thumbnailImageUrl, imageUrls, createdAt);
+    }
+
+    public ParcelDetailedResponse withImageUrls(List<String> imageUrls) {
+        return new ParcelDetailedResponse(parcelId, owner, description, weightKg, size, fragile,
+                pickupAddress, dropoffAddress, status, thumbnailImageUrl, imageUrls, createdAt);
     }
 }

@@ -37,7 +37,6 @@ public class Parcel {
     private BigDecimal weightKg;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private ParcelSize size;
 
     @Column(name = "is_fragile", nullable = false)

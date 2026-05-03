@@ -23,13 +23,15 @@ CREATE TABLE bookings (
 
 CREATE TABLE booking_requests (
                                   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                                  trip_id          UUID NOT NULL REFERENCES trips(id)   ON DELETE RESTRICT,
-                                  parcel_id        UUID NOT NULL REFERENCES parcels(id) ON DELETE RESTRICT,
+                                  trip_id          UUID NOT NULL,
+                                  parcel_id        UUID NOT NULL,
                                   status           VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
                                       CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED')),
                                   rejection_reason TEXT,
                                   responded_at     TIMESTAMPTZ,
                                   requested_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-                                  CONSTRAINT uq_booking_request_trip_parcel UNIQUE (trip_id, parcel_id)
+                                  CONSTRAINT uq_booking_request_trip_parcel UNIQUE (trip_id, parcel_id),
+                                  CONSTRAINT fk_booking_request_trip   FOREIGN KEY (trip_id)   REFERENCES trips(id)   ON DELETE RESTRICT,
+                                  CONSTRAINT fk_booking_request_parcel FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE RESTRICT
 );

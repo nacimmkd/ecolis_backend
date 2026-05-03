@@ -1,9 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.trips.dto.TripStopRequest;
-import com.deliveryplatform.trips.dto.TripStopResponse;
-import com.deliveryplatform.trips.dto.TripCreateRequest;
-import com.deliveryplatform.trips.dto.TripDetailedResponse;
+import com.deliveryplatform.trips.dto.*;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +52,7 @@ public class TripController {
     public ResponseEntity<TripDetailedResponse> updateTrip(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody TripCreateRequest request
+            @Valid @RequestBody TripUpdateRequest request
     ) {
         return ResponseEntity.ok(tripService.updateTrip(id, principal.getId(), request));
     }

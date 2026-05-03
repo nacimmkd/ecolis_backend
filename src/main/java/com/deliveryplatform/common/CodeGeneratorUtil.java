@@ -3,9 +3,11 @@ package com.deliveryplatform.common;
 import java.security.SecureRandom;
 
 
-public class CodeGeneratorUtil {
+public final class CodeGeneratorUtil {
 
     private static final SecureRandom random = new SecureRandom();
+
+    private CodeGeneratorUtil() {}
 
     // ex: DEL-5436
     public static String generateParcelCode() {
