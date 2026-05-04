@@ -10,15 +10,15 @@ import java.util.UUID;
 @Builder
 public record ConversationDetailedResponse(
         UUID conversationId,
-        ProfileSummary receiver,
+        List<ProfileSummary> participants,
         List<MessageResponse> messages,
         OffsetDateTime createdAt
 ) {
-    public ConversationDetailedResponse withReceiver(ProfileSummary receiver) {
-        return new ConversationDetailedResponse(conversationId, receiver, messages, createdAt);
+    public ConversationDetailedResponse withParticipants(List<ProfileSummary> participants) {
+        return new ConversationDetailedResponse(conversationId, participants, messages, createdAt);
     }
 
     public ConversationDetailedResponse withMessages(List<MessageResponse> messages) {
-        return new ConversationDetailedResponse(conversationId, receiver, messages, createdAt);
+        return new ConversationDetailedResponse(conversationId, participants, messages, createdAt);
     }
 }

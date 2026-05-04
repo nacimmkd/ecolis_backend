@@ -7,13 +7,13 @@ import org.mapstruct.*;
 public interface MessageMapper {
 
     @Mapping(target = "conversationId", source = "id")
-    @Mapping(target = "receiver",       ignore = true)
+    @Mapping(target = "participants",       ignore = true)
     @Mapping(target = "lastMessage",    ignore = true)
     @Mapping(target = "createdAt",      source = "createdAt")
     ConversationResponse toResponse(Conversation conversation);
 
     @Mapping(target = "conversationId", source = "id")
-    @Mapping(target = "receiver",       ignore = true)
+    @Mapping(target = "participants",       ignore = true)
     @Mapping(target = "messages",       ignore = true)
     @Mapping(target = "createdAt",      source = "createdAt")
     ConversationDetailedResponse toDetailedResponse(Conversation conversation);
