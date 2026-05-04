@@ -4,7 +4,7 @@ package com.deliveryplatform.profiles.dto;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record UserSummary(
+public record ProfileSummary(
         UUID profileId,
         String firstName,
         String lastName,
@@ -12,8 +12,8 @@ public record UserSummary(
         String avatarUrl
 ) {
 
-    public UserSummary withAvatarUrl(String avatarUrl) {
-        return new UserSummary(profileId, firstName, lastName,
+    public ProfileSummary withAvatarUrl(String avatarUrl) {
+        return new ProfileSummary(profileId, firstName, lastName,
                 avgRating, avatarUrl);
     }
 }

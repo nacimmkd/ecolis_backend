@@ -5,7 +5,6 @@ import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
-import com.deliveryplatform.images.dto.ImageResponse;
 import com.deliveryplatform.messages.dto.*;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;

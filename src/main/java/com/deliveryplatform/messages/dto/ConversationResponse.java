@@ -1,25 +1,21 @@
 package com.deliveryplatform.messages.dto;
 
-
-import com.deliveryplatform.messages.Conversation;
+import com.deliveryplatform.profiles.dto.ProfileSummary;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record ConversationResponse(
-        UUID            id,
-        ChatUser        receiver,
-        String          lastMessage,
-        OffsetDateTime  createdAt
-){
+        UUID           conversationId,
+        ProfileSummary receiver,
+        String         lastMessage,
+        OffsetDateTime createdAt
+) {
+    public ConversationResponse withReceiver(ProfileSummary receiver) {
+        return new ConversationResponse(conversationId, receiver, lastMessage, createdAt);
+    }
 
-    public static ConversationResponse of(Conversation conversation, ChatUser receiver) {
-        var lastMessage = conversation.getLastMessage();
-        return new ConversationResponse(
-                conversation.getId(),
-                receiver,
-                lastMessage != null ? lastMessage.getContent() : "image",
-                conversation.getCreatedAt()
-        );
+    public ConversationResponse withLastMessage(String lastMessage) {
+        return new ConversationResponse(conversationId, receiver, lastMessage, createdAt);
     }
 }

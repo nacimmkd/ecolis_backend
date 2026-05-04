@@ -2,7 +2,7 @@ package com.deliveryplatform.profiles;
 
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.dto.ProfileResponse;
-import com.deliveryplatform.profiles.dto.ProfileSummaryResponse;
+import com.deliveryplatform.profiles.dto.ProfileSummary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +23,7 @@ public class ProfileResolver {
     }
 
 
-    public ProfileSummaryResponse resolveSummary(Profile profile) {
+    public ProfileSummary resolveSummary(Profile profile) {
         var response = profileMapper.toSummaryResponse(profile);
         var avatar = profile.getAvatar();
 

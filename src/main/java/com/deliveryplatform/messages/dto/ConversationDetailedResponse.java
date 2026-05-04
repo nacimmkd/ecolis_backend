@@ -1,7 +1,6 @@
 package com.deliveryplatform.messages.dto;
 
-
-import com.deliveryplatform.messages.Conversation;
+import com.deliveryplatform.profiles.dto.ProfileSummary;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
@@ -10,19 +9,16 @@ import java.util.UUID;
 
 @Builder
 public record ConversationDetailedResponse(
-        UUID id,
-        ChatUser receiver,
+        UUID conversationId,
+        ProfileSummary receiver,
         List<MessageResponse> messages,
         OffsetDateTime createdAt
 ) {
+    public ConversationDetailedResponse withReceiver(ProfileSummary receiver) {
+        return new ConversationDetailedResponse(conversationId, receiver, messages, createdAt);
+    }
 
-
-    public static ConversationDetailedResponse of(Conversation conversation, ChatUser receiver, List<MessageResponse> messages) {
-        return ConversationDetailedResponse.builder()
-                .id(conversation.getId())
-                .receiver(receiver)
-                .messages(messages)
-                .createdAt(conversation.getCreatedAt())
-                .build();
+    public ConversationDetailedResponse withMessages(List<MessageResponse> messages) {
+        return new ConversationDetailedResponse(conversationId, receiver, messages, createdAt);
     }
 }

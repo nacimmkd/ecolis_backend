@@ -1,7 +1,7 @@
 package com.deliveryplatform.trips.dto;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
-import com.deliveryplatform.profiles.dto.ProfileSummaryResponse;
+import com.deliveryplatform.profiles.dto.ProfileSummary;
 import com.deliveryplatform.trips.TripStatus;
 
 import java.math.BigDecimal;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public record TripSummaryResponse(
         UUID tripId,
-        ProfileSummaryResponse owner,
+        ProfileSummary owner,
         GeocodedAddress departureAddress,
         GeocodedAddress arrivalAddress,
         LocalDate departureDate,
@@ -24,7 +24,7 @@ public record TripSummaryResponse(
         OffsetDateTime createdAt
 ) {
 
-    public TripSummaryResponse withOwner(ProfileSummaryResponse owner) {
+    public TripSummaryResponse withOwner(ProfileSummary owner) {
         return new TripSummaryResponse(tripId, owner, departureAddress, arrivalAddress,
                 departureDate, arrivalDate, availableVolumeCm3, availableWeightKg,
                 pricePerKg, instantBooking, status, createdAt);

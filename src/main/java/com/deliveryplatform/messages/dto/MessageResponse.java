@@ -1,27 +1,24 @@
 package com.deliveryplatform.messages.dto;
 
-import com.deliveryplatform.images.dto.ImageResponse;
-import com.deliveryplatform.messages.Message;
+
+import com.deliveryplatform.profiles.dto.ProfileSummary;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public record MessageResponse(
-        UUID           id,
-        ChatUser       sender,
+        UUID           messageId,
+        ProfileSummary sender,
         String         content,
         List<String>   imagesUrls,
         OffsetDateTime sentAt
 ) {
+    public MessageResponse withSender(ProfileSummary sender) {
+        return new MessageResponse(messageId, sender, content, imagesUrls, sentAt);
+    }
 
-    public static MessageResponse of(Message message, ChatUser sender , List<String> images) {
-        return new MessageResponse(
-                message.getId(),
-                sender,
-                message.getContent(),
-                images,
-                message.getSentAt()
-        );
+    public MessageResponse withImagesUrls(List<String> imagesUrls) {
+        return new MessageResponse(messageId, sender, content, imagesUrls, sentAt);
     }
 }
