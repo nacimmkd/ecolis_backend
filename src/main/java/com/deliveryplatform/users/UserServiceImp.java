@@ -7,7 +7,7 @@ import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.emails.EmailService;
-import com.deliveryplatform.emails.EmailTemplates;
+import com.deliveryplatform.emails.Templates;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.profiles.dto.ProfilePostRequest;
@@ -81,7 +81,7 @@ public class UserServiceImp implements UserService {
         var code = CodeGeneratorUtil.generateVerificationCode();
         cachingService.save(key, code , VERIFICATION_CODE_TTL);
 
-        var template = EmailTemplates.confirmEmailTemplate(code);
+        var template = Templates.confirmEmailTemplate(code);
         emailService.send(
                 user.getEmail(),
                 template.subject(),

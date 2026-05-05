@@ -1,13 +1,10 @@
 package com.deliveryplatform.notifications;
 
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.emails.EmailService;
-import com.deliveryplatform.emails.EmailTemplates;
-import com.deliveryplatform.notifications.dto.NotificationRequest;
+import com.deliveryplatform.notifications.channels.ChannelType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Service;
 
@@ -19,31 +16,22 @@ import java.util.UUID;
 public class NotificationServiceImp implements NotificationService {
 
     private final NotificationRepository notificationRepository;
-    private final EmailService emailNotifier;
     private final SimpUserRegistry simpUserRegistry;
-    private final NotificationMapper notificationMapper;
-    private final SimpMessagingTemplate messagingTemplate;
-
-    private static final String WS_DEST = "/queue/notifications";
+    private final NotificationManager notificationManager;
 
 
 
     @Override
     @Transactional
-    public void notify(NotificationRequest request) {
-        var notification = notificationRepository.save(notificationMapper.toEntity(request));
+    public void notify(NotificationPayload payload) {
+        var notification = notificationRepository.save(Notification.createFromNotificationPayload(payload));
 
         var isConnected = this.isUserConnected(notification.getUserId());
         if(isConnected){
-            send(notification);
-        } else {
-            var template = EmailTemplates.notificationReminderTemplate();
-            emailNotifier.send(
-                    request.emailTo(),
-                    template.subject(),
-                    template.body()
-            );
+            payload.getChannels().remove(ChannelType.IN_APP);
+            payload.getChannels().add(ChannelType.EMAIL);
         }
+        notificationManager.send(payload);
     }
 
     @Override
@@ -73,17 +61,6 @@ public class NotificationServiceImp implements NotificationService {
                 ));
     }
 
-    private void send(Notification notification) {
-        try{
-            messagingTemplate.convertAndSendToUser(
-                    notification.getUserId().toString(),
-                    WS_DEST,
-                    notification
-            );
-        }catch (Exception e){
-            log.error("[WS] Failed to send notification — user={} — message={}", notification.getUserId().toString(), e.getMessage());
-        }
-    }
 
     private boolean isUserConnected(UUID userId) {
         return simpUserRegistry.getUser(userId.toString()) != null;

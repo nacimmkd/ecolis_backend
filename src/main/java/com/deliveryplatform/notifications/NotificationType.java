@@ -18,5 +18,5 @@ public enum NotificationType {
     TRIP_CANCELLED,
 
     PARCEL_PICKED_UP,
-    PARCEL_DELIVERED;
+    PARCEL_DELIVERED
 }

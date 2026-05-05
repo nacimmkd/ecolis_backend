@@ -2,11 +2,13 @@ package com.deliveryplatform.notifications.events;
 
 import com.deliveryplatform.notifications.NotificationServiceImp;
 import com.deliveryplatform.notifications.NotificationType;
-import com.deliveryplatform.notifications.dto.NotificationRequest;
+import com.deliveryplatform.notifications.NotificationPayload;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -18,11 +20,12 @@ public class NotificationEventHandler {
     @Async
     public void onBookingRequested(BookingRequestedEvent event) {
         notificationServiceImp.notify(
-                NotificationRequest.builder()
-                        .userId(event.carrierId())
-                        .type(NotificationType.BOOKING_REQUESTED)
+                NotificationPayload.builder()
+                        .receiverId(event.carrierId())
+                        .receiverEmail(event.carrierEmail())
+                        .notificationType(NotificationType.BOOKING_REQUESTED)
                         .referenceId(event.bookingId())
-                        .emailTo(event.carrierEmail())
+                        .metadata(Map.of())
                         .build()
         );
     }
@@ -31,11 +34,11 @@ public class NotificationEventHandler {
     @Async
     public void onBookingAccepted(BookingAcceptedEvent event) {
         notificationServiceImp.notify(
-                NotificationRequest.builder()
-                        .userId(event.senderId())
-                        .type(NotificationType.BOOKING_ACCEPTED)
+                NotificationPayload.builder()
+                        .receiverId(event.senderId())
+                        .receiverEmail(event.senderEmail())
+                        .notificationType(NotificationType.BOOKING_ACCEPTED)
                         .referenceId(event.bookingId())
-                        .emailTo(event.senderEmail())
                         .build()
         );
     }
@@ -44,11 +47,11 @@ public class NotificationEventHandler {
     @Async
     public void onBookingCancelled(BookingCancelledEvent event) {
         notificationServiceImp.notify(
-                NotificationRequest.builder()
-                        .userId(event.userId())
-                        .type(NotificationType.BOOKING_CANCELLED)
+                NotificationPayload.builder()
+                        .referenceId(event.userId())
+                        .receiverEmail(event.userEmail())
+                        .notificationType(NotificationType.BOOKING_CANCELLED)
                         .referenceId(event.bookingId())
-                        .emailTo(event.userEmail())
                         .build()
         );
     }
@@ -57,11 +60,11 @@ public class NotificationEventHandler {
     @Async
     public void onPaymentReceived(PaymentReceivedEvent event) {
         notificationServiceImp.notify(
-                NotificationRequest.builder()
-                        .userId(event.userId())
-                        .type(NotificationType.PAYMENT_RECEIVED)
+                NotificationPayload.builder()
+                        .receiverId(event.userId())
+                        .receiverEmail(event.userEmail())
+                        .notificationType(NotificationType.PAYMENT_RECEIVED)
                         .referenceId(event.bookingId())
-                        .emailTo(event.userEmail())
                         .build()
         );
     }
@@ -70,11 +73,11 @@ public class NotificationEventHandler {
     @Async
     public void onTripCancelled(TripCancelledEvent event) {
         notificationServiceImp.notify(
-                NotificationRequest.builder()
-                        .userId(event.userId())
-                        .type(NotificationType.TRIP_CANCELLED)
+                NotificationPayload.builder()
+                        .receiverId(event.userId())
+                        .receiverEmail(event.userEmail())
+                        .notificationType(NotificationType.TRIP_CANCELLED)
                         .referenceId(event.tripId())
-                        .emailTo(event.userEmail())
                         .build()
         );
     }
@@ -83,11 +86,11 @@ public class NotificationEventHandler {
     @Async
     public void onParcelDelivered(ParcelDeliveredEvent event) {
         notificationServiceImp.notify(
-                NotificationRequest.builder()
-                        .userId(event.userId())
-                        .type(NotificationType.PARCEL_DELIVERED)
+                NotificationPayload.builder()
+                        .receiverId(event.userId())
+                        .receiverEmail(event.userEmail())
+                        .notificationType(NotificationType.PARCEL_DELIVERED)
                         .referenceId(event.parcelId())
-                        .emailTo(event.userEmail())
                         .build()
         );
     }

@@ -2,8 +2,6 @@ package com.deliveryplatform.notifications;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -37,5 +35,15 @@ public class Notification {
     @Column(name = "created_at", nullable = false)
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
+
+
+    public static Notification createFromNotificationPayload(NotificationPayload payload) {
+        return Notification.builder()
+                .userId(payload.getReceiverId())
+                .type(payload.getNotificationType())
+                .referenceId(payload.getReferenceId())
+                .isRead(false)
+                .build();
+    }
 
 }

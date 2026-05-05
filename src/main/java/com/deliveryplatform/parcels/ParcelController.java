@@ -45,7 +45,7 @@ public class ParcelController {
                 userPrincipal.getId(),
                 request
         );
-        var uri = uriBuilder.path("/api/v1/parcels/{id}").build(parcelDto.id());
+        var uri = uriBuilder.path("/api/v1/parcels/{id}").build(parcelDto.parcelId());
         return ResponseEntity.created(uri).body(parcelDto);
     }
 

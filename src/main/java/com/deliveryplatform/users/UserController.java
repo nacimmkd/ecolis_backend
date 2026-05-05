@@ -38,7 +38,7 @@ public class UserController {
 
         var uri = uriBuilder
                 .path("/api/v1/users/{id}")
-                .build(user.id());
+                .build(user.userId());
 
         return ResponseEntity.created(uri).body(user);
     }

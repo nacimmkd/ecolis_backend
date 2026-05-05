@@ -1,8 +1,8 @@
 package com.deliveryplatform.emails;
 
-public final class EmailTemplates {
+public final class Templates {
 
-    private EmailTemplates() {}
+    private Templates() {}
 
     public record EmailContent(String subject, String body) {}
 
