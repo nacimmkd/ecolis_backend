@@ -8,12 +8,14 @@ import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
-@Builder
-public record ParcelSummaryResponse(
+@Builder(toBuilder = true)
+public record ParcelDetails(
         UUID parcelId,
         ProfileSummary owner,
+        String description,
         BigDecimal weightKg,
         ParcelSize size,
         boolean fragile,
@@ -21,16 +23,6 @@ public record ParcelSummaryResponse(
         GeocodedAddress dropoffAddress,
         ParcelStatus status,
         String thumbnailImageUrl,
+        List<String> imageUrls,
         OffsetDateTime createdAt
-) {
-
-    public ParcelSummaryResponse withOwner(ProfileSummary owner) {
-        return new ParcelSummaryResponse(parcelId, owner, weightKg, size, fragile,
-                pickupAddress, dropoffAddress, status, thumbnailImageUrl, createdAt);
-    }
-
-    public ParcelSummaryResponse withThumbnailImageUrl(String thumbnailImageUrl) {
-        return new ParcelSummaryResponse(parcelId, owner, weightKg, size, fragile,
-                pickupAddress, dropoffAddress, status, thumbnailImageUrl, createdAt);
-    }
-}
+) {}

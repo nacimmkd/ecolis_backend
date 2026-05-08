@@ -2,8 +2,8 @@ package com.deliveryplatform.profiles;
 
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.images.ImageService;
-import com.deliveryplatform.profiles.dto.ProfilePatchRequest;
-import com.deliveryplatform.profiles.dto.ProfileResponse;
+import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
+import com.deliveryplatform.profiles.dto.ProfileDetails;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,17 +15,17 @@ import java.util.UUID;
 public class ProfileServiceImp implements ProfileService {
 
     private final ProfileRepository profileRepository;
-    private final ProfileResolver profileResolver;
+    private final ProfileMapper profileMapper;
     private final ImageService imageService;
 
     @Override
-    public ProfileResponse getUserProfile(UUID userId) {
-        return profileResolver.resolve(getByIdOrThrow(userId));
+    public ProfileDetails getUserProfile(UUID userId) {
+        return profileMapper.toDetailedDto(getByIdOrThrow(userId));
     }
 
     @Override
     @Transactional
-    public ProfileResponse updateProfile(UUID userId, ProfilePatchRequest request) {
+    public ProfileDetails updateProfile(UUID userId, ProfileUpdateRequest request) {
         var profile = getByIdOrThrow(userId);
 
         if (request.firstName() != null) profile.setFirstName(request.firstName());
@@ -33,12 +33,12 @@ public class ProfileServiceImp implements ProfileService {
         if (request.phone() != null)     profile.setPhone(request.phone());
 
         profileRepository.save(profile);
-        return profileResolver.resolve(profile);
+        return profileMapper.toDetailedDto(profile);
     }
 
     @Override
     @Transactional
-    public ProfileResponse updateAvatar(UUID userId, UUID imageId) {
+    public ProfileDetails updateAvatar(UUID userId, UUID imageId) {
         var profile = getByIdOrThrow(userId);
         var image = imageService.getImageEntity(imageId);
 
@@ -46,7 +46,7 @@ public class ProfileServiceImp implements ProfileService {
 
         profile.setAvatar(image);
         profileRepository.save(profile);
-        return profileResolver.resolve(profile);
+        return profileMapper.toDetailedDto(profile);
     }
 
     @Override

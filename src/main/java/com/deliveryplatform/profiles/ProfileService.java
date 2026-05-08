@@ -1,16 +1,16 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.profiles.dto.ProfilePatchRequest;
-import com.deliveryplatform.profiles.dto.ProfileResponse;
+import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
+import com.deliveryplatform.profiles.dto.ProfileDetails;
 
 import java.util.UUID;
 
 public interface ProfileService {
-    ProfileResponse getUserProfile(UUID userId);
+    ProfileDetails getUserProfile(UUID userId);
 
-    ProfileResponse updateProfile(UUID profileId, ProfilePatchRequest request);
+    ProfileDetails updateProfile(UUID profileId, ProfileUpdateRequest request);
 
-    ProfileResponse updateAvatar(UUID profileId, UUID imageId);
+    ProfileDetails updateAvatar(UUID profileId, UUID imageId);
 
     void removeAvatar(UUID userId);
 

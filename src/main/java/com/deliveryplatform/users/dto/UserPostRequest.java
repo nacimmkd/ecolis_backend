@@ -1,6 +1,6 @@
 package com.deliveryplatform.users.dto;
 
-import com.deliveryplatform.profiles.dto.ProfilePostRequest;
+import com.deliveryplatform.profiles.dto.ProfileCreateRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -15,5 +15,5 @@ public record UserPostRequest(
         @Size(min = 5, max = 100)
         String password,
 
-        @Valid ProfilePostRequest profile
+        @Valid ProfileCreateRequest profile
 ) {}

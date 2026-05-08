@@ -7,21 +7,21 @@ import java.util.UUID;
 
 public interface TripService {
 
-    TripDetailedResponse getTrip(UUID id);
+    TripDetails getTrip(UUID id);
 
-    List<TripDetailedResponse> getUserTrips(UUID userId);
+    List<TripSummary> getUserTrips(UUID userId);
 
-    List<TripDetailedResponse> getAllTrips();
+    List<TripSummary> getAllTrips();
 
-    TripDetailedResponse createTrip(UUID userId, TripCreateRequest request);
+    TripDetails createTrip(UUID userId, TripCreateRequest request);
 
-    TripDetailedResponse updateTrip(UUID tripId, UUID userId, TripUpdateRequest request);
+    TripDetails updateTrip(UUID tripId, UUID userId, TripUpdateRequest request);
 
     void deleteTrip(UUID tripId, UUID userId);
 
-    TripStopResponse addStop(UUID tripId, UUID userId, TripStopRequest request);
+    TripStopSummary addStop(UUID tripId, UUID userId, TripStopRequest request);
 
-    TripStopResponse updateStop(UUID stopId, UUID tripId, UUID userId, TripStopRequest request);
+    TripStopSummary updateStop(UUID stopId, UUID tripId, UUID userId, TripStopRequest request);
 
     void deleteStop(UUID stopId, UUID tripId, UUID userId);
 }

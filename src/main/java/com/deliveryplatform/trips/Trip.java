@@ -1,6 +1,8 @@
 package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.bookings.Booking;
+import com.deliveryplatform.bookings.BookingRequest;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,9 +13,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "trips")
@@ -57,11 +58,11 @@ public class Trip {
     @Column(name = "arrival_date")
     private LocalDate arrivalDate;
 
-    @Column(name = "available_volume_cm3", precision = 8, scale = 2)
-    private BigDecimal availableVolumeCm3;
-
     @Column(name = "available_weight_kg", precision = 8, scale = 2)
     private BigDecimal availableWeightKg;
+
+    @Column(name = "remaining_weight_kg", precision = 8, scale = 2)
+    private BigDecimal remainingWeightKg;
 
     @Column(name = "price_per_kg", precision = 10, scale = 2)
     private BigDecimal pricePerKg;
@@ -90,6 +91,10 @@ public class Trip {
     @Builder.Default
     private List<TripStop> stops = new ArrayList<>();
 
+    @OneToMany(mappedBy = "trip")
+    @Builder.Default
+    private List<Booking> bookings = new ArrayList<>();
+
 
     @Builder.Default
     private boolean deleted = false;
@@ -98,13 +103,15 @@ public class Trip {
     private OffsetDateTime deletedAt;
 
 
+    // methods ---------------------------------------------------------------------------------
+
     public void addStop(TripStop stop) {
         stops.add(stop);
         stop.setTrip(this);
     }
 
     public void updateStops(List<TripStop> newStops) {
-        this.stops.clear();
+        removeStops(newStops);
         newStops.forEach(stop -> stop.setTrip(this));
         this.stops.addAll(newStops);
     }
@@ -114,10 +121,25 @@ public class Trip {
         stop.setTrip(null);
     }
 
+    public void removeStops(List<TripStop> stops) {
+        stops.forEach(stop -> stop.setTrip(null));
+        this.stops.clear();
+    }
+
     public void reorderStops() {
         for (int i = 0; i < stops.size(); i++) {
             stops.get(i).setStopOrder(i + 1);
         }
+    }
+
+    public void addBooking(Booking booking) {
+        booking.setTrip(this);
+        bookings.add(booking);
+    }
+
+    public void removeBooking(Booking booking) {
+        booking.setTrip(null);
+        bookings.remove(booking);
     }
 
     public void softDelete(){
@@ -128,4 +150,12 @@ public class Trip {
         this.deleted = true;
         this.deletedAt = OffsetDateTime.now();
     }
+
+    public BigDecimal getRemainingWeightKg() {
+        var usedWeight = bookings.stream()
+                .map(booking -> booking.getParcel().getWeightKg())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return availableWeightKg.subtract(usedWeight);
+    }
+
 }

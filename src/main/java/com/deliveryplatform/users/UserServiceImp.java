@@ -10,11 +10,11 @@ import com.deliveryplatform.emails.EmailService;
 import com.deliveryplatform.emails.Templates;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.Profile;
-import com.deliveryplatform.profiles.dto.ProfilePostRequest;
+import com.deliveryplatform.profiles.dto.ProfileCreateRequest;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserPostRequest;
-import com.deliveryplatform.users.dto.UserResponse;
-import com.deliveryplatform.users.dto.UserSummaryResponse;
+import com.deliveryplatform.users.dto.UserDto;
+import com.deliveryplatform.users.dto.UserSummaryDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,7 +30,7 @@ public class UserServiceImp implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserResolver userResolver;
+    private final UserMapper userMapper;
     private final EmailService emailService;
     private final CachingService cachingService;
     private final AuthService authService;
@@ -42,29 +42,29 @@ public class UserServiceImp implements UserService {
 
 
     @Override
-    public UserResponse findById(UUID id) {
-        return userResolver.resolve(getUserByIdOrThrow(id));
+    public UserDto findById(UUID id) {
+        return userMapper.toDto(getUserByIdOrThrow(id));
     }
 
     @Override
-    public List<UserSummaryResponse> findAll() {
+    public List<UserSummaryDto> findAll() {
         return userRepository.findAll().stream()
                 .filter(user -> !user.getRole().equals(Role.ADMIN))
-                .map(userResolver::resolveSummary)
+                .map(userMapper::toSummaryDto)
                 .toList();
     }
 
 
     @Override
     @Transactional
-    public UserResponse register(UserPostRequest request) {
+    public UserDto register(UserPostRequest request) {
         assertEmailUniqueness(request.email());
 
         var user = buildUser(request);
         var profile = buildProfile(request.profile());
 
         user.setProfile(profile);
-        return userResolver.resolve(userRepository.save(user));
+        return userMapper.toDto(userRepository.save(user));
     }
 
 
@@ -158,7 +158,7 @@ public class UserServiceImp implements UserService {
                 .build();
     }
 
-    private Profile buildProfile(ProfilePostRequest request) {
+    private Profile buildProfile(ProfileCreateRequest request) {
         return Profile.builder()
                 .firstName(request.firstName())
                 .lastName(request.lastName())

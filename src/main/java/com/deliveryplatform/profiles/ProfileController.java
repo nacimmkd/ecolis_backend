@@ -1,8 +1,8 @@
 package com.deliveryplatform.profiles;
 
 import com.deliveryplatform.profiles.dto.ProfileAvatarRequest;
-import com.deliveryplatform.profiles.dto.ProfilePatchRequest;
-import com.deliveryplatform.profiles.dto.ProfileResponse;
+import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
+import com.deliveryplatform.profiles.dto.ProfileDetails;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,20 +19,20 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @GetMapping("/me")
-    public ResponseEntity<ProfileResponse> getMyProfile(
+    public ResponseEntity<ProfileDetails> getMyProfile(
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(profileService.getUserProfile(principal.getId()));
     }
 
     @PatchMapping("/me")
-    public ResponseEntity<ProfileResponse> updateProfile(
+    public ResponseEntity<ProfileDetails> updateProfile(
             @AuthenticationPrincipal UserPrincipal principal,
-            @RequestBody @Valid ProfilePatchRequest request) {
+            @RequestBody @Valid ProfileUpdateRequest request) {
         return ResponseEntity.ok(profileService.updateProfile(principal.getId(), request));
     }
 
     @PatchMapping("/me/avatar")
-    public ResponseEntity<ProfileResponse> updateAvatar(
+    public ResponseEntity<ProfileDetails> updateAvatar(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody ProfileAvatarRequest request) {
         return ResponseEntity.ok(profileService.updateAvatar(principal.getId(), request.avatarId()));

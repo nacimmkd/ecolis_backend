@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 
-public record ProfilePostRequest(
+public record ProfileCreateRequest(
         @NotBlank(message = "Invalid firstname") @Size(max = 30)
         String firstName,
 

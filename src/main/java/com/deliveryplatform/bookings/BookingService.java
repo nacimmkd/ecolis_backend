@@ -1,23 +1,22 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingRequestCreateRequest;
-import com.deliveryplatform.bookings.dto.BookingRequestResponse;
-import com.deliveryplatform.bookings.dto.BookingResponse;
+import com.deliveryplatform.bookings.dto.BookingRequestDto;
+import com.deliveryplatform.bookings.dto.BookingDto;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface BookingService {
 
-    BookingResponse getBooking(UUID bookingId, UUID currentUserId);
+    BookingDto getBooking(UUID bookingId, UUID currentUserId);
 
-    BookingRequestResponse getBookingRequest(UUID requestId, UUID currentUserId);
+    BookingRequestDto getBookingRequest(UUID requestId, UUID currentUserId);
 
-    BookingRequestResponse createRequest(BookingRequestCreateRequest dto, UUID senderId);
+    BookingRequestDto createRequest(BookingRequestCreateRequest dto, UUID senderId);
 
     void cancelRequest(UUID requestId, UUID userId);
 
-    BookingResponse acceptRequest(UUID requestId, UUID carrierId);
+    BookingDto acceptRequest(UUID requestId, UUID carrierId);
 
     void rejectRequest(UUID requestId, UUID carrierId, String reason);
 

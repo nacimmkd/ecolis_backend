@@ -1,8 +1,8 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingRequestCreateRequest;
-import com.deliveryplatform.bookings.dto.BookingRequestResponse;
-import com.deliveryplatform.bookings.dto.BookingResponse;
+import com.deliveryplatform.bookings.dto.BookingRequestDto;
+import com.deliveryplatform.bookings.dto.BookingDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +21,7 @@ public class BookingRequestController {
     private final BookingService bookingService;
 
     @GetMapping("/{requestId}")
-    public ResponseEntity<BookingRequestResponse> getBookingRequest(
+    public ResponseEntity<BookingRequestDto> getBookingRequest(
             @PathVariable UUID requestId,
             @AuthenticationPrincipal UUID currentUserId
     ) {
@@ -29,7 +29,7 @@ public class BookingRequestController {
     }
 
     @PostMapping
-    public ResponseEntity<BookingRequestResponse> createRequest(
+    public ResponseEntity<BookingRequestDto> createRequest(
             @RequestBody BookingRequestCreateRequest dto,
             @AuthenticationPrincipal UUID currentUserId,
             UriComponentsBuilder uriBuilder
@@ -42,7 +42,7 @@ public class BookingRequestController {
     }
 
     @PatchMapping("/{requestId}/accept")
-    public ResponseEntity<BookingResponse> acceptRequest(
+    public ResponseEntity<BookingDto> acceptRequest(
             @PathVariable UUID requestId,
             @AuthenticationPrincipal UUID currentUserId
     ) {

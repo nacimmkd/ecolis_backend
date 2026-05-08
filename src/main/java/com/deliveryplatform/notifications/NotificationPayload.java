@@ -12,7 +12,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class NotificationPayload {
+public final class NotificationPayload {
 
     private UUID receiverId;
     private String receiverEmail;
@@ -20,5 +20,4 @@ public class NotificationPayload {
     private Set<ChannelType> channels;
     private UUID referenceId;
     private Map<String, Object> metadata;
-
 }

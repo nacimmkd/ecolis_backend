@@ -24,21 +24,21 @@ public class TripController {
     // PUBLIC
 
     @GetMapping("/{id}")
-    public ResponseEntity<TripDetailedResponse> getTrip(@PathVariable UUID id) {
+    public ResponseEntity<TripDetails> getTrip(@PathVariable UUID id) {
         return ResponseEntity.ok(tripService.getTrip(id));
     }
 
     // USER
 
     @GetMapping("/me")
-    public ResponseEntity<List<TripDetailedResponse>> getMyTrips(
+    public ResponseEntity<List<TripSummary>> getMyTrips(
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         return ResponseEntity.ok(tripService.getUserTrips(principal.getId()));
     }
 
     @PostMapping
-    public ResponseEntity<TripDetailedResponse> createTrip(
+    public ResponseEntity<TripDetails> createTrip(
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody TripCreateRequest request,
             UriComponentsBuilder uriBuilder
@@ -49,7 +49,7 @@ public class TripController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<TripDetailedResponse> updateTrip(
+    public ResponseEntity<TripDetails> updateTrip(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody TripUpdateRequest request
@@ -70,7 +70,7 @@ public class TripController {
     // STOPS
 
     @PostMapping("/{tripId}/stops")
-    public TripStopResponse addStop(
+    public TripStopSummary addStop(
             @PathVariable UUID tripId,
             @RequestBody TripStopRequest stopRequest,
             @AuthenticationPrincipal UserPrincipal principal
@@ -91,7 +91,7 @@ public class TripController {
 
 
     @PatchMapping("/{tripId}/stops/{stopId}")
-    public ResponseEntity<TripStopResponse> updateTripStop(
+    public ResponseEntity<TripStopSummary> updateTripStop(
             @PathVariable UUID tripId,
             @PathVariable UUID stopId,
             @RequestBody TripStopRequest stopRequest,
@@ -107,7 +107,7 @@ public class TripController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TripDetailedResponse>> getAllTrips() {
+    public ResponseEntity<List<TripSummary>> getAllTrips() {
         return ResponseEntity.ok(tripService.getAllTrips());
     }
 

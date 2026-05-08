@@ -1,19 +1,16 @@
 package com.deliveryplatform.profiles.dto;
 
 
+import lombok.Builder;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Builder(toBuilder = true)
 public record ProfileSummary(
         UUID profileId,
         String firstName,
         String lastName,
         BigDecimal avgRating,
         String avatarUrl
-) {
-
-    public ProfileSummary withAvatarUrl(String avatarUrl) {
-        return new ProfileSummary(profileId, firstName, lastName,
-                avgRating, avatarUrl);
-    }
-}
+) {}

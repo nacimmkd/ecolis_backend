@@ -1,16 +1,13 @@
 package com.deliveryplatform.trips.dto;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
+import lombok.Builder;
 
 import java.util.UUID;
 
-public record TripStopResponse(
+@Builder(toBuilder = true)
+public record TripStopSummary(
         UUID tripStopId,
         Integer stopOrder,
         GeocodedAddress address
-) {
-
-    public TripStopResponse withAddress(GeocodedAddress address) {
-        return new TripStopResponse(tripStopId, stopOrder, address);
-    }
-}
+) {}

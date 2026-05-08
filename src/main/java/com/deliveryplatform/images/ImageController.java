@@ -1,6 +1,6 @@
 package com.deliveryplatform.images;
 
-import com.deliveryplatform.images.dto.ImageResponse;
+import com.deliveryplatform.images.dto.ImageDto;
 import com.deliveryplatform.storage.PresignedUrl;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.constraints.NotBlank;
@@ -22,7 +22,7 @@ public class ImageController {
     private final ImageService imageService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ImageResponse> getImage(@PathVariable @NotNull UUID id){
+    public ResponseEntity<ImageDto> getImage(@PathVariable @NotNull UUID id){
         return ResponseEntity.ok(imageService.getImage(id));
     }
 
@@ -35,7 +35,7 @@ public class ImageController {
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<ImageResponse> confirmUpload(
+    public ResponseEntity<ImageDto> confirmUpload(
             @RequestParam("key") @NotBlank String key,
             @AuthenticationPrincipal UserPrincipal user) {
 

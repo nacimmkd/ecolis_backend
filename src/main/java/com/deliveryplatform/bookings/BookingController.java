@@ -1,6 +1,6 @@
 package com.deliveryplatform.bookings;
 
-import com.deliveryplatform.bookings.dto.BookingResponse;
+import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ public class BookingController {
 
 
     @GetMapping("/{id}")
-    public BookingResponse getBooking(
+    public BookingDto getBooking(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal user) {
         return bookingService.getBooking(id, user.getId());

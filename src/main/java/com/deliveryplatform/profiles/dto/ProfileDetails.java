@@ -1,9 +1,12 @@
 package com.deliveryplatform.profiles.dto;
 
+import lombok.Builder;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record ProfileResponse(
+@Builder(toBuilder = true)
+public record ProfileDetails(
         UUID profileId,
         String firstName,
         String lastName,
@@ -12,11 +15,4 @@ public record ProfileResponse(
         int totalDeliveries,
         int totalOrders,
         String avatarUrl
-) {
-
-    public ProfileResponse withAvatarUrl(String avatarUrl) {
-        return new ProfileResponse(profileId, firstName, lastName, phone,
-                avgRating, totalDeliveries, totalOrders, avatarUrl);
-    }
-
-}
+) {}

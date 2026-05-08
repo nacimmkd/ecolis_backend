@@ -16,7 +16,6 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
-import javax.print.attribute.standard.Media;
 import java.util.UUID;
 
 @Slf4j

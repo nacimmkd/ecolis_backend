@@ -3,7 +3,7 @@ package com.deliveryplatform.images;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
-import com.deliveryplatform.images.dto.ImageResponse;
+import com.deliveryplatform.images.dto.ImageDto;
 import com.deliveryplatform.storage.MediaType;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.storage.PresignedUrl;
@@ -31,10 +31,10 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
-    public ImageResponse getImage(UUID id) {
+    public ImageDto getImage(UUID id) {
         var image = getByIdOrThrow(id);
         var url = s3StorageService.generateReadUrl(image.getKey());
-        return ImageResponse.of(image, url);
+        return ImageDto.of(image, url);
     }
 
     @Override
@@ -42,7 +42,6 @@ public class ImageServiceImp implements ImageService {
         var image = getByIdOrThrow(id);
         return s3StorageService.generateReadUrl(image.getKey());
     }
-
 
     @Override
     public PresignedUrl requestImageUpload(String contentType, UUID uploadedBy) {
@@ -58,14 +57,14 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
-    public ImageResponse confirmUpload(String key, UUID uploadedBy) {
+    public ImageDto confirmUpload(String key, UUID uploadedBy) {
         var image = getByKeyOrThrow(key);
         assertOwnership(image, uploadedBy);
         assertExistsInStorage(key);
         image.setConfirmed(true);
         imageRepository.save(image);
         var url = s3StorageService.generateReadUrl(key);
-        return ImageResponse.of(image, url);
+        return ImageDto.of(image, url);
     }
 
 
@@ -101,13 +100,12 @@ public class ImageServiceImp implements ImageService {
     }
 
     private Image getByIdOrThrow(UUID id) {
-        if (id == null) return null;
         return imageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Image not found"));
     }
 
     private void assertOwnership(Image image, UUID requestedBy) {
-        if (!image.getUploadedBy().equals(requestedBy)) {
+        if (image == null || !image.getUploadedBy().equals(requestedBy)) {
             throw new UnauthorizedActionException("You are not allowed to perform this action");
         }
     }
@@ -116,6 +114,5 @@ public class ImageServiceImp implements ImageService {
         if (!s3StorageService.exists(key)) {
             throw new ResourceNotFoundException("Image not found : " + key);
         }
-        ;
     }
 }

@@ -1,18 +1,20 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.profiles.dto.ProfileResponse;
+
+import com.deliveryplatform.profiles.dto.ProfileDetails;
 import com.deliveryplatform.profiles.dto.ProfileSummary;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
+
 
 @Mapper(componentModel = "spring")
+@DecoratedWith(ProfileMapperDecorator.class)
 public interface ProfileMapper {
 
     @Mapping(target = "profileId", source = "id")
     @Mapping(target = "avatarUrl", ignore = true)
-    ProfileResponse toResponse(Profile profile);
+    ProfileDetails toDetailedDto(Profile profile);
 
     @Mapping(target = "profileId", source = "id")
     @Mapping(target = "avatarUrl", ignore = true)
-    ProfileSummary toSummaryResponse(Profile profile);
+    ProfileSummary toSummaryDto(Profile profile);
 }

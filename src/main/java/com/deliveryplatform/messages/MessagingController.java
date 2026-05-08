@@ -1,7 +1,7 @@
 package com.deliveryplatform.messages;
 
-import com.deliveryplatform.messages.dto.ConversationDetailedResponse;
-import com.deliveryplatform.messages.dto.ConversationResponse;
+import com.deliveryplatform.messages.dto.ConversationDetails;
+import com.deliveryplatform.messages.dto.ConversationSummary;
 import com.deliveryplatform.messages.dto.SendMessageRequest;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
@@ -28,7 +28,7 @@ public class MessagingController {
 
 
     @PostMapping("/with/{otherUserId}")
-    public ResponseEntity<ConversationResponse> getOrCreateConversation(
+    public ResponseEntity<ConversationDetails> getOrCreateConversation(
             @PathVariable UUID otherUserId,
             @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(
@@ -38,7 +38,7 @@ public class MessagingController {
 
 
     @GetMapping
-    public ResponseEntity<List<ConversationResponse>> getMyConversations(
+    public ResponseEntity<List<ConversationSummary>> getMyConversations(
             @AuthenticationPrincipal UserPrincipal user) {
 
         return ResponseEntity.ok(
@@ -48,7 +48,7 @@ public class MessagingController {
 
 
     @GetMapping("/{conversationId}")
-    public ResponseEntity<ConversationDetailedResponse> getConversationDetails(
+    public ResponseEntity<ConversationDetails> getConversationDetails(
             @PathVariable @NotNull UUID conversationId,
             @AuthenticationPrincipal UserPrincipal user) {
 

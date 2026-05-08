@@ -20,8 +20,10 @@ CREATE TABLE "trips" (
 
                          departure_date        DATE,
                          arrival_date          DATE,
-                         available_volume_cm3  NUMERIC(8,2)  NOT NULL,
+
                          available_weight_kg   NUMERIC(8,2)  NOT NULL,
+                         remaining_weight_kg   NUMERIC(8,2),
+
                          price_per_kg          NUMERIC(8,2)  NOT NULL DEFAULT 0.00,
                          max_detour_km         NUMERIC(6,2)  NOT NULL DEFAULT 1,
                          status                VARCHAR(20)   NOT NULL DEFAULT 'PUBLISHED'

@@ -22,30 +22,29 @@ public class TripServiceImp implements TripService {
     private final UserRepository     userRepository;
     private final GeocodingService   geocodingService;
     private final TripMapper         tripMapper;
-    private final TripResolver       tripResolver;
 
     @Override
-    public TripDetailedResponse getTrip(UUID tripId) {
-        return tripResolver.resolveDetailed(getTripByIdOrThrow(tripId));
+    public TripDetails getTrip(UUID tripId) {
+        return tripMapper.toDetailsDto(getTripByIdOrThrow(tripId));
     }
 
     @Override
-    public List<TripDetailedResponse> getUserTrips(UUID currentUserId) {
+    public List<TripSummary> getUserTrips(UUID currentUserId) {
         return tripRepository.findByOwnerId(currentUserId).stream()
-                .map(tripResolver::resolveDetailed)
+                .map(tripMapper::toSummaryDto)
                 .toList();
     }
 
     @Override
-    public List<TripDetailedResponse> getAllTrips() {
+    public List<TripSummary> getAllTrips() {
         return tripRepository.findAll().stream()
-                .map(tripResolver::resolveDetailed)
+                .map(tripMapper::toSummaryDto)
                 .toList();
     }
 
     @Override
     @Transactional
-    public TripDetailedResponse createTrip(UUID currentUserId, TripCreateRequest request) {
+    public TripDetails createTrip(UUID currentUserId, TripCreateRequest request) {
         var owner = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -56,19 +55,19 @@ public class TripServiceImp implements TripService {
         trip.setArrivalAddress(geocodingService.geocode(request.arrivalAddress()));
         trip.updateStops(buildStopEntities(request.stops()));
 
-        return tripResolver.resolveDetailed(tripRepository.save(trip));
+        return tripMapper.toDetailsDto(tripRepository.save(trip));
     }
 
     @Override
     @Transactional
-    public TripDetailedResponse updateTrip(UUID tripId, UUID currentUserId, TripUpdateRequest request) {
+    public TripDetails updateTrip(UUID tripId, UUID currentUserId, TripUpdateRequest request) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
         assertTripInStatusPublished(trip);
 
         applyUpdates(trip, request);
 
-        return tripResolver.resolveDetailed(tripRepository.save(trip));
+        return tripMapper.toDetailsDto(tripRepository.save(trip));
     }
 
     @Override
@@ -83,7 +82,7 @@ public class TripServiceImp implements TripService {
 
     @Override
     @Transactional
-    public TripStopResponse addStop(UUID tripId, UUID currentUserId, TripStopRequest request) {
+    public TripStopSummary addStop(UUID tripId, UUID currentUserId, TripStopRequest request) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
@@ -94,21 +93,19 @@ public class TripServiceImp implements TripService {
 
         trip.addStop(stop);
 
-        return tripMapper.toStopResponse(stopRepository.save(stop))
-                .withAddress(stop.getAddress());
+        return tripMapper.toStopDto(stopRepository.save(stop));
     }
 
     @Override
     @Transactional
-    public TripStopResponse updateStop(UUID stopId, UUID tripId, UUID currentUserId, TripStopRequest request) {
+    public TripStopSummary updateStop(UUID stopId, UUID tripId, UUID currentUserId, TripStopRequest request) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
         var stop = findStopInTrip(trip, stopId);
         stop.setAddress(geocodingService.geocode(request.address()));
 
-        return tripMapper.toStopResponse(stopRepository.save(stop))
-                .withAddress(stop.getAddress());
+        return tripMapper.toStopDto(stopRepository.save(stop));
     }
 
     @Override
@@ -171,7 +168,6 @@ public class TripServiceImp implements TripService {
         if (request.arrivalAddress()     != null) trip.setArrivalAddress(geocodingService.geocode(request.arrivalAddress()));
         if (request.departureDate()      != null) trip.setDepartureDate(request.departureDate());
         if (request.arrivalDate()        != null) trip.setArrivalDate(request.arrivalDate());
-        if (request.availableVolumeCm3() != null) trip.setAvailableVolumeCm3(request.availableVolumeCm3());
         if (request.availableWeightKg()  != null) trip.setAvailableWeightKg(request.availableWeightKg());
         if (request.pricePerKg()         != null) trip.setPricePerKg(request.pricePerKg());
         if (request.maxDetourKm()        != null) trip.setMaxDetourKm(request.maxDetourKm());

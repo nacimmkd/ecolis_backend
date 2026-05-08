@@ -7,8 +7,8 @@ import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
-import com.deliveryplatform.parcels.dto.ParcelDetailedResponse;
-import com.deliveryplatform.parcels.dto.ParcelSummaryResponse;
+import com.deliveryplatform.parcels.dto.ParcelDetails;
+import com.deliveryplatform.parcels.dto.ParcelSummary;
 import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
@@ -29,42 +29,41 @@ public class ParcelServiceImp implements ParcelService {
     private final GeocodingService geocodingService;
     private final ImageService     imageService;
     private final ParcelMapper     parcelMapper;
-    private final ParcelResolver   parcelResolver;
 
     @Override
-    public ParcelDetailedResponse getParcel(UUID id) {
-        return parcelResolver.resolveDetailed(getParcelByIdOrThrow(id));
+    public ParcelDetails getParcel(UUID id) {
+        return parcelMapper.toDetailedDto(getParcelByIdOrThrow(id));
     }
 
     @Override
-    public List<ParcelSummaryResponse> getUserParcels(UUID userId) {
+    public List<ParcelSummary> getUserParcels(UUID userId) {
         return parcelRepository.findWithOwnerByUserId(userId).stream()
-                .map(parcelResolver::resolveSummary)
+                .map(parcelMapper::toSummaryDto)
                 .toList();
     }
 
     @Override
-    public List<ParcelSummaryResponse> getParcels() {
+    public List<ParcelSummary> getParcels() {
         return parcelRepository.findAll().stream()
-                .map(parcelResolver::resolveSummary)
+                .map(parcelMapper::toSummaryDto)
                 .toList();
     }
 
     @Override
     @Transactional
-    public ParcelDetailedResponse createParcel(UUID userId, ParcelCreateRequest request) {
+    public ParcelDetails createParcel(UUID userId, ParcelCreateRequest request) {
         var owner  = getUserByIdOrThrow(userId);
         var parcel = parcelMapper.toEntity(request);
         parcel.setOwner(owner);
         updateParcelThumbnail(parcel, request.thumbnailImageId());
         updateParcelImages(parcel, request.imageIds());
 
-        return parcelResolver.resolveDetailed(parcelRepository.save(parcel));
+        return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
     }
 
     @Override
     @Transactional
-    public ParcelDetailedResponse updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
+    public ParcelDetails updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
         assertParcelIsInStatusAvailable(parcel);
@@ -73,7 +72,7 @@ public class ParcelServiceImp implements ParcelService {
         updateParcelThumbnail(parcel, request.thumbnailImageId());
         updateParcelImages(parcel, request.imageIds());
 
-        return parcelResolver.resolveDetailed(parcelRepository.save(parcel));
+        return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
     }
 
     @Override

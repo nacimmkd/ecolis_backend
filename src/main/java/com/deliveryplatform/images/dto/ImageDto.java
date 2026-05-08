@@ -6,14 +6,14 @@ import com.deliveryplatform.storage.MediaType;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public record ImageResponse(
+public record ImageDto(
         UUID id,
         String url,
         MediaType mediaType,
         OffsetDateTime createdAt
 ) {
 
-    public static ImageResponse of(Image image, String url) {
-        return new ImageResponse(image.getId(), url, image.getMediaType(), image.getCreatedAt());
+    public static ImageDto of(Image image, String url) {
+        return new ImageDto(image.getId(), url, image.getMediaType(), image.getCreatedAt());
     }
 }

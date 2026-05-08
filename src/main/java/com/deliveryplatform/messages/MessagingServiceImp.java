@@ -24,7 +24,7 @@ public class MessagingServiceImp implements MessagingService {
     private final UserRepository         userRepository;
     private final ImageService           imageService;
     private final SimpMessagingTemplate  messagingTemplate;
-    private final MessageResolver        messageResolver;
+    private final MessageMapper        messageMapper;
 
     private static final String WS_DEST = "/queue/messages";
 
@@ -32,26 +32,26 @@ public class MessagingServiceImp implements MessagingService {
 
     @Override
     @Transactional
-    public ConversationResponse getOrCreateConversation(UUID otherUserId, UUID currentUserId) {
+    public ConversationDetails getOrCreateConversation(UUID otherUserId, UUID currentUserId) {
         var conversation = conversationRepository
                 .findByParticipants(currentUserId, otherUserId)
                 .orElseGet(() -> createConversation(currentUserId, otherUserId));
 
-        return messageResolver.resolveSummary(conversation);
+        return messageMapper.toDetailsDto(conversation);
     }
 
     @Override
-    public List<ConversationResponse> getUserConversations(UUID currentUserId) {
+    public List<ConversationSummary> getUserConversations(UUID currentUserId) {
         return conversationRepository.findAllByMemberId(currentUserId).stream()
-                .map(messageResolver::resolveSummary)
+                .map(messageMapper::toSummaryDto)
                 .toList();
     }
 
     @Override
-    public ConversationDetailedResponse getConversationDetails(UUID conversationId, UUID currentUserId) {
+    public ConversationDetails getConversationDetails(UUID conversationId, UUID currentUserId) {
         var conversation = getConversationWithMessagesOrThrow(conversationId);
         assertIsParticipant(conversation, currentUserId);
-        return messageResolver.resolveDetailed(conversation);
+        return messageMapper.toDetailsDto(conversation);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class MessagingServiceImp implements MessagingService {
         conversation.addMessage(message);
         conversationRepository.save(conversation);
 
-        broadcastToReceiver(conversation, currentUserId, messageResolver.resolveMessage(message));
+        broadcastToReceiver(conversation, currentUserId, messageMapper.toSummaryDto(message));
     }
 
 
@@ -96,7 +96,7 @@ public class MessagingServiceImp implements MessagingService {
         );
     }
 
-    private void broadcastToReceiver(Conversation conversation, UUID currentUserId, MessageResponse message) {
+    private void broadcastToReceiver(Conversation conversation, UUID currentUserId, MessageSummary message) {
         var receiverId = resolveOtherParticipant(conversation, currentUserId).getId();
         messagingTemplate.convertAndSendToUser(receiverId.toString(), WS_DEST, message);
     }

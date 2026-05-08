@@ -16,7 +16,6 @@ public record TripCreateRequest(
 
         @NotNull @Future LocalDate departureDate,
         @NotNull @Future LocalDate arrivalDate,
-        @DecimalMin("10.0") BigDecimal availableVolumeCm3,
         @DecimalMin("0.1") BigDecimal availableWeightKg,
         @NotNull @DecimalMin("0.1") BigDecimal pricePerKg,
         boolean instantBooking,

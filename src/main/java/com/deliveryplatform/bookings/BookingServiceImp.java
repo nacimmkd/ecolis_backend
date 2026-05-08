@@ -1,8 +1,8 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingRequestCreateRequest;
-import com.deliveryplatform.bookings.dto.BookingRequestResponse;
-import com.deliveryplatform.bookings.dto.BookingResponse;
+import com.deliveryplatform.bookings.dto.BookingRequestDto;
+import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
@@ -25,20 +25,20 @@ public class BookingServiceImp implements BookingService {
     private final BookingRequestRepository bookingRequestRepository;
     private final ParcelRepository         parcelRepository;
     private final TripRepository           tripRepository;
-    private final BookingResolver          bookingResolver;
+    private final BookingMapper            bookingMapper;
 
     // ─────────────────────────────────────────────────────────────────────────
 
     @Override
-    public BookingRequestResponse getBookingRequest(UUID requestId, UUID currentUserId) {
+    public BookingRequestDto getBookingRequest(UUID requestId, UUID currentUserId) {
         var request = getRequestByIdOrThrow(requestId);
         assertInvolves(request.involves(currentUserId));
-        return bookingResolver.resolve(request);
+        return bookingMapper.toRequestDto(request);
     }
 
     @Override
     @Transactional
-    public BookingRequestResponse createRequest(BookingRequestCreateRequest dto, UUID senderId) {
+    public BookingRequestDto createRequest(BookingRequestCreateRequest dto, UUID senderId) {
         var parcel = parcelRepository.findById(dto.parcelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
@@ -61,7 +61,7 @@ public class BookingServiceImp implements BookingService {
             bookingRequestRepository.save(bookingRequest);
         }
 
-        return bookingResolver.resolve(bookingRequest);
+        return bookingMapper.toRequestDto(bookingRequest);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class BookingServiceImp implements BookingService {
 
     @Override
     @Transactional
-    public BookingResponse acceptRequest(UUID requestId, UUID carrierId) {
+    public BookingDto acceptRequest(UUID requestId, UUID carrierId) {
         var request = getRequestByIdOrThrow(requestId);
         assertCarrier(request.getCarrierId(), carrierId);
         assertRequestIsPending(request);
@@ -86,7 +86,7 @@ public class BookingServiceImp implements BookingService {
         bookingRequestRepository.save(request);
 
         var booking = bookingRepository.save(Booking.createFromRequest(request));
-        return bookingResolver.resolve(booking);
+        return bookingMapper.toDto(booking);
     }
 
     @Override
@@ -100,10 +100,10 @@ public class BookingServiceImp implements BookingService {
     }
 
     @Override
-    public BookingResponse getBooking(UUID bookingId, UUID currentUserId) {
+    public BookingDto getBooking(UUID bookingId, UUID currentUserId) {
         var booking = getBookingByIdOrThrow(bookingId);
         assertInvolves(booking.involves(currentUserId));
-        return bookingResolver.resolve(booking);
+        return bookingMapper.toDto(booking);
     }
 
     @Override

@@ -22,7 +22,7 @@ public class UserController {
     private final UserServiceImp userService;
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getMe(
+    public ResponseEntity<UserDto> getMe(
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         var userDto = userService.findById(principal.getId());
@@ -30,7 +30,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(
+    public ResponseEntity<UserDto> register(
             @Valid @RequestBody UserPostRequest request,
             UriComponentsBuilder uriBuilder
     ) {
@@ -84,14 +84,14 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserSummaryResponse>> getAllUsers() {
+    public ResponseEntity<List<UserSummaryDto>> getAllUsers() {
         var users = userService.findAll();
         return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable UUID id) {
         var userDto = userService.findById(id);
         return ResponseEntity.ok(userDto);
     }
