@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
-public record BookingRequestCreateRequest(
+public record BookingCreateRequest(
         @NotNull UUID tripId,
         @NotNull UUID parcelId
 ) {}

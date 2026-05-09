@@ -1,7 +1,7 @@
 package com.deliveryplatform.bookings;
 
 public enum BookingStatus {
-    CONFIRMED,
+    PENDING,
     PAID,
     CANCELLED,
     COMPLETED

@@ -3,21 +3,24 @@ package com.deliveryplatform.parcels;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelDetails;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
+import com.deliveryplatform.profiles.ProfileMapper;
 import org.mapstruct.DecoratedWith;
+import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(
+        componentModel = "spring",
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
+        uses = ProfileMapper.class)
 @DecoratedWith(ParcelMapperDecorator.class)
 public interface ParcelMapper {
 
     @Mapping(target = "parcelId", source = "id")
-    @Mapping(target = "owner", ignore = true)
     @Mapping(target = "thumbnailImageUrl", ignore = true)
     ParcelSummary toSummaryDto(Parcel parcel);
 
     @Mapping(target = "parcelId", source = "id")
-    @Mapping(target = "owner", ignore = true)
     @Mapping(target = "thumbnailImageUrl", ignore = true)
     @Mapping(target = "imageUrls", ignore = true)
     ParcelDetails toDetailedDto(Parcel parcel);

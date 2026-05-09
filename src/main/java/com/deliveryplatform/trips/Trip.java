@@ -2,7 +2,6 @@ package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
 import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.bookings.BookingRequest;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,11 +9,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "trips")
@@ -130,16 +127,6 @@ public class Trip {
         for (int i = 0; i < stops.size(); i++) {
             stops.get(i).setStopOrder(i + 1);
         }
-    }
-
-    public void addBooking(Booking booking) {
-        booking.setTrip(this);
-        bookings.add(booking);
-    }
-
-    public void removeBooking(Booking booking) {
-        booking.setTrip(null);
-        bookings.remove(booking);
     }
 
     public void softDelete(){

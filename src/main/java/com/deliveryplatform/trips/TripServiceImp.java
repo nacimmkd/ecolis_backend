@@ -18,7 +18,7 @@ import java.util.UUID;
 public class TripServiceImp implements TripService {
 
     private final TripRepository     tripRepository;
-    private final TripStopRepository stopRepository;
+    private final TripStopRepository stopRepository; // to be removed later
     private final UserRepository     userRepository;
     private final GeocodingService   geocodingService;
     private final TripMapper         tripMapper;

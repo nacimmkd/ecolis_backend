@@ -11,6 +11,6 @@ import java.util.UUID;
 public record ConversationSummary(
         UUID           conversationId,
         List<ProfileSummary> participants,
-        String         lastMessage,
+        MessageSummary         lastMessage,
         OffsetDateTime createdAt
 ) {}

@@ -4,7 +4,6 @@ import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.ParcelDetails;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
-import com.deliveryplatform.profiles.ProfileMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,9 +14,6 @@ public abstract class ParcelMapperDecorator implements ParcelMapper {
     private ParcelMapper delegate;
 
     @Autowired
-    private ProfileMapper profileMapper;
-
-    @Autowired
     private ImageService imageService;
 
     @Override
@@ -26,7 +22,6 @@ public abstract class ParcelMapperDecorator implements ParcelMapper {
         ParcelSummary dto = delegate.toSummaryDto(parcel);
 
         return dto.toBuilder()
-                .owner(profileMapper.toSummaryDto(parcel.getOwner().getProfile()))
                 .thumbnailImageUrl(resolveImageUrl(parcel.getThumbnailImage()))
                 .build();
     }
@@ -37,7 +32,6 @@ public abstract class ParcelMapperDecorator implements ParcelMapper {
         ParcelDetails dto = delegate.toDetailedDto(parcel);
 
         return dto.toBuilder()
-                .owner(profileMapper.toSummaryDto(parcel.getOwner().getProfile()))
                 .thumbnailImageUrl(resolveImageUrl(parcel.getThumbnailImage()))
                 .imageUrls(
                         parcel.getImages()

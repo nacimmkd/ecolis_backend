@@ -1,6 +1,6 @@
 package com.deliveryplatform.bookings;
 
-import com.deliveryplatform.bookings.dto.BookingRequestCreateRequest;
+import com.deliveryplatform.bookings.dto.BookingCreateRequest;
 import com.deliveryplatform.bookings.dto.BookingRequestDto;
 import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.common.CodeGeneratorUtil;
@@ -30,7 +30,7 @@ public class BookingServiceImp implements BookingService {
     // ─────────────────────────────────────────────────────────────────────────
 
     @Override
-    public BookingRequestDto getBookingRequest(UUID requestId, UUID currentUserId) {
+    public BookingRequestDto getBookingRequests(UUID requestId, UUID currentUserId) {
         var request = getRequestByIdOrThrow(requestId);
         assertInvolves(request.involves(currentUserId));
         return bookingMapper.toRequestDto(request);
@@ -38,7 +38,7 @@ public class BookingServiceImp implements BookingService {
 
     @Override
     @Transactional
-    public BookingRequestDto createRequest(BookingRequestCreateRequest dto, UUID senderId) {
+    public BookingRequestDto requestBooking(BookingCreateRequest dto, UUID senderId) {
         var parcel = parcelRepository.findById(dto.parcelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
@@ -76,7 +76,7 @@ public class BookingServiceImp implements BookingService {
 
     @Override
     @Transactional
-    public BookingDto acceptRequest(UUID requestId, UUID carrierId) {
+    public void acceptRequest(UUID requestId, UUID carrierId) {
         var request = getRequestByIdOrThrow(requestId);
         assertCarrier(request.getCarrierId(), carrierId);
         assertRequestIsPending(request);
@@ -84,9 +84,7 @@ public class BookingServiceImp implements BookingService {
         request.accept();
         request.getParcel().setStatus(ParcelStatus.BOOKED);
         bookingRequestRepository.save(request);
-
-        var booking = bookingRepository.save(Booking.createFromRequest(request));
-        return bookingMapper.toDto(booking);
+        bookingRepository.save(Booking.createFromRequest(request));
     }
 
     @Override
@@ -111,7 +109,7 @@ public class BookingServiceImp implements BookingService {
     public void cancelBooking(UUID bookingId, UUID userId) {
         var booking = getBookingByIdOrThrow(bookingId);
         assertInvolves(booking.involves(userId));
-        assertBookingInStatus(booking, BookingStatus.CONFIRMED, "Only CONFIRMED bookings can be cancelled");
+        assertBookingInStatus(booking, BookingStatus.PENDING, "Only PENDING bookings can be cancelled");
         booking.cancel();
         booking.getParcel().setStatus(ParcelStatus.PUBLISHED);
         bookingRepository.save(booking);
@@ -122,7 +120,7 @@ public class BookingServiceImp implements BookingService {
     public void pay(UUID bookingId, UUID senderId) {
         var booking = getBookingByIdOrThrow(bookingId);
         assertSender(booking.getParcel().getOwner().getId(), senderId);
-        assertBookingInStatus(booking, BookingStatus.CONFIRMED, "Only CONFIRMED bookings can be paid");
+        assertBookingInStatus(booking, BookingStatus.PENDING, "Only PENDING bookings can be paid");
         booking.pay();
         bookingRepository.save(booking);
     }

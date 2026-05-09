@@ -34,7 +34,7 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private BookingStatus status = BookingStatus.CONFIRMED;
+    private BookingStatus status = BookingStatus.PENDING;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal price;

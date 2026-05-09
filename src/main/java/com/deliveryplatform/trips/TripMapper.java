@@ -1,26 +1,20 @@
 package com.deliveryplatform.trips;
 
+import com.deliveryplatform.profiles.ProfileMapper;
 import com.deliveryplatform.trips.dto.*;
-import org.mapstruct.DecoratedWith;
+import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
-@DecoratedWith(TripMapperDecorator.class)
+@Mapper(componentModel = "spring",
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
+        uses = ProfileMapper.class)
 public interface TripMapper {
 
     @Mapping(target = "tripId", source = "id")
-    @Mapping(target = "owner", ignore = true)
-    @Mapping(target = "departureAddress", ignore = true)
-    @Mapping(target = "arrivalAddress", ignore = true)
-    @Mapping(target = "stops", ignore = true)
     TripSummary toSummaryDto(Trip trip);
 
     @Mapping(target = "tripId", source = "id")
-    @Mapping(target = "owner", ignore = true)
-    @Mapping(target = "departureAddress", ignore = true)
-    @Mapping(target = "arrivalAddress", ignore = true)
-    @Mapping(target = "stops", ignore = true)
     TripDetails toDetailsDto(Trip trip);
 
     @Mapping(target = "tripStopId", source = "id")
@@ -29,8 +23,6 @@ public interface TripMapper {
     @Mapping(target = "id",                ignore = true)
     @Mapping(target = "owner",             ignore = true)
     @Mapping(target = "status",            ignore = true)
-    @Mapping(target = "departureAddress",  ignore = true)
-    @Mapping(target = "arrivalAddress",    ignore = true)
     @Mapping(target = "stops",             ignore = true)
     @Mapping(target = "bookings",          ignore = true)
     @Mapping(target = "deleted",           ignore = true)

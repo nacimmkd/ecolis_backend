@@ -21,14 +21,10 @@ public class TripController {
     private final TripServiceImp tripService;
 
 
-    // PUBLIC
-
     @GetMapping("/{id}")
     public ResponseEntity<TripDetails> getTrip(@PathVariable UUID id) {
         return ResponseEntity.ok(tripService.getTrip(id));
     }
-
-    // USER
 
     @GetMapping("/me")
     public ResponseEntity<List<TripSummary>> getMyTrips(
@@ -70,12 +66,13 @@ public class TripController {
     // STOPS
 
     @PostMapping("/{tripId}/stops")
-    public TripStopSummary addStop(
+    public ResponseEntity<TripStopSummary> addStop(
             @PathVariable UUID tripId,
             @RequestBody TripStopRequest stopRequest,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return tripService.addStop(tripId, principal.getId(), stopRequest);
+        var stop = tripService.addStop(tripId, principal.getId(), stopRequest);
+        return ResponseEntity.ok(stop);
     }
 
 
