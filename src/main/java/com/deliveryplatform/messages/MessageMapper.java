@@ -2,10 +2,9 @@ package com.deliveryplatform.messages;
 
 import com.deliveryplatform.messages.dto.*;
 import com.deliveryplatform.profiles.ProfileMapper;
-import org.mapstruct.DecoratedWith;
-import org.mapstruct.InjectionStrategy;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
+
+import java.util.List;
 
 @Mapper(
         componentModel = "spring",
@@ -16,7 +15,7 @@ import org.mapstruct.Mapping;
 public interface MessageMapper {
 
     @Mapping(target = "conversationId", source = "id")
-    @Mapping(target = "lastMessage", ignore = true)
+    @Mapping(target = "lastMessage", source = "messages", qualifiedByName = "mapLastMessage")
     ConversationSummary toSummaryDto(Conversation conversation);
 
     @Mapping(target = "conversationId", source = "id")
@@ -26,4 +25,14 @@ public interface MessageMapper {
     @Mapping(target = "messageId", source = "id")
     @Mapping(target = "imagesUrls", ignore = true)
     MessageSummary toSummaryDto(Message message);
+
+
+    @Named("mapLastMessage")
+    default MessageSummary mapLastMessage(List<Message> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
+        Message lastMessage = messages.get(messages.size() - 1);
+        return toSummaryDto(lastMessage);
+    }
 }
