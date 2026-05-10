@@ -1,33 +1,84 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.profiles.ProfileMapper;
 import com.deliveryplatform.trips.dto.*;
-import org.mapstruct.InjectionStrategy;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import com.deliveryplatform.users.UserMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        uses = ProfileMapper.class)
-public interface TripMapper {
 
-    @Mapping(target = "tripId", source = "id")
-    TripSummary toSummaryDto(Trip trip);
+@Component
+@RequiredArgsConstructor
+public class TripMapper {
 
-    @Mapping(target = "tripId", source = "id")
-    TripDetails toDetailsDto(Trip trip);
+    private final UserMapper userMapper;
 
-    @Mapping(target = "tripStopId", source = "id")
-    TripStopSummary toStopDto(TripStop stop);
+    public TripSummary toSummaryDto(Trip trip) {
+        if (trip == null) {
+            return null;
+        }
+        return TripSummary.builder()
+                .tripId(trip.getId())
+                .owner(userMapper.toSummaryDto(trip.getOwner()))
+                .departureAddress(trip.getDepartureAddress())
+                .arrivalAddress(trip.getArrivalAddress())
+                .departureDate(trip.getDepartureDate())
+                .arrivalDate(trip.getArrivalDate())
+                .availableWeightKg(trip.getAvailableWeightKg())
+                .remainingWeightKg(trip.getRemainingWeightKg())
+                .pricePerKg(trip.getPricePerKg())
+                .instantBooking(trip.isInstantBooking())
+                .status(trip.getStatus())
+                .stops(trip.getStops().stream().map(this::toStopDto).toList())
+                .createdAt(trip.getCreatedAt())
+                .build();
+    }
 
-    @Mapping(target = "id",                ignore = true)
-    @Mapping(target = "owner",             ignore = true)
-    @Mapping(target = "status",            ignore = true)
-    @Mapping(target = "stops",             ignore = true)
-    @Mapping(target = "bookings",          ignore = true)
-    @Mapping(target = "deleted",           ignore = true)
-    @Mapping(target = "deletedAt",         ignore = true)
-    @Mapping(target = "createdAt",         ignore = true)
-    @Mapping(target = "remainingWeightKg", ignore = true)
-    Trip toEntity(TripCreateRequest request);
+    public TripDetails toDetailsDto(Trip trip) {
+        if (trip == null) {
+            return null;
+        }
+        return TripDetails.builder()
+                .tripId(trip.getId())
+                .owner(userMapper.toSummaryDto(trip.getOwner()))
+                .departureAddress(trip.getDepartureAddress())
+                .arrivalAddress(trip.getArrivalAddress())
+                .departureDate(trip.getDepartureDate())
+                .arrivalDate(trip.getArrivalDate())
+                .availableWeightKg(trip.getAvailableWeightKg())
+                .remainingWeightKg(trip.getRemainingWeightKg())
+                .pricePerKg(trip.getPricePerKg())
+                .instantBooking(trip.isInstantBooking())
+                .maxDetourKm(trip.getMaxDetourKm())
+                .status(trip.getStatus())
+                .notes(trip.getNotes())
+                .stops(trip.getStops().stream().map(this::toStopDto).toList())
+                .createdAt(trip.getCreatedAt())
+                .build();
+    }
+
+    public TripStopSummary toStopDto(TripStop stop) {
+        if (stop == null) {
+            return null;
+        }
+        return TripStopSummary.builder()
+                .tripStopId(stop.getId())
+                .stopOrder(stop.getStopOrder())
+                .address(stop.getAddress())
+                .build();
+    }
+
+    public Trip toEntity(TripCreateRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return Trip.builder()
+                .departureDate(request.departureDate())
+                .arrivalDate(request.arrivalDate())
+                .availableWeightKg(request.availableWeightKg())
+                .pricePerKg(request.pricePerKg())
+                .instantBooking(request.instantBooking())
+                .maxDetourKm(request.maxDetourKm())
+                .notes(request.notes())
+                .build();
+    }
 }

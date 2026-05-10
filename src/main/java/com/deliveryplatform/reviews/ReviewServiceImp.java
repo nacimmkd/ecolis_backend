@@ -7,7 +7,7 @@ import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.reviews.dto.CreateReviewRequest;
-import com.deliveryplatform.reviews.dto.ReviewResponse;
+import com.deliveryplatform.reviews.dto.ReviewDto;
 import com.deliveryplatform.users.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +23,15 @@ public class ReviewServiceImp implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final BookingRepository bookingRepository;
+    private final ReviewMapper reviewMapper;
 
 
-    public List<ReviewResponse> getUserReviews(UUID userId) {
-        return reviewRepository.findByRevieweeId(userId)
-                .stream()
-                .map(ReviewResponse::of)
-                .toList();
+    public List<ReviewDto> getUserReviews(UUID userId) {
+        return reviewMapper.toDto(reviewRepository.findByRevieweeId(userId));
     }
 
     @Transactional
-    public ReviewResponse create(CreateReviewRequest request, UUID reviewerId) {
+    public ReviewDto create(CreateReviewRequest request, UUID reviewerId) {
 
         var booking = getBookingByIdOrThrow(request.bookingId());
 
@@ -45,7 +43,7 @@ public class ReviewServiceImp implements ReviewService {
         var reviewee = booking.resolveOtherParticipant(reviewerId);
 
         var review = buildReview(booking, reviewer, reviewee, request.rating(), request.comment());
-        return ReviewResponse.of(reviewRepository.save(review));
+        return reviewMapper.toDto(reviewRepository.save(review));
     }
 
 

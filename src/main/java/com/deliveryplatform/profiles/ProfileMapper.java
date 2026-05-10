@@ -1,20 +1,36 @@
 package com.deliveryplatform.profiles;
 
+import com.deliveryplatform.images.Image;
+import com.deliveryplatform.images.ImageService;
+import com.deliveryplatform.profiles.dto.ProfileDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-import com.deliveryplatform.profiles.dto.ProfileDetails;
-import com.deliveryplatform.profiles.dto.ProfileSummary;
-import org.mapstruct.*;
 
+@Component
+@RequiredArgsConstructor
+public class ProfileMapper {
 
-@Mapper(componentModel = "spring")
-@DecoratedWith(ProfileMapperDecorator.class)
-public interface ProfileMapper {
+    private final ImageService imageService;
 
-    @Mapping(target = "profileId", source = "id")
-    @Mapping(target = "avatarUrl", ignore = true)
-    ProfileDetails toDetailedDto(Profile profile);
+    public ProfileDto toDetailedDto(Profile profile) {
+        if (profile == null) {
+            return null;
+        }
+        return ProfileDto.builder()
+                .profileId(profile.getId())
+                .firstName(profile.getFirstName())
+                .lastName(profile.getLastName())
+                .phone(profile.getPhone())
+                .avgRating(profile.getAvgRating())
+                .totalDeliveries(profile.getTotalDeliveries())
+                .totalOrders(profile.getTotalOrders())
+                .avatarUrl(resolveAvatarUrl(profile.getAvatar()))
+                .build();
+    }
 
-    @Mapping(target = "profileId", source = "id")
-    @Mapping(target = "avatarUrl", ignore = true)
-    ProfileSummary toSummaryDto(Profile profile);
+    private String resolveAvatarUrl(Image avatar) {
+        if (avatar == null || avatar.getId() == null) return null;
+        return imageService.getReadUrl(avatar.getId());
+    }
 }

@@ -9,14 +9,14 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Builder(toBuilder = true)
+@Builder
 public record BookingDto(
         UUID bookingId,
         TripSummary trip,
         ParcelSummary parcel,
         BigDecimal price,
         BookingStatus status,
-        OffsetDateTime confirmedAt,
+        OffsetDateTime createdAt,
         OffsetDateTime paidAt,
         OffsetDateTime completedAt,
         OffsetDateTime cancelledAt

@@ -1,8 +1,8 @@
 package com.deliveryplatform.trips.dto;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
-import com.deliveryplatform.profiles.dto.ProfileSummary;
 import com.deliveryplatform.trips.TripStatus;
+import com.deliveryplatform.users.dto.UserSummary;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 public record TripSummary(
         UUID tripId,
-        ProfileSummary owner,
+        UserSummary owner,
         GeocodedAddress departureAddress,
         GeocodedAddress arrivalAddress,
         LocalDate departureDate,

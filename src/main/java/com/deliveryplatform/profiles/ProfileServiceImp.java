@@ -3,7 +3,7 @@ package com.deliveryplatform.profiles;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
-import com.deliveryplatform.profiles.dto.ProfileDetails;
+import com.deliveryplatform.profiles.dto.ProfileDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,13 +19,13 @@ public class ProfileServiceImp implements ProfileService {
     private final ImageService imageService;
 
     @Override
-    public ProfileDetails getUserProfile(UUID userId) {
+    public ProfileDto getUserProfile(UUID userId) {
         return profileMapper.toDetailedDto(getByIdOrThrow(userId));
     }
 
     @Override
     @Transactional
-    public ProfileDetails updateProfile(UUID userId, ProfileUpdateRequest request) {
+    public ProfileDto updateProfile(UUID userId, ProfileUpdateRequest request) {
         var profile = getByIdOrThrow(userId);
 
         if (request.firstName() != null) profile.setFirstName(request.firstName());
@@ -38,7 +38,7 @@ public class ProfileServiceImp implements ProfileService {
 
     @Override
     @Transactional
-    public ProfileDetails updateAvatar(UUID userId, UUID imageId) {
+    public ProfileDto updateAvatar(UUID userId, UUID imageId) {
         var profile = getByIdOrThrow(userId);
         var image = imageService.getImageEntity(imageId);
 

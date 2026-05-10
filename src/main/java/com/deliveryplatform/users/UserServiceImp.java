@@ -13,8 +13,8 @@ import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.profiles.dto.ProfileCreateRequest;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserPostRequest;
-import com.deliveryplatform.users.dto.UserDto;
-import com.deliveryplatform.users.dto.UserSummaryDto;
+import com.deliveryplatform.users.dto.UserDetails;
+import com.deliveryplatform.users.dto.UserSummary;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,12 +42,12 @@ public class UserServiceImp implements UserService {
 
 
     @Override
-    public UserDto findById(UUID id) {
+    public UserDetails findById(UUID id) {
         return userMapper.toDto(getUserByIdOrThrow(id));
     }
 
     @Override
-    public List<UserSummaryDto> findAll() {
+    public List<UserSummary> findAll() {
         return userRepository.findAll().stream()
                 .filter(user -> !user.getRole().equals(Role.ADMIN))
                 .map(userMapper::toSummaryDto)
@@ -57,7 +57,7 @@ public class UserServiceImp implements UserService {
 
     @Override
     @Transactional
-    public UserDto register(UserPostRequest request) {
+    public UserDetails register(UserPostRequest request) {
         assertEmailUniqueness(request.email());
 
         var user = buildUser(request);

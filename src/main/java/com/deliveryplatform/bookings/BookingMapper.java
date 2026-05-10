@@ -4,26 +4,49 @@ import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.bookings.dto.BookingRequestDto;
 import com.deliveryplatform.parcels.ParcelMapper;
 import com.deliveryplatform.trips.TripMapper;
-import org.mapstruct.InjectionStrategy;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Mapper(
-        componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        uses = {ParcelMapper.class , TripMapper.class}
-)
-public interface BookingMapper {
+@Component
+@RequiredArgsConstructor
+public class BookingMapper {
 
-    @Mapping(target = "bookingId", source = "id")
-    BookingDto toDto(Booking booking);
+    private final TripMapper   tripMapper;
+    private final ParcelMapper parcelMapper;
 
-    List<BookingDto> toDto(List<Booking> bookings);
+    public BookingDto toDto(Booking booking) {
+        return BookingDto.builder()
+                .bookingId(booking.getId())
+                .trip(tripMapper.toSummaryDto(booking.getTrip()))
+                .parcel(parcelMapper.toSummaryDto(booking.getParcel()))
+                .price(booking.getPrice())
+                .status(booking.getStatus())
+                .createdAt(booking.getCreatedAt())
+                .paidAt(booking.getPaidAt())
+                .completedAt(booking.getCompletedAt())
+                .cancelledAt(booking.getCancelledAt())
+                .build();
+    }
 
-    @Mapping(target = "requestId", source = "id")
-    BookingRequestDto toRequestDto(BookingRequest bookingRequest);
+    public List<BookingDto> toDto(List<Booking> bookings) {
+        return bookings.stream().map(this::toDto).toList();
+    }
 
-    List<BookingRequestDto> toRequestDto(List<BookingRequest> bookingRequests);
+    public BookingRequestDto toRequestDto(BookingRequest request) {
+        return BookingRequestDto.builder()
+                .requestId(request.getId())
+                .trip(tripMapper.toSummaryDto(request.getTrip()))
+                .parcel(parcelMapper.toSummaryDto(request.getParcel()))
+                .status(request.getStatus())
+                .rejectionReason(request.getRejectionReason())
+                .requestedAt(request.getRequestedAt())
+                .respondedAt(request.getRespondedAt())
+                .build();
+    }
+
+    public List<BookingRequestDto> toRequestDto(List<BookingRequest> requests) {
+        return requests.stream().map(this::toRequestDto).toList();
+    }
 }

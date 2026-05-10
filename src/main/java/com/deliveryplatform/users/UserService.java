@@ -2,18 +2,18 @@ package com.deliveryplatform.users;
 
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserPostRequest;
-import com.deliveryplatform.users.dto.UserDto;
-import com.deliveryplatform.users.dto.UserSummaryDto;
+import com.deliveryplatform.users.dto.UserDetails;
+import com.deliveryplatform.users.dto.UserSummary;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    UserDto findById(UUID id);
+    UserDetails findById(UUID id);
 
-    List<UserSummaryDto> findAll();
+    List<UserSummary> findAll();
 
-    UserDto register(UserPostRequest request);
+    UserDetails register(UserPostRequest request);
 
     void sendVerificationCode(UUID id);
 

@@ -1,22 +1,49 @@
 package com.deliveryplatform.users;
 
+import com.deliveryplatform.images.Image;
+import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.ProfileMapper;
-import com.deliveryplatform.users.dto.UserDto;
-import com.deliveryplatform.users.dto.UserSummaryDto;
-import org.mapstruct.InjectionStrategy;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import com.deliveryplatform.users.dto.UserDetails;
+import com.deliveryplatform.users.dto.UserSummary;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-@Mapper(
-        componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        uses = ProfileMapper.class
-)
-public interface UserMapper {
 
-    @Mapping(target = "userId", source = "id")
-    UserDto toDto(User user);
+@Component
+@RequiredArgsConstructor
+public class UserMapper {
 
-    @Mapping(target = "userId", source = "id")
-    UserSummaryDto toSummaryDto(User user);
+    private final ProfileMapper profileMapper;
+    private final ImageService imageService;
+
+    public UserDetails toDto(User user) {
+        return UserDetails.builder()
+                .userId(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .verified(user.isVerified())
+                .profile(profileMapper.toDetailedDto(user.getProfile()))
+                .registeredAt(user.getRegisteredAt())
+                .build();
+    }
+
+    public UserSummary toSummaryDto(User user) {
+        if (user == null) return null;
+
+        var profile = user.getProfile();
+        if (profile == null) return null;
+        return UserSummary.builder()
+                .userId(user.getId())
+                .firstName(profile.getFirstName())
+                .lastName(profile.getLastName())
+                .avgRating(profile.getAvgRating())
+                .avatarUrl(resolveAvatarUrl(profile.getAvatar()))
+                .verified(user.isVerified())
+                .build();
+    }
+
+    private String resolveAvatarUrl(Image avatar) {
+        if (avatar == null || avatar.getId() == null) return null;
+        return imageService.getReadUrl(avatar.getId());
+    }
 }

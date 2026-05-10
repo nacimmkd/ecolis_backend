@@ -5,8 +5,8 @@ import lombok.Builder;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Builder(toBuilder = true)
-public record ProfileDetails(
+@Builder
+public record ProfileDto(
         UUID profileId,
         String firstName,
         String lastName,

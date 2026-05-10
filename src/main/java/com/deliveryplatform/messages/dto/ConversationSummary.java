@@ -1,16 +1,16 @@
 package com.deliveryplatform.messages.dto;
 
-import com.deliveryplatform.profiles.dto.ProfileSummary;
+import com.deliveryplatform.users.dto.UserSummary;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Builder(toBuilder = true)
+@Builder
 public record ConversationSummary(
         UUID           conversationId,
-        List<ProfileSummary> participants,
+        List<UserSummary> participants,
         MessageSummary         lastMessage,
         OffsetDateTime createdAt
 ) {}

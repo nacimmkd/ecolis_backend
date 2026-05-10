@@ -1,7 +1,7 @@
 package com.deliveryplatform.reviews;
 
 import com.deliveryplatform.reviews.dto.CreateReviewRequest;
-import com.deliveryplatform.reviews.dto.ReviewResponse;
+import com.deliveryplatform.reviews.dto.ReviewDto;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,18 +22,18 @@ public class ReviewController {
 
     // public
     @GetMapping("/{id}")
-    public List<ReviewResponse> getUserReviews(@PathVariable UUID id) {
+    public List<ReviewDto> getUserReviews(@PathVariable UUID id) {
         return reviewService.getUserReviews(id);
     }
 
     @GetMapping
-    public List<ReviewResponse> getReviewsMe(
+    public List<ReviewDto> getReviewsMe(
             @AuthenticationPrincipal UserPrincipal user){
         return reviewService.getUserReviews(user.getId());
     }
 
     @PostMapping
-    public ResponseEntity<ReviewResponse> create(
+    public ResponseEntity<ReviewDto> create(
             @Valid @RequestBody CreateReviewRequest request,
             @AuthenticationPrincipal UserPrincipal user,
             UriComponentsBuilder uriBuilder
