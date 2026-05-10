@@ -14,8 +14,17 @@ import java.util.UUID;
 public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     @Query("SELECT b FROM Booking b JOIN FETCH b.parcel p JOIN FETCH p.owner JOIN FETCH b.trip t JOIN FETCH t.owner WHERE b.id = :bookingId ")
-    Optional<Booking> findBookingWithParticipants(@Param("bookingId") UUID bookingId);
+    Optional<Booking> findBookingById(@Param("bookingId") UUID bookingId);
 
-    @Query("SELECT b FROM Booking b ")
-    List<Booking> getBookingsByTripId(@Param("tripId") UUID tripId);
+    List<Booking> findByTripId(UUID tripId);
+
+    Booking findByParcelId(UUID parcelId);
+
+    @Query("""
+       SELECT b FROM Booking b
+       WHERE b.trip.owner.id = :userId
+       OR b.parcel.owner.id = :userId
+       ORDER BY b.createdAt DESC
+       """)
+    List<Booking> findAllByInvolvedUser(@Param("userId") UUID userId);
 }

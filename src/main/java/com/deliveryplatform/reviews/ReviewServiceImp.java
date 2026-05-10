@@ -75,7 +75,7 @@ public class ReviewServiceImp implements ReviewService {
     }
 
     private Booking getBookingByIdOrThrow(UUID bookingId) {
-        return bookingRepository.findBookingWithParticipants(bookingId)
+        return bookingRepository.findBookingById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
     }
 

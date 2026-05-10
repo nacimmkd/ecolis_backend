@@ -8,6 +8,8 @@ import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(
         componentModel = "spring",
         injectionStrategy = InjectionStrategy.CONSTRUCTOR,
@@ -18,6 +20,10 @@ public interface BookingMapper {
     @Mapping(target = "bookingId", source = "id")
     BookingDto toDto(Booking booking);
 
+    List<BookingDto> toDto(List<Booking> bookings);
+
     @Mapping(target = "requestId", source = "id")
     BookingRequestDto toRequestDto(BookingRequest bookingRequest);
+
+    List<BookingRequestDto> toRequestDto(List<BookingRequest> bookingRequests);
 }

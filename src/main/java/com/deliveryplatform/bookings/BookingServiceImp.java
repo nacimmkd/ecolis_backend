@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,15 +31,21 @@ public class BookingServiceImp implements BookingService {
     // ─────────────────────────────────────────────────────────────────────────
 
     @Override
-    public BookingRequestDto getBookingRequests(UUID requestId, UUID currentUserId) {
+    public BookingRequestDto getBookingRequest(UUID requestId, UUID currentUserId) {
         var request = getRequestByIdOrThrow(requestId);
         assertInvolves(request.involves(currentUserId));
         return bookingMapper.toRequestDto(request);
     }
 
     @Override
+    public List<BookingRequestDto> getBookingRequests(UUID currentUserId) {
+        return bookingMapper.toRequestDto(bookingRequestRepository.findAllByInvolvedUser(currentUserId));
+    }
+
+
+    @Override
     @Transactional
-    public BookingRequestDto requestBooking(BookingCreateRequest dto, UUID senderId) {
+    public BookingRequestDto createBookingRequest(BookingCreateRequest dto, UUID senderId) {
         var parcel = parcelRepository.findById(dto.parcelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
@@ -78,7 +85,7 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public void acceptRequest(UUID requestId, UUID carrierId) {
         var request = getRequestByIdOrThrow(requestId);
-        assertCarrier(request.getCarrierId(), carrierId);
+        assertIsCarrier(request.getCarrierId(), carrierId);
         assertRequestIsPending(request);
 
         request.accept();
@@ -91,7 +98,7 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public void rejectRequest(UUID requestId, UUID carrierId, String reason) {
         var request = getRequestByIdOrThrow(requestId);
-        assertCarrier(request.getCarrierId(), carrierId);
+        assertIsCarrier(request.getCarrierId(), carrierId);
         assertRequestIsPending(request);
         request.reject(reason);
         bookingRequestRepository.save(request);
@@ -102,6 +109,29 @@ public class BookingServiceImp implements BookingService {
         var booking = getBookingByIdOrThrow(bookingId);
         assertInvolves(booking.involves(currentUserId));
         return bookingMapper.toDto(booking);
+    }
+
+    @Override
+    public List<BookingDto> getMyBookings(UUID currentUserId) {
+        return bookingMapper.toDto(bookingRepository.findAllByInvolvedUser(currentUserId));
+    }
+
+    @Override
+    public List<BookingDto> getTripBookings(UUID tripId, UUID currentUserId) {
+        var trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
+
+        assertIsCarrier(trip.getOwner().getId(), currentUserId);
+        return bookingMapper.toDto(bookingRepository.findByTripId(tripId));
+    }
+
+    @Override
+    public BookingDto getParcelBooking(UUID parcelId, UUID currentUserId) {
+        var parcel = parcelRepository.findById(parcelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
+
+        assertIsSender(parcel.getOwner().getId(), currentUserId);
+        return bookingMapper.toDto(bookingRepository.findByParcelId(parcelId));
     }
 
     @Override
@@ -119,7 +149,7 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public void pay(UUID bookingId, UUID senderId) {
         var booking = getBookingByIdOrThrow(bookingId);
-        assertSender(booking.getParcel().getOwner().getId(), senderId);
+        assertIsSender(booking.getParcel().getOwner().getId(), senderId);
         assertBookingInStatus(booking, BookingStatus.PENDING, "Only PENDING bookings can be paid");
         booking.pay();
         bookingRepository.save(booking);
@@ -129,7 +159,7 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public void complete(UUID bookingId, UUID carrierId) {
         var booking = getBookingByIdOrThrow(bookingId);
-        assertCarrier(booking.getTrip().getOwner().getId(), carrierId);
+        assertIsCarrier(booking.getTrip().getOwner().getId(), carrierId);
         assertBookingInStatus(booking, BookingStatus.PAID, "Only PAID bookings can be completed");
         booking.complete();
         booking.getParcel().setStatus(ParcelStatus.DELIVERED);
@@ -163,13 +193,13 @@ public class BookingServiceImp implements BookingService {
             throw new InvalidDomainStateException("Parcel is not available for booking");
     }
 
-    private void assertCarrier(UUID carrierId, UUID userId) {
-        if (!carrierId.equals(userId))
+    private void assertIsCarrier(UUID carrierId, UUID currentUserId) {
+        if (!carrierId.equals(currentUserId))
             throw new UnauthorizedActionException("You are not the carrier of this trip");
     }
 
-    private void assertSender(UUID senderId, UUID userId) {
-        if (!senderId.equals(userId))
+    private void assertIsSender(UUID senderId, UUID currentUserId) {
+        if (!senderId.equals(currentUserId))
             throw new UnauthorizedActionException("You are not the sender of this booking");
     }
 

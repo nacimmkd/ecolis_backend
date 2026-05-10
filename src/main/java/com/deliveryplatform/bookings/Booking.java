@@ -45,9 +45,9 @@ public class Booking {
     @Column(name = "dropoff_code")
     private String dropOffCode;
 
-    @Column(name = "confirmed_at")
+    @Column(name = "created_at")
     @Builder.Default
-    private OffsetDateTime confirmedAt = OffsetDateTime.now();
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @Column(name = "paid_at")
     private OffsetDateTime paidAt;

@@ -4,15 +4,24 @@ import com.deliveryplatform.bookings.dto.BookingCreateRequest;
 import com.deliveryplatform.bookings.dto.BookingRequestDto;
 import com.deliveryplatform.bookings.dto.BookingDto;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface BookingService {
 
     BookingDto getBooking(UUID bookingId, UUID currentUserId);
 
-    BookingRequestDto getBookingRequests(UUID requestId, UUID currentUserId);
+    List<BookingDto> getMyBookings(UUID currentUserId);
 
-    BookingRequestDto requestBooking(BookingCreateRequest dto, UUID senderId);
+    List<BookingDto> getTripBookings(UUID tripId, UUID currentUserId);
+
+    BookingDto getParcelBooking(UUID parcelId, UUID currentUserId);
+
+    BookingRequestDto getBookingRequest(UUID requestId, UUID currentUserId);
+
+    List<BookingRequestDto> getBookingRequests(UUID currentUserId);
+
+    BookingRequestDto createBookingRequest(BookingCreateRequest dto, UUID senderId);
 
     void cancelRequest(UUID requestId, UUID userId);
 

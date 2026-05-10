@@ -9,7 +9,7 @@ CREATE TABLE bookings (
                           pickup_code      VARCHAR(20),
                           dropoff_code     VARCHAR(20),
 
-                          confirmed_at     TIMESTAMPTZ DEFAULT NOW(),
+                          created_at     TIMESTAMPTZ DEFAULT NOW(),
                           paid_at          TIMESTAMPTZ,
                           completed_at    TIMESTAMPTZ,
                           cancelled_at    TIMESTAMPTZ,

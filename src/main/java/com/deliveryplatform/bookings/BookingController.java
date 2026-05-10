@@ -5,11 +5,13 @@ import com.deliveryplatform.bookings.dto.BookingCreateRequest;
 import com.deliveryplatform.bookings.dto.BookingRequestDto;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,11 +23,39 @@ public class BookingController {
 
 
     // ─── BOOKING ────────────────────────────────────────────────────
+
     @GetMapping("/{bookingId}")
     public BookingDto getBooking(
             @PathVariable UUID bookingId,
             @AuthenticationPrincipal UserPrincipal user) {
         return bookingService.getBooking(bookingId, user.getId());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<BookingDto>> getMyBookings(
+            @RequestParam(required = false) UUID tripId,
+            @RequestParam(required = false) UUID parcelId,
+            @AuthenticationPrincipal UserPrincipal user
+    ) throws BadRequestException {
+
+        if(tripId != null && parcelId != null) {
+            throw new BadRequestException("tripId and parcelId cannot be presented at same time");
+        }
+
+        List<BookingDto> bookings;
+
+        if (tripId != null) {
+            bookings = bookingService.getTripBookings(tripId, user.getId());
+        }
+        else if (parcelId != null) {
+            BookingDto booking = bookingService.getParcelBooking(parcelId, user.getId());
+            bookings = (booking != null) ? List.of(booking) : List.of();
+        }
+        else {
+            bookings = bookingService.getMyBookings(user.getId());
+        }
+
+        return ResponseEntity.ok(bookings);
     }
 
     @PatchMapping("/{bookingId}/pay")
@@ -59,7 +89,7 @@ public class BookingController {
             @PathVariable UUID requestId,
             @AuthenticationPrincipal UUID currentUserId
     ) {
-        return ResponseEntity.ok(bookingService.getBookingRequests(requestId, currentUserId));
+        return ResponseEntity.ok(bookingService.getBookingRequest(requestId, currentUserId));
     }
 
     @PostMapping("/requests")
@@ -68,7 +98,7 @@ public class BookingController {
             @AuthenticationPrincipal UUID currentUserId,
             UriComponentsBuilder uriBuilder
     ) {
-        var request = bookingService.requestBooking(dto, currentUserId);
+        var request = bookingService.createBookingRequest(dto, currentUserId);
         var uri = uriBuilder
                 .path("/api/v1/users/{id}")
                 .build(request.requestId());

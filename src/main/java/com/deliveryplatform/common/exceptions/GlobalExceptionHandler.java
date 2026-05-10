@@ -4,6 +4,7 @@ import com.deliveryplatform.common.ApiError;
 import com.deliveryplatform.common.validations.ApiValidationError;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -87,6 +88,16 @@ public class GlobalExceptionHandler {
                         HttpStatus.BAD_GATEWAY.value(),
                         "Service temporarily not available, please try later",
                         request.getRequestURI()));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequestException(BadRequestException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(
+                        HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(),
+                        request.getRequestURI()
+                ));
     }
 
     // VALIDATIONS

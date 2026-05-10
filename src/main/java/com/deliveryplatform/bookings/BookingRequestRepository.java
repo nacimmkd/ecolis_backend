@@ -35,5 +35,14 @@ public interface BookingRequestRepository extends JpaRepository<BookingRequest, 
             ORDER BY br.requestedAt DESC
             """)
     List<BookingRequest> findByParcelId(@Param("parcelId") UUID parcelId);
+
+
+    @Query("""
+       SELECT r FROM BookingRequest r 
+       WHERE r.parcel.owner.id = :userId 
+       OR r.trip.owner.id = :userId
+       ORDER BY r.requestedAt DESC
+       """)
+    List<BookingRequest> findAllByInvolvedUser(@Param("userId") UUID userId);
 }
 
