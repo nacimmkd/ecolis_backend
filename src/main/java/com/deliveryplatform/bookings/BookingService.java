@@ -1,6 +1,5 @@
 package com.deliveryplatform.bookings;
 
-import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.bookings.dto.BookingDto;
 
 import java.util.List;

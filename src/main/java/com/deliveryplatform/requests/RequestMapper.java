@@ -1,7 +1,5 @@
 package com.deliveryplatform.requests;
 
-import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.parcels.ParcelMapper;
 import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.trips.TripMapper;
