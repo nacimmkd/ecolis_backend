@@ -1,6 +1,6 @@
-package com.deliveryplatform.bookings.dto;
+package com.deliveryplatform.requests.dto;
 
-import com.deliveryplatform.bookings.BookingRequestStatus;
+import com.deliveryplatform.requests.BookingRequestStatus;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
 import com.deliveryplatform.trips.dto.TripSummary;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Builder(toBuilder = true)
-public record BookingRequestDto(
+public record RequestDto(
         UUID requestId,
         TripSummary trip,
         ParcelSummary parcel,

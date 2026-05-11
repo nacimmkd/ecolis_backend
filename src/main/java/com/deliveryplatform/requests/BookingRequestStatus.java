@@ -1,4 +1,4 @@
-package com.deliveryplatform.bookings;
+package com.deliveryplatform.requests;
 
 public enum BookingRequestStatus {
     PENDING,

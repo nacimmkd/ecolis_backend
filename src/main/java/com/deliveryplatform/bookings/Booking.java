@@ -1,6 +1,7 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.parcels.Parcel;
+import com.deliveryplatform.requests.BookingRequest;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;

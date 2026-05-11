@@ -1,4 +1,4 @@
-package com.deliveryplatform.bookings;
+package com.deliveryplatform.requests;
 
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.trips.Trip;

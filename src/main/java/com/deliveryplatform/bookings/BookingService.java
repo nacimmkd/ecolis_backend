@@ -1,7 +1,6 @@
 package com.deliveryplatform.bookings;
 
-import com.deliveryplatform.bookings.dto.BookingCreateRequest;
-import com.deliveryplatform.bookings.dto.BookingRequestDto;
+import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.bookings.dto.BookingDto;
 
 import java.util.List;
@@ -17,19 +16,7 @@ public interface BookingService {
 
     BookingDto getParcelBooking(UUID parcelId, UUID currentUserId);
 
-    BookingRequestDto getBookingRequest(UUID requestId, UUID currentUserId);
-
-    List<BookingRequestDto> getBookingRequests(UUID currentUserId);
-
-    BookingRequestDto createBookingRequest(BookingCreateRequest dto, UUID senderId);
-
-    void cancelRequest(UUID requestId, UUID userId);
-
-    void acceptRequest(UUID requestId, UUID carrierId);
-
-    void rejectRequest(UUID requestId, UUID carrierId, String reason);
-
-    void cancelBooking(UUID bookingId, UUID userId);
+    void cancel(UUID bookingId, UUID userId);
 
     void pay(UUID bookingId, UUID senderId);
 

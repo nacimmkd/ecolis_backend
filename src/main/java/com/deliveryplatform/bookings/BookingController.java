@@ -1,15 +1,12 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
-import com.deliveryplatform.bookings.dto.BookingCreateRequest;
-import com.deliveryplatform.bookings.dto.BookingRequestDto;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,9 +17,6 @@ import java.util.UUID;
 public class BookingController {
 
     private final BookingService bookingService;
-
-
-    // ─── BOOKING ────────────────────────────────────────────────────
 
     @GetMapping("/{bookingId}")
     public BookingDto getBooking(
@@ -38,20 +32,17 @@ public class BookingController {
             @AuthenticationPrincipal UserPrincipal user
     ) throws BadRequestException {
 
-        if(tripId != null && parcelId != null) {
+        if (tripId != null && parcelId != null)
             throw new BadRequestException("tripId and parcelId cannot be presented at same time");
-        }
 
         List<BookingDto> bookings;
 
         if (tripId != null) {
             bookings = bookingService.getTripBookings(tripId, user.getId());
-        }
-        else if (parcelId != null) {
+        } else if (parcelId != null) {
             BookingDto booking = bookingService.getParcelBooking(parcelId, user.getId());
             bookings = (booking != null) ? List.of(booking) : List.of();
-        }
-        else {
+        } else {
             bookings = bookingService.getMyBookings(user.getId());
         }
 
@@ -70,7 +61,7 @@ public class BookingController {
     public ResponseEntity<Void> cancelBooking(
             @PathVariable UUID bookingId,
             @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.cancelBooking(bookingId, user.getId());
+        bookingService.cancel(bookingId, user.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -79,57 +70,6 @@ public class BookingController {
             @PathVariable UUID bookingId,
             @AuthenticationPrincipal UserPrincipal user) {
         bookingService.complete(bookingId, user.getId());
-        return ResponseEntity.noContent().build();
-    }
-
-    // ─── BOOKING REQUESTS ────────────────────────────────────────────────────
-
-    @GetMapping("/requests/{requestId}")
-    public ResponseEntity<BookingRequestDto> getBookingRequest(
-            @PathVariable UUID requestId,
-            @AuthenticationPrincipal UUID currentUserId
-    ) {
-        return ResponseEntity.ok(bookingService.getBookingRequest(requestId, currentUserId));
-    }
-
-    @PostMapping("/requests")
-    public ResponseEntity<BookingRequestDto> requestBooking(
-            @RequestBody BookingCreateRequest dto,
-            @AuthenticationPrincipal UUID currentUserId,
-            UriComponentsBuilder uriBuilder
-    ) {
-        var request = bookingService.createBookingRequest(dto, currentUserId);
-        var uri = uriBuilder
-                .path("/api/v1/users/{id}")
-                .build(request.requestId());
-        return ResponseEntity.created(uri).body(request);
-    }
-
-    @PatchMapping("/requests/{requestId}/accept")
-    public ResponseEntity<BookingDto> acceptRequest(
-            @PathVariable UUID requestId,
-            @AuthenticationPrincipal UUID currentUserId
-    ) {
-        bookingService.acceptRequest(requestId, currentUserId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("/requests/{requestId}/reject")
-    public ResponseEntity<Void> rejectRequest(
-            @PathVariable UUID requestId,
-            @RequestParam String reason,
-            @AuthenticationPrincipal UUID currentUserId
-    ) {
-        bookingService.rejectRequest(requestId, currentUserId, reason);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("/requests/{requestId}/cancel")
-    public ResponseEntity<Void> cancelRequest(
-            @PathVariable UUID requestId,
-            @AuthenticationPrincipal UUID currentUserId
-    ) {
-        bookingService.cancelRequest(requestId, currentUserId);
         return ResponseEntity.noContent().build();
     }
 }

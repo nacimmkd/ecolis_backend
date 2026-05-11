@@ -1,10 +1,10 @@
-package com.deliveryplatform.bookings.dto;
+package com.deliveryplatform.requests.dto;
 
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
-public record BookingCreateRequest(
+public record CreateRequest(
         @NotNull UUID tripId,
         @NotNull UUID parcelId
 ) {}
