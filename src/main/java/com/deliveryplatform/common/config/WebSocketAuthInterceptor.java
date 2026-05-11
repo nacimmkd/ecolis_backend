@@ -3,6 +3,7 @@ package com.deliveryplatform.common.config;
 import com.deliveryplatform.auth.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -20,7 +21,8 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     private final JwtService jwtService;
 
     @Override
-    public Message<?> preSend(Message<?> message, MessageChannel channel) {
+    @NonNull
+    public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor
                 .getAccessor(message, StompHeaderAccessor.class);
 
@@ -44,7 +46,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
         }
 
         var principal = jwtService.extractPrincipal(token);
-        var auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()){
+        var auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()) {
             @Override
             public String getName() {
                 return principal.getId().toString();

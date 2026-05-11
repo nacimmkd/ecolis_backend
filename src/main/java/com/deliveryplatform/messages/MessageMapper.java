@@ -5,7 +5,6 @@ import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.messages.dto.*;
 import com.deliveryplatform.users.UserMapper;
 import lombok.RequiredArgsConstructor;
-import org.mapstruct.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

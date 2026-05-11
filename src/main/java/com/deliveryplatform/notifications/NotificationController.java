@@ -54,23 +54,4 @@ public class NotificationController {
         notificationService.delete(id, userId);
         return ResponseEntity.noContent().build();
     }
-
-
-    // test
-//    @PostMapping("/test-ws")
-//    public ResponseEntity<String> testWs(
-//            @AuthenticationPrincipal UserPrincipal user
-//    ) {
-//
-//        var event = new BookingAcceptedEvent(
-//                user.getId(),
-//                "test",
-//                "nacim",
-//                BigDecimal.valueOf(20.0),
-//                UUID.randomUUID()
-//        );
-//        applicationEventPublisher.publishEvent(event);
-//
-//        return ResponseEntity.ok("Check logs");
-//    }
 }

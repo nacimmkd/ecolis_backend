@@ -11,10 +11,7 @@ public record ApiValidationError(
         List<ValidationError> errors
 ) {
 
-    public record ValidationError(
-            String field,
-            String message
-    ){}
+    public record ValidationError(String field, String message){}
 
     public static ApiValidationError of(List<ValidationError> errors) {
         return new ApiValidationError(

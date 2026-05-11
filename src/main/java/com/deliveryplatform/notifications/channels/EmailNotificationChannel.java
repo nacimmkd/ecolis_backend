@@ -19,14 +19,14 @@ public class EmailNotificationChannel implements NotificationChannel {
     public void send(NotificationPayload payload) {
         var template = Templates.notificationReminderTemplate();
         emailService.send(
-                payload.getReceiverEmail(),
+                payload.receiverEmail(),
                 template.subject(),
                 template.body()
         );
     }
 
     @Override
-    public ChannelType channelType() {
+    public ChannelType type() {
         return ChannelType.EMAIL;
     }
 

@@ -9,15 +9,11 @@ import java.util.Set;
 import java.util.UUID;
 
 @Builder
-@Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class NotificationPayload {
-
-    private UUID receiverId;
-    private String receiverEmail;
-    private NotificationType notificationType;
-    private Set<ChannelType> channels;
-    private UUID referenceId;
-    private Map<String, Object> metadata;
-}
+public record NotificationPayload(
+        UUID receiverId,
+        String receiverEmail,
+        NotificationType notificationType,
+        Set<ChannelType> channels,
+        UUID referenceId,
+        Map<String, Object> metadata
+) {}

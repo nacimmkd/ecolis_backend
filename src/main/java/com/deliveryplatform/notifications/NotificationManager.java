@@ -15,7 +15,7 @@ public class NotificationManager {
 
     public void send(NotificationPayload payload) {
         channels.stream()
-                .filter(channel -> payload.getChannels().contains(channel))
+                .filter(channel -> payload.channels().contains(channel.type()))
                 .forEach(channel -> channel.send(payload));
     }
 

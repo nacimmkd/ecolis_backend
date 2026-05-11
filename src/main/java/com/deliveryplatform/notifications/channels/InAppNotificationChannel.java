@@ -17,22 +17,22 @@ public class InAppNotificationChannel implements NotificationChannel {
 
     @Override
     public void send(NotificationPayload payload) {
-        if (payload.getReferenceId() == null) {
+        if (payload.referenceId() == null) {
             throw new IllegalArgumentException("Missing receiverId");
         }
         try{
             messagingTemplate.convertAndSendToUser(
-                    payload.getReceiverId().toString(),
+                    payload.receiverId().toString(),
                     WS_DEST,
                     payload
             );
         }catch (Exception e){
-            log.error("[WS] Failed to send notification — user={} — message={}", payload.getReceiverId().toString(), e.getMessage());
+            log.error("[WS] Failed to send notification — user={} — message={}", payload.receiverId().toString(), e.getMessage());
         }
     }
 
     @Override
-    public ChannelType channelType() {
+    public ChannelType type() {
         return ChannelType.IN_APP;
     }
 }
