@@ -58,11 +58,15 @@ public class BookingServiceImp implements BookingService {
 
     @Override
     @Transactional
-    public void cancel(UUID bookingId, UUID userId) {
+    public void cancel(UUID bookingId, String reason, UUID currentUserId) {
+
         var booking = getBookingByIdOrThrow(bookingId);
-        assertInvolves(booking.involves(userId));
+        assertInvolves(booking.involves(currentUserId));
         assertBookingInStatus(booking, BookingStatus.PENDING, "Only PENDING bookings can be cancelled");
-        booking.cancel();
+
+        var cancelledBy = booking.resolveCanceller(currentUserId);
+        booking.cancel(reason, cancelledBy);
+
         booking.getParcel().setStatus(ParcelStatus.PUBLISHED);
         bookingRepository.save(booking);
     }

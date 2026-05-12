@@ -60,8 +60,9 @@ public class BookingController {
     @PatchMapping("/{bookingId}/cancel")
     public ResponseEntity<Void> cancelBooking(
             @PathVariable UUID bookingId,
+            @RequestParam String reason,
             @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.cancel(bookingId, user.getId());
+        bookingService.cancel(bookingId,reason, user.getId());
         return ResponseEntity.noContent().build();
     }
 

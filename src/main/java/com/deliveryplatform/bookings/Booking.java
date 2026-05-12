@@ -59,6 +59,12 @@ public class Booking {
     @Column(name = "cancelled_at")
     private OffsetDateTime cancelledAt;
 
+    @Column(name = "cancelled_by")
+    private CancelledBy cancelledBy;
+
+    @Column(name = "cancel_reason")
+    private String cancelReason;
+
     // ----------------------------------------------------------------
 
     public static Booking createFromRequest(Request request) {
@@ -79,9 +85,11 @@ public class Booking {
         this.completedAt = OffsetDateTime.now();
     }
 
-    public void cancel() {
+    public void cancel(String reason, CancelledBy cancelledBy) {
         this.status = BookingStatus.CANCELLED;
         this.cancelledAt = OffsetDateTime.now();
+        this.cancelledBy = cancelledBy;
+        this.cancelReason = reason;
     }
 
     public boolean isCompleted() {
@@ -103,5 +111,11 @@ public class Booking {
         var parcelOwner = this.parcel.getOwner();
         var tripOwner   = this.trip.getOwner();
         return parcelOwner.getId().equals(userId) ? tripOwner : parcelOwner;
+    }
+
+    public CancelledBy resolveCanceller(UUID currentUserId) {
+        if (currentUserId.equals(this.getParcel().getOwner().getId())) return CancelledBy.SENDER;
+        if (currentUserId.equals(this.getTrip().getOwner().getId())) return CancelledBy.CARRIER;
+        return CancelledBy.ADMIN;
     }
 }

@@ -15,7 +15,7 @@ public interface BookingService {
 
     BookingDto getParcelBooking(UUID parcelId, UUID currentUserId);
 
-    void cancel(UUID bookingId, UUID userId);
+    void cancel(UUID bookingId, String reason, UUID userId);
 
     void pay(UUID bookingId, UUID senderId);
 

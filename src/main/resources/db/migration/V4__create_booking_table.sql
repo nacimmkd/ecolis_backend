@@ -12,7 +12,12 @@ CREATE TABLE bookings (
                           created_at     TIMESTAMPTZ DEFAULT NOW(),
                           paid_at          TIMESTAMPTZ,
                           completed_at    TIMESTAMPTZ,
+
                           cancelled_at    TIMESTAMPTZ,
+                          cancelled_by    VARCHAR(10)
+                              CHECK (cancelled_by IN ('SENDER', 'CARRIER', 'ADMIN')),
+                          cancel_reason TEXT,
+
 
                           UNIQUE (trip_id, parcel_id),
 
