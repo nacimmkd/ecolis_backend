@@ -9,10 +9,10 @@ public final class CodeGeneratorUtil {
 
     private CodeGeneratorUtil() {}
 
-    // ex: DEL-5436
-    public static String generateParcelCode() {
+    // ex: BOK-5436
+    public static String generateBookingCode() {
         int number = random.nextInt(9000) + 1000;
-        return "PAR-" + number;
+        return "BOK-" + number;
     }
 
     public static String generateVerificationCode() {

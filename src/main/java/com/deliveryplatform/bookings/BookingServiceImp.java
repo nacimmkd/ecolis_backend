@@ -6,6 +6,7 @@ import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.ParcelStatus;
+import com.deliveryplatform.requests.Request;
 import com.deliveryplatform.trips.TripRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,13 @@ public class BookingServiceImp implements BookingService {
 
         assertIsSender(parcel.getOwner().getId(), currentUserId);
         return bookingMapper.toDto(bookingRepository.findByParcelId(parcelId));
+    }
+
+    @Override
+    @Transactional
+    public BookingDto create(Request request) {
+        var booking = Booking.createFromRequest(request);
+        return bookingMapper.toDto(bookingRepository.save(booking));
     }
 
     @Override

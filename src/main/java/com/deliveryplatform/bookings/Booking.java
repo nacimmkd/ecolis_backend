@@ -1,5 +1,6 @@
 package com.deliveryplatform.bookings;
 
+import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.requests.Request;
 import com.deliveryplatform.trips.Trip;
@@ -60,6 +61,7 @@ public class Booking {
     private OffsetDateTime cancelledAt;
 
     @Column(name = "cancelled_by")
+    @Enumerated(EnumType.STRING)
     private CancelledBy cancelledBy;
 
     @Column(name = "cancel_reason")
@@ -71,7 +73,8 @@ public class Booking {
         return Booking.builder()
                 .trip(request.getTrip())
                 .parcel(request.getParcel())
-                .price(request.getParcel().getWeightKg().multiply(request.getTrip().getPricePerKg()))
+                .price(BookingPriceCalculator.calculate(request.getParcel(), request.getTrip()))
+                .pickupCode(CodeGeneratorUtil.generateBookingCode())
                 .build();
     }
 

@@ -2,6 +2,7 @@ package com.deliveryplatform.addresses;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.lang.NonNull;
 
 public record Address(
         @NotBlank @Size(max = 255) String street,
@@ -11,8 +12,9 @@ public record Address(
 ) {
 
     @Override
+    @NonNull
     public String toString(){
         return "%s, %s %s, %s".formatted(street, postalCode, city, country);
-        // → "10 rue de la Paix, 75001 Paris, France"
+        // → "10 rue strasbourg, 75001 Paris, France"
     }
 }

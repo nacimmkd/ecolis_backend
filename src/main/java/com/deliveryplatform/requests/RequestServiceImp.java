@@ -1,9 +1,6 @@
 package com.deliveryplatform.requests;
 
-import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.bookings.BookingPriceCalculator;
-import com.deliveryplatform.bookings.BookingRepository;
-import com.deliveryplatform.common.CodeGeneratorUtil;
+import com.deliveryplatform.bookings.BookingService;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
@@ -25,7 +22,7 @@ import java.util.UUID;
 public class RequestServiceImp implements RequestService {
 
     private final RequestRepository        requestRepository;
-    private final BookingRepository        bookingRepository;
+    private final BookingService           bookingService;
     private final ParcelRepository         parcelRepository;
     private final TripRepository           tripRepository;
     private final RequestMapper            requestMapper;
@@ -96,8 +93,8 @@ public class RequestServiceImp implements RequestService {
         if (trip.isInstantBooking()) {
             bookingRequest.accept();
             parcel.setStatus(ParcelStatus.BOOKED);
+            bookingService.create(bookingRequest); // ccreate and save booking
             requestRepository.save(bookingRequest);
-            bookingRepository.save(buildBookingFromRequest(bookingRequest));
         } else {
             requestRepository.save(bookingRequest);
         }
@@ -124,8 +121,8 @@ public class RequestServiceImp implements RequestService {
 
         request.accept();
         request.getParcel().setStatus(ParcelStatus.BOOKED);
+        bookingService.create(request);
         requestRepository.save(request);
-        bookingRepository.save(Booking.createFromRequest(request));
     }
 
     @Override
@@ -182,11 +179,4 @@ public class RequestServiceImp implements RequestService {
             );
     }
 
-    private Booking buildBookingFromRequest(Request request) {
-        var booking = Booking.createFromRequest(request);
-        booking.setPickupCode(CodeGeneratorUtil.generateParcelCode());
-        booking.setDropOffCode(CodeGeneratorUtil.generateParcelCode());
-        booking.setPrice(BookingPriceCalculator.calculate(request.getParcel(), request.getTrip()));
-        return booking;
-    }
 }

@@ -1,6 +1,7 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
+import com.deliveryplatform.requests.Request;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +15,8 @@ public interface BookingService {
     List<BookingDto> getTripBookings(UUID tripId, UUID currentUserId);
 
     BookingDto getParcelBooking(UUID parcelId, UUID currentUserId);
+
+    BookingDto create(Request request);
 
     void cancel(UUID bookingId, String reason, UUID userId);
 
