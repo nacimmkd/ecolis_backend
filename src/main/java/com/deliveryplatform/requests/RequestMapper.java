@@ -16,7 +16,7 @@ public class RequestMapper {
     private final ParcelMapper parcelMapper;
 
 
-    public RequestDto toRequestDto(BookingRequest request) {
+    public RequestDto toRequestDto(Request request) {
         return RequestDto.builder()
                 .requestId(request.getId())
                 .trip(tripMapper.toSummaryDto(request.getTrip()))
@@ -28,7 +28,7 @@ public class RequestMapper {
                 .build();
     }
 
-    public List<RequestDto> toRequestDto(List<BookingRequest> requests) {
+    public List<RequestDto> toRequestDto(List<Request> requests) {
         return requests.stream().map(this::toRequestDto).toList();
     }
 }

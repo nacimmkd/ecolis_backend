@@ -8,11 +8,19 @@ import java.util.UUID;
 
 public interface RequestService {
 
-    RequestDto getBookingRequest(UUID requestId, UUID currentUserId);
+    RequestDto getRequest(UUID requestId, UUID currentUserId);
 
-    List<RequestDto> getBookingRequests(UUID currentUserId);
+    List<RequestDto> getMySentRequests(UUID senderId);
 
-    RequestDto createBookingRequest(CreateRequest dto, UUID senderId);
+    List<RequestDto> getMyReceivedRequests(UUID carrierId);
+
+    List<RequestDto> getMyTripRequests(UUID tripId, UUID currentUserId);
+
+    List<RequestDto> getMyParcelRequests(UUID parcelId, UUID currentUserId);
+
+    List<RequestDto> getUserInvolvedRequests(UUID currentUserId);
+
+    RequestDto createRequest(CreateRequest dto, UUID senderId);
 
     void cancelRequest(UUID requestId, UUID userId);
 

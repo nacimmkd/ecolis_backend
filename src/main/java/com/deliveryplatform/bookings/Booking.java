@@ -1,7 +1,7 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.parcels.Parcel;
-import com.deliveryplatform.requests.BookingRequest;
+import com.deliveryplatform.requests.Request;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -61,7 +61,7 @@ public class Booking {
 
     // ----------------------------------------------------------------
 
-    public static Booking createFromRequest(BookingRequest request) {
+    public static Booking createFromRequest(Request request) {
         return Booking.builder()
                 .trip(request.getTrip())
                 .parcel(request.getParcel())

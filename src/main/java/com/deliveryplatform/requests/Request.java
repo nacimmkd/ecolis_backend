@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookingRequest {
+public class Request {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,7 +33,7 @@ public class BookingRequest {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private BookingRequestStatus status = BookingRequestStatus.PENDING;
+    private RequestStatus status = RequestStatus.PENDING;
 
     @Column(name = "rejection_reason")
     private String rejectionReason;
@@ -47,31 +47,31 @@ public class BookingRequest {
 
     // ----------------------------------------------------------------
 
-    public static BookingRequest create(Trip trip, Parcel parcel) {
-        return BookingRequest.builder()
+    public static Request create(Trip trip, Parcel parcel) {
+        return Request.builder()
                 .trip(trip)
                 .parcel(parcel)
                 .build();
     }
 
     public void accept() {
-        this.status = BookingRequestStatus.ACCEPTED;
+        this.status = RequestStatus.ACCEPTED;
         this.respondedAt = OffsetDateTime.now();
     }
 
     public void reject(String reason) {
-        this.status = BookingRequestStatus.REJECTED;
+        this.status = RequestStatus.REJECTED;
         this.rejectionReason = reason;
         this.respondedAt = OffsetDateTime.now();
     }
 
     public void cancel() {
-        this.status = BookingRequestStatus.CANCELLED;
+        this.status = RequestStatus.CANCELLED;
         this.respondedAt = OffsetDateTime.now();
     }
 
     public boolean isPending() {
-        return BookingRequestStatus.PENDING.equals(this.status);
+        return RequestStatus.PENDING.equals(this.status);
     }
 
     public UUID getSenderId()  { return this.parcel.getOwner().getId(); }

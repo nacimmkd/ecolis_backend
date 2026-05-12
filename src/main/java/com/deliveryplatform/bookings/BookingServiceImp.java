@@ -6,7 +6,6 @@ import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.ParcelStatus;
-import com.deliveryplatform.requests.BookingRequestRepository;
 import com.deliveryplatform.trips.TripRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ import java.util.UUID;
 public class BookingServiceImp implements BookingService {
 
     private final BookingRepository        bookingRepository;
-    private final BookingRequestRepository bookingRequestRepository;
     private final ParcelRepository         parcelRepository;
     private final TripRepository           tripRepository;
     private final BookingMapper            bookingMapper;

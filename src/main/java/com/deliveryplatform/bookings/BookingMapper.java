@@ -3,7 +3,7 @@ package com.deliveryplatform.bookings;
 import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.parcels.ParcelMapper;
-import com.deliveryplatform.requests.BookingRequest;
+import com.deliveryplatform.requests.Request;
 import com.deliveryplatform.trips.TripMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -35,19 +35,4 @@ public class BookingMapper {
         return bookings.stream().map(this::toDto).toList();
     }
 
-    public RequestDto toRequestDto(BookingRequest request) {
-        return RequestDto.builder()
-                .requestId(request.getId())
-                .trip(tripMapper.toSummaryDto(request.getTrip()))
-                .parcel(parcelMapper.toSummaryDto(request.getParcel()))
-                .status(request.getStatus())
-                .rejectionReason(request.getRejectionReason())
-                .requestedAt(request.getRequestedAt())
-                .respondedAt(request.getRespondedAt())
-                .build();
-    }
-
-    public List<RequestDto> toRequestDto(List<BookingRequest> requests) {
-        return requests.stream().map(this::toRequestDto).toList();
-    }
 }

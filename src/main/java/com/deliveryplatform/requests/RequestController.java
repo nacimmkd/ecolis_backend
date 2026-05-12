@@ -4,6 +4,7 @@ import com.deliveryplatform.requests.dto.CreateRequest;
 import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,14 +25,44 @@ public class RequestController {
             @PathVariable UUID requestId,
             @AuthenticationPrincipal UserPrincipal user
     ) {
-        return ResponseEntity.ok(requestService.getBookingRequest(requestId, user.getId()));
+        return ResponseEntity.ok(requestService.getRequest(requestId, user.getId()));
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<List<RequestDto>> getMyRequests(
+    @GetMapping
+    public ResponseEntity<List<RequestDto>> getRequests(
+            @RequestParam("tripId")  UUID tripId,
+            @RequestParam("parcelId")  UUID parcelId,
+            @AuthenticationPrincipal UserPrincipal user
+    ) throws BadRequestException
+    {
+        if (tripId != null && parcelId != null)
+            throw new BadRequestException("tripId and parcelId cannot be presented at same time");
+
+        List<RequestDto> requests;
+
+        if (tripId != null) {
+            requests = requestService.getMyTripRequests(tripId, user.getId());
+        } else if (parcelId != null) {
+            requests = requestService.getMyParcelRequests(parcelId, user.getId());
+        } else {
+            requests = requestService.getUserInvolvedRequests(user.getId());
+        }
+
+        return ResponseEntity.ok(requests);
+    }
+
+    @GetMapping("/received")
+    public ResponseEntity<List<RequestDto>> getReceivedRequests(
             @AuthenticationPrincipal UserPrincipal user
     ) {
-        return ResponseEntity.ok(requestService.getBookingRequests(user.getId()));
+        return ResponseEntity.ok(requestService.getMyReceivedRequests(user.getId()));
+    }
+
+    @GetMapping("/sent")
+    public ResponseEntity<List<RequestDto>> getSentRequests(
+            @AuthenticationPrincipal UserPrincipal user
+    ) {
+        return ResponseEntity.ok(requestService.getMySentRequests(user.getId()));
     }
 
     @PostMapping
@@ -40,7 +71,7 @@ public class RequestController {
             @AuthenticationPrincipal UserPrincipal user,
             UriComponentsBuilder uriBuilder
     ) {
-        var request = requestService.createBookingRequest(dto, user.getId());
+        var request = requestService.createRequest(dto, user.getId());
         var uri = uriBuilder
                 .path("/api/v1/booking-requests/{id}")
                 .build(request.requestId());

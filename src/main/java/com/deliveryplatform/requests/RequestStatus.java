@@ -1,6 +1,6 @@
 package com.deliveryplatform.requests;
 
-public enum BookingRequestStatus {
+public enum RequestStatus {
     PENDING,
     ACCEPTED,
     REJECTED,
