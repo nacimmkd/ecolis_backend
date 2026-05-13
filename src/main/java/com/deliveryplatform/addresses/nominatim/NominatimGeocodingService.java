@@ -30,7 +30,7 @@ public class NominatimGeocodingService implements GeocodingService {
                         Double.parseDouble((String) result.get("lat")),
                         Double.parseDouble((String) result.get("lon"))
                 ))
-                .orElseThrow(() -> new UnprocessableEntityException("The provided address could not be found"));
+                .orElseThrow(() -> new UnprocessableEntityException("The provided address [ %s ] could not be found".formatted(address)));
     }
 
     private Optional<Map<String, Object>> fetchFirstResult(Address address) {

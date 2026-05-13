@@ -2,6 +2,7 @@ package com.deliveryplatform.profiles;
 
 
 import com.deliveryplatform.images.Image;
+import com.deliveryplatform.profiles.dto.ProfileCreateRequest;
 import com.deliveryplatform.users.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -51,6 +52,16 @@ public class Profile {
     @JsonIgnore
     @MapsId
     private User user;
+
+
+    public static Profile createFromRequest(ProfileCreateRequest request) {
+        return Profile.builder()
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .phone(request.phone())
+                .avatar(null)
+                .build();
+    }
 
 
 }

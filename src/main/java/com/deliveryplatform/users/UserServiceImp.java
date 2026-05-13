@@ -8,11 +8,9 @@ import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.emails.EmailService;
 import com.deliveryplatform.emails.Templates;
-import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.Profile;
-import com.deliveryplatform.profiles.dto.ProfileCreateRequest;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
-import com.deliveryplatform.users.dto.UserPostRequest;
+import com.deliveryplatform.users.dto.UserCreateRequest;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserSummary;
 import jakarta.transaction.Transactional;
@@ -34,7 +32,6 @@ public class UserServiceImp implements UserService {
     private final EmailService emailService;
     private final CachingService cachingService;
     private final AuthService authService;
-    private final ImageService imageService;
 
     private static final String VERIFICATION_CODE_PREFIX = "email:verify:";
     private static final Duration VERIFICATION_CODE_TTL = Duration.ofMinutes(5);
@@ -57,12 +54,11 @@ public class UserServiceImp implements UserService {
 
     @Override
     @Transactional
-    public UserDetails register(UserPostRequest request) {
+    public UserDetails register(UserCreateRequest request) {
         assertEmailUniqueness(request.email());
 
         var user = buildUser(request);
-        var profile = buildProfile(request.profile());
-
+        var profile = Profile.createFromRequest(request.profile());
         user.setProfile(profile);
         return userMapper.toDto(userRepository.save(user));
     }
@@ -147,27 +143,17 @@ public class UserServiceImp implements UserService {
         }
     }
 
-    private User buildUser(UserPostRequest request) {
+    private User buildUser(UserCreateRequest request) {
         return User.builder()
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.USER)
-                .isVerified(true) // just for dev, to be changed later
+                .isVerified(false)
                 .deleted(false)
                 .deletedAt(null)
                 .build();
     }
 
-    private Profile buildProfile(ProfileCreateRequest request) {
-        return Profile.builder()
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .phone(request.phone())
-                .avatar(
-                        imageService.getImageEntity(request.avatarId())
-                )
-                .build();
-    }
 
 
 

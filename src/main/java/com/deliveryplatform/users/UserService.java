@@ -1,7 +1,7 @@
 package com.deliveryplatform.users;
 
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
-import com.deliveryplatform.users.dto.UserPostRequest;
+import com.deliveryplatform.users.dto.UserCreateRequest;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserSummary;
 
@@ -13,7 +13,7 @@ public interface UserService {
 
     List<UserSummary> findAll();
 
-    UserDetails register(UserPostRequest request);
+    UserDetails register(UserCreateRequest request);
 
     void sendVerificationCode(UUID id);
 
