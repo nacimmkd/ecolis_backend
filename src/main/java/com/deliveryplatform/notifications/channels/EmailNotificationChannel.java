@@ -1,8 +1,8 @@
 package com.deliveryplatform.notifications.channels;
 
 
-import com.deliveryplatform.emails.EmailService;
-import com.deliveryplatform.emails.Templates;
+import com.deliveryplatform.notifications.emails.EmailService;
+import com.deliveryplatform.notifications.emails.Templates;
 import com.deliveryplatform.notifications.NotificationPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

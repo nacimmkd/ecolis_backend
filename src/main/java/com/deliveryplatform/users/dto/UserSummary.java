@@ -1,5 +1,6 @@
 package com.deliveryplatform.users.dto;
 
+import com.deliveryplatform.images.dto.ImageDto;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -11,6 +12,6 @@ public record UserSummary(
         String firstName,
         String lastName,
         BigDecimal avgRating,
-        String avatarUrl,
+        ImageDto avatar,
         boolean verified
 ) {}

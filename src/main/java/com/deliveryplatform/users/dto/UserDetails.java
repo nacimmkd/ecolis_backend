@@ -1,6 +1,6 @@
 package com.deliveryplatform.users.dto;
 
-import com.deliveryplatform.profiles.dto.ProfileDto;
+import com.deliveryplatform.profiles.dto.ProfileSummary;
 import com.deliveryplatform.users.Role;
 import lombok.Builder;
 
@@ -13,6 +13,6 @@ public record UserDetails(
         String email,
         Role role,
         boolean verified,
-        ProfileDto profile,
+        ProfileSummary profile,
         OffsetDateTime registeredAt
 ) {}

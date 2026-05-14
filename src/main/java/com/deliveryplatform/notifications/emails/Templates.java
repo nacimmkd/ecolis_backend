@@ -1,4 +1,4 @@
-package com.deliveryplatform.emails;
+package com.deliveryplatform.notifications.emails;
 
 public final class Templates {
 

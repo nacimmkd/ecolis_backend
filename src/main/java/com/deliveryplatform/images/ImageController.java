@@ -21,17 +21,17 @@ public class ImageController {
 
     private final ImageService imageService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ImageDto> getImage(@PathVariable @NotNull UUID id){
-        return ResponseEntity.ok(imageService.getImage(id));
+    @GetMapping("/{imageId}")
+    public ResponseEntity<ImageDto> getImage(@PathVariable @NotNull UUID imageId){
+        return ResponseEntity.ok(imageService.getImage(imageId));
     }
 
     @PostMapping("/presign")
-    public ResponseEntity<PresignedUrl> requestImageUpload(
+    public ResponseEntity<PresignedUrl> getPresignUrl(
             @RequestParam("content") @NotBlank String contentType,
             @AuthenticationPrincipal UserPrincipal user) {
 
-        return ResponseEntity.ok(imageService.requestImageUpload(contentType, user.getId()));
+        return ResponseEntity.ok(imageService.getPresignUrl(contentType, user.getId()));
     }
 
     @PostMapping("/confirm")
@@ -44,12 +44,12 @@ public class ImageController {
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{imageId}")
     public ResponseEntity<Void> remove(
-            @PathVariable @NotNull UUID id,
+            @PathVariable @NotNull UUID imageId,
             @AuthenticationPrincipal UserPrincipal user) {
 
-        imageService.remove(id, user.getId());
+        imageService.removeImage(imageId, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

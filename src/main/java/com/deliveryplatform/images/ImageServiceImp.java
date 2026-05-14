@@ -19,32 +19,11 @@ public class ImageServiceImp implements ImageService {
 
     private final StorageService s3StorageService;
     private final ImageRepository imageRepository;
+    private final ImageMapper imageMapper;
+
 
     @Override
-    public Image getImageEntity(UUID imageId) {
-        return getByIdOrThrow(imageId);
-    }
-
-    @Override
-    public List<Image> getImageEntities(List<UUID> imageIds) {
-        return imageRepository.findAllById(imageIds);
-    }
-
-    @Override
-    public ImageDto getImage(UUID id) {
-        var image = getByIdOrThrow(id);
-        var url = s3StorageService.generateReadUrl(image.getKey());
-        return ImageDto.of(image, url);
-    }
-
-    @Override
-    public String getReadUrl(UUID id) {
-        var image = getByIdOrThrow(id);
-        return s3StorageService.generateReadUrl(image.getKey());
-    }
-
-    @Override
-    public PresignedUrl requestImageUpload(String contentType, UUID uploadedBy) {
+    public PresignedUrl getPresignUrl(String contentType, UUID uploadedBy) {
         var mediaType = resolveMediaType(contentType);
         var presignedUrl = s3StorageService.generatePresignedUrl(mediaType, "images");
 
@@ -57,21 +36,42 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
+    public ImageDto getImage(UUID id) {
+        var image = getByIdOrThrow(id);
+        return imageMapper.toDto(image);
+    }
+
+    @Override
+    public String getReadUrl(UUID id) {
+        var image = getByIdOrThrow(id);
+        return s3StorageService.generateReadUrl(image.getKey());
+    }
+
+
+    @Override
+    public Image getImageEntity(UUID imageId) {
+        return getByIdOrThrow(imageId);
+    }
+
+    @Override
+    public List<Image> getImageEntities(List<UUID> imageIds) {
+        return imageRepository.findAllById(imageIds);
+    }
+
+    @Override
     public ImageDto confirmUpload(String key, UUID uploadedBy) {
         var image = getByKeyOrThrow(key);
         assertOwnership(image, uploadedBy);
         assertExistsInStorage(key);
         image.setConfirmed(true);
-        imageRepository.save(image);
-        var url = s3StorageService.generateReadUrl(key);
-        return ImageDto.of(image, url);
+        return imageMapper.toDto(imageRepository.save(image));
     }
 
 
     @Override
-    public void remove(UUID imageId, UUID userId) {
+    public void removeImage(UUID imageId, UUID currentUserId) {
         var image = getByIdOrThrow(imageId);
-        assertOwnership(image, userId);
+        assertOwnership(image, currentUserId);
         s3StorageService.delete(image.getKey());
         imageRepository.delete(image);
     }

@@ -1,6 +1,7 @@
 package com.deliveryplatform.parcels.dto;
 
 import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.images.dto.ImageDto;
 import com.deliveryplatform.parcels.ParcelSize;
 import com.deliveryplatform.parcels.ParcelStatus;
 import com.deliveryplatform.users.dto.UserSummary;
@@ -22,7 +23,7 @@ public record ParcelDetails(
         GeocodedAddress pickupAddress,
         GeocodedAddress dropoffAddress,
         ParcelStatus status,
-        String thumbnailImageUrl,
-        List<String> imageUrls,
+        ImageDto thumbnailImage,
+        List<ImageDto> images,
         OffsetDateTime createdAt
 ) {}

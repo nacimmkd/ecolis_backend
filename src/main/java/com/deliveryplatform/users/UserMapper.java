@@ -1,7 +1,6 @@
 package com.deliveryplatform.users;
 
-import com.deliveryplatform.images.Image;
-import com.deliveryplatform.images.ImageService;
+import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.profiles.ProfileMapper;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserSummary;
@@ -14,15 +13,15 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
 
     private final ProfileMapper profileMapper;
-    private final ImageService imageService;
+    private final ImageMapper imageMapper;
 
-    public UserDetails toDto(User user) {
+    public UserDetails toDetailsDto(User user) {
         return UserDetails.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .verified(user.isVerified())
-                .profile(profileMapper.toDetailedDto(user.getProfile()))
+                .profile(profileMapper.toSummaryDto(user.getProfile()))
                 .registeredAt(user.getRegisteredAt())
                 .build();
     }
@@ -37,13 +36,8 @@ public class UserMapper {
                 .firstName(profile.getFirstName())
                 .lastName(profile.getLastName())
                 .avgRating(profile.getAvgRating())
-                .avatarUrl(resolveAvatarUrl(profile.getAvatar()))
+                .avatar(imageMapper.toDto(profile.getAvatar()))
                 .verified(user.isVerified())
                 .build();
-    }
-
-    private String resolveAvatarUrl(Image avatar) {
-        if (avatar == null || avatar.getId() == null) return null;
-        return imageService.getReadUrl(avatar.getId());
     }
 }

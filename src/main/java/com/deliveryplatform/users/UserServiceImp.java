@@ -6,8 +6,8 @@ import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.emails.EmailService;
-import com.deliveryplatform.emails.Templates;
+import com.deliveryplatform.notifications.emails.EmailService;
+import com.deliveryplatform.notifications.emails.Templates;
 import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserCreateRequest;
@@ -40,7 +40,7 @@ public class UserServiceImp implements UserService {
 
     @Override
     public UserDetails findById(UUID id) {
-        return userMapper.toDto(getUserByIdOrThrow(id));
+        return userMapper.toDetailsDto(getUserByIdOrThrow(id));
     }
 
     @Override
@@ -60,7 +60,7 @@ public class UserServiceImp implements UserService {
         var user = buildUser(request);
         var profile = Profile.createFromRequest(request.profile());
         user.setProfile(profile);
-        return userMapper.toDto(userRepository.save(user));
+        return userMapper.toDetailsDto(userRepository.save(user));
     }
 
 

@@ -35,17 +35,17 @@ public class Profile {
     @JoinColumn(name = "avatar_image_id")
     private Image avatar;
 
-    @Column(name = "avg_rating", precision = 2, scale = 1)
-    @Builder.Default
-    private BigDecimal avgRating = null;
+    @Transient
+    private BigDecimal avgRating;
 
-    @Column(name = "total_deliveries")
-    @Builder.Default
-    private int totalDeliveries = 0;
+    @Transient
+    private long totalReviews;
 
-    @Column(name = "total_orders")
-    @Builder.Default
-    private int totalOrders = 0;
+    @Transient
+    private int totalDeliveries;
+
+    @Transient
+    private int totalOrders;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id")

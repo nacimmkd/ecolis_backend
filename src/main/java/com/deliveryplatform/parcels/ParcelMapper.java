@@ -1,7 +1,7 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.images.Image;
-import com.deliveryplatform.images.ImageService;
+
+import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelDetails;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class ParcelMapper {
 
     private final UserMapper userMapper;
-    private final ImageService imageService;
+    private final ImageMapper imageMapper;
 
     public ParcelSummary toSummaryDto(Parcel parcel) {
         return ParcelSummary.builder()
@@ -27,7 +27,7 @@ public class ParcelMapper {
                 .pickupAddress(parcel.getPickupAddress())
                 .dropoffAddress(parcel.getDropoffAddress())
                 .status(parcel.getStatus())
-                .thumbnailImageUrl(resolveImageUrl(parcel.getThumbnailImage()))
+                .thumbnailImage(imageMapper.toDto(parcel.getThumbnailImage()))
                 .createdAt(parcel.getCreatedAt())
                 .build();
     }
@@ -43,10 +43,8 @@ public class ParcelMapper {
                 .pickupAddress(parcel.getPickupAddress())
                 .dropoffAddress(parcel.getDropoffAddress())
                 .status(parcel.getStatus())
-                .thumbnailImageUrl(resolveImageUrl(parcel.getThumbnailImage()))
-                .imageUrls(parcel.getImages().stream()
-                        .map(this::resolveImageUrl)
-                        .toList())
+                .thumbnailImage(imageMapper.toDto(parcel.getThumbnailImage()))
+                .images(imageMapper.toDto(parcel.getImages()))
                 .createdAt(parcel.getCreatedAt())
                 .build();
     }
@@ -58,10 +56,5 @@ public class ParcelMapper {
                 .size(request.size())
                 .fragile(request.fragile())
                 .build();
-    }
-
-    private String resolveImageUrl(Image image) {
-        if (image == null || image.getId() == null) return null;
-        return imageService.getReadUrl(image.getId());
     }
 }

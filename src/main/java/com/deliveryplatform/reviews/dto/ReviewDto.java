@@ -9,9 +9,7 @@ import java.util.UUID;
 @Builder
 public record ReviewDto(
         UUID id,
-        UUID bookingId,
         UserSummary reviewer,
-        UserSummary reviewee,
         Short rating,
         String comment,
         OffsetDateTime createdAt

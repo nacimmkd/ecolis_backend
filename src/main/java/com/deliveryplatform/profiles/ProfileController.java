@@ -1,14 +1,17 @@
 package com.deliveryplatform.profiles;
 
 import com.deliveryplatform.profiles.dto.ProfileAvatarRequest;
+import com.deliveryplatform.profiles.dto.ProfileSummary;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
-import com.deliveryplatform.profiles.dto.ProfileDto;
+import com.deliveryplatform.profiles.dto.ProfileDetails;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 
 @RestController
@@ -19,20 +22,27 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @GetMapping("/me")
-    public ResponseEntity<ProfileDto> getMyProfile(
+    public ResponseEntity<ProfileDetails> getMyProfile(
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(profileService.getUserProfile(principal.getId()));
     }
 
+    @GetMapping("/{profileId}")
+    public ResponseEntity<ProfileDetails> getProfileById(
+            @PathVariable UUID profileId
+    ) {
+        return ResponseEntity.ok(profileService.getUserProfile(profileId));
+    }
+
     @PatchMapping("/me")
-    public ResponseEntity<ProfileDto> updateProfile(
+    public ResponseEntity<ProfileSummary> updateProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody @Valid ProfileUpdateRequest request) {
         return ResponseEntity.ok(profileService.updateProfile(principal.getId(), request));
     }
 
     @PatchMapping("/me/avatar")
-    public ResponseEntity<ProfileDto> updateAvatar(
+    public ResponseEntity<ProfileSummary> updateAvatar(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody ProfileAvatarRequest request) {
         return ResponseEntity.ok(profileService.updateAvatar(principal.getId(), request.avatarId()));

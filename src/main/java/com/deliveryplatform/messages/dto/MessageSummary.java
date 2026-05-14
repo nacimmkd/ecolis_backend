@@ -1,6 +1,7 @@
 package com.deliveryplatform.messages.dto;
 
 
+import com.deliveryplatform.images.dto.ImageDto;
 import com.deliveryplatform.users.dto.UserSummary;
 import lombok.Builder;
 
@@ -13,6 +14,6 @@ public record MessageSummary(
         UUID           messageId,
         UserSummary sender,
         String         content,
-        List<String>   imagesUrls,
+        List<ImageDto>   images,
         OffsetDateTime sentAt
 ) {}

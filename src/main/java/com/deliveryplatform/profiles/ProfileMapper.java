@@ -1,8 +1,8 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.images.Image;
-import com.deliveryplatform.images.ImageService;
-import com.deliveryplatform.profiles.dto.ProfileDto;
+import com.deliveryplatform.images.ImageMapper;
+import com.deliveryplatform.profiles.dto.ProfileDetails;
+import com.deliveryplatform.profiles.dto.ProfileSummary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,26 +11,36 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProfileMapper {
 
-    private final ImageService imageService;
+    private final ImageMapper imageMapper;
 
-    public ProfileDto toDetailedDto(Profile profile) {
+    public ProfileDetails toDetailedDto(Profile profile) {
         if (profile == null) {
             return null;
         }
-        return ProfileDto.builder()
+        return ProfileDetails.builder()
                 .profileId(profile.getId())
                 .firstName(profile.getFirstName())
                 .lastName(profile.getLastName())
                 .phone(profile.getPhone())
                 .avgRating(profile.getAvgRating())
+                .totalReviews(profile.getTotalReviews())
                 .totalDeliveries(profile.getTotalDeliveries())
                 .totalOrders(profile.getTotalOrders())
-                .avatarUrl(resolveAvatarUrl(profile.getAvatar()))
+                .avatar(imageMapper.toDto(profile.getAvatar()))
                 .build();
     }
 
-    private String resolveAvatarUrl(Image avatar) {
-        if (avatar == null || avatar.getId() == null) return null;
-        return imageService.getReadUrl(avatar.getId());
+
+    public ProfileSummary toSummaryDto(Profile profile) {
+        if (profile == null) {
+            return null;
+        }
+        return ProfileSummary.builder()
+                .profileId(profile.getId())
+                .firstName(profile.getFirstName())
+                .lastName(profile.getLastName())
+                .phone(profile.getPhone())
+                .avatar(imageMapper.toDto(profile.getAvatar()))
+                .build();
     }
 }

@@ -1,4 +1,4 @@
-package com.deliveryplatform.emails;
+package com.deliveryplatform.notifications.emails;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
