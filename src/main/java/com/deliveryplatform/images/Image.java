@@ -32,9 +32,6 @@ public class Image {
     @Builder.Default
     private boolean confirmed = false;
 
-    @Transient
-    private String url;
-
     @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
