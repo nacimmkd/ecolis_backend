@@ -1,5 +1,6 @@
 package com.deliveryplatform.trips;
 
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.trips.dto.*;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public interface TripService {
 
     void deleteTrip(UUID tripId, UUID userId);
 
-    TripStopSummary addStop(UUID tripId, UUID userId, TripStopRequest request);
+    TripStopSummary addStop(UUID tripId, UUID userId, Address address);
 
     TripStopSummary updateStop(UUID stopId, UUID tripId, UUID userId, TripStopRequest request);
 

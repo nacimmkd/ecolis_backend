@@ -1,9 +1,7 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
-import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.parcels.ParcelMapper;
-import com.deliveryplatform.requests.Request;
 import com.deliveryplatform.trips.TripMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

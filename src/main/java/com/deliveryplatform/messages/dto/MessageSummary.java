@@ -2,7 +2,7 @@ package com.deliveryplatform.messages.dto;
 
 
 import com.deliveryplatform.images.dto.ImageDto;
-import com.deliveryplatform.users.dto.UserSummary;
+import com.deliveryplatform.users.dto.UserBrief;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 public record MessageSummary(
         UUID           messageId,
-        UserSummary sender,
+        UserBrief sender,
         String         content,
         List<ImageDto>   images,
         OffsetDateTime sentAt

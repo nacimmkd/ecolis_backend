@@ -5,7 +5,6 @@ import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.dto.ProfileSummary;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
 import com.deliveryplatform.profiles.dto.ProfileDetails;
-import com.deliveryplatform.reviews.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,14 +16,15 @@ import java.util.UUID;
 public class ProfileServiceImp implements ProfileService {
 
     private final ProfileRepository profileRepository;
-    private final ReviewRepository reviewRepository;
     private final ProfileMapper profileMapper;
     private final ImageService imageService;
 
     @Override
     public ProfileDetails getUserProfile(UUID userId) {
         var profile = getByIdOrThrow(userId);
-        profile.setAvgRating(reviewRepository.calculateAvgRating(userId));
+        profile.setStatistics(
+                profileRepository.getProfileStats(profile.getId())
+        );
         return profileMapper.toDetailedDto(profile);
     }
 

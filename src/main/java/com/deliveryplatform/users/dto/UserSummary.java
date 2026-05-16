@@ -1,17 +1,17 @@
 package com.deliveryplatform.users.dto;
 
-import com.deliveryplatform.images.dto.ImageDto;
+
+import com.deliveryplatform.users.Role;
 import lombok.Builder;
 
-import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Builder
 public record UserSummary(
         UUID userId,
-        String firstName,
-        String lastName,
-        BigDecimal avgRating,
-        ImageDto avatar,
-        boolean verified
+        String email,
+        Role role,
+        boolean verified,
+        OffsetDateTime registeredAt
 ) {}

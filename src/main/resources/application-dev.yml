@@ -8,9 +8,11 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: validate
-    properties:
-      hibernate:
-        format_sql: false
+
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-test.sql
 
   data:
     redis:

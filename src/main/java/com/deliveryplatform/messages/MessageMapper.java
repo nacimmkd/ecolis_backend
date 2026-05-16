@@ -42,7 +42,7 @@ public class MessageMapper {
     public MessageSummary toSummaryDto(Message message) {
         return MessageSummary.builder()
                 .messageId(message.getId())
-                .sender(userMapper.toSummaryDto(message.getSender()))
+                .sender(userMapper.toRefDto(message.getSender()))
                 .content(message.getContent())
                 .images(imageMapper.toDto(message.getImages()))
                 .sentAt(message.getSentAt())

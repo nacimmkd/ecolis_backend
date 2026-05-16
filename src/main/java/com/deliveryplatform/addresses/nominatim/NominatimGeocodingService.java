@@ -24,6 +24,9 @@ public class NominatimGeocodingService implements GeocodingService {
 
     @Override
     public GeocodedAddress geocode(Address address) {
+        if (address == null) {
+            return null;
+        }
         return fetchFirstResult(address)
                 .map(result -> GeocodedAddress.of(
                         address,

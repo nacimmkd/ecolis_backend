@@ -4,7 +4,7 @@ import com.deliveryplatform.addresses.GeocodedAddress;
 import com.deliveryplatform.images.dto.ImageDto;
 import com.deliveryplatform.parcels.ParcelSize;
 import com.deliveryplatform.parcels.ParcelStatus;
-import com.deliveryplatform.users.dto.UserSummary;
+import com.deliveryplatform.users.dto.UserBrief;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder
 public record ParcelDetails(
         UUID parcelId,
-        UserSummary owner,
+        UserBrief owner,
         String description,
         BigDecimal weightKg,
         ParcelSize size,

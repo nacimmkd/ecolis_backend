@@ -14,6 +14,9 @@ public class ImageMapper {
     private final StorageService storageService;
 
     public ImageDto toDto(Image image) {
+        if (image == null) {
+            return null;
+        }
         return ImageDto.builder()
                 .id(image.getId())
                 .url(storageService.generateReadUrl(image.getKey()))
@@ -23,6 +26,9 @@ public class ImageMapper {
     }
 
     public List<ImageDto> toDto(List<Image> images) {
+        if (images == null) {
+            return List.of();
+        }
         return images.stream()
                 .map(this::toDto)
                 .toList();

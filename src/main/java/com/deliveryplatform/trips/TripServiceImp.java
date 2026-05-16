@@ -1,5 +1,6 @@
 package com.deliveryplatform.trips;
 
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.addresses.GeocodingService;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
@@ -82,18 +83,18 @@ public class TripServiceImp implements TripService {
 
     @Override
     @Transactional
-    public TripStopSummary addStop(UUID tripId, UUID currentUserId, TripStopRequest request) {
+    public TripStopSummary addStop(UUID tripId, UUID currentUserId, Address address) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
         var stop = TripStop.builder()
                 .stopOrder(trip.getStops().size() + 1)
-                .address(geocodingService.geocode(request.address()))
+                .address(geocodingService.geocode(address))
                 .build();
 
         trip.addStop(stop);
 
-        return tripMapper.toStopDto(stopRepository.save(stop));
+        return tripMapper.toSummaryDto(stopRepository.save(stop));
     }
 
     @Override
@@ -102,10 +103,11 @@ public class TripServiceImp implements TripService {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
+        if (request.address() == null) throw new InvalidDomainStateException("Address is required");
         var stop = findStopInTrip(trip, stopId);
         stop.setAddress(geocodingService.geocode(request.address()));
 
-        return tripMapper.toStopDto(stopRepository.save(stop));
+        return tripMapper.toSummaryDto(stopRepository.save(stop));
     }
 
     @Override

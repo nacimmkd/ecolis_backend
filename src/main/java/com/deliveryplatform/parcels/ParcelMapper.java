@@ -20,7 +20,7 @@ public class ParcelMapper {
     public ParcelSummary toSummaryDto(Parcel parcel) {
         return ParcelSummary.builder()
                 .parcelId(parcel.getId())
-                .owner(userMapper.toSummaryDto(parcel.getOwner()))
+                .owner(userMapper.toRefDto(parcel.getOwner()))
                 .weightKg(parcel.getWeightKg())
                 .size(parcel.getSize())
                 .fragile(parcel.isFragile())
@@ -35,7 +35,7 @@ public class ParcelMapper {
     public ParcelDetails toDetailedDto(Parcel parcel) {
         return ParcelDetails.builder()
                 .parcelId(parcel.getId())
-                .owner(userMapper.toSummaryDto(parcel.getOwner()))
+                .owner(userMapper.toRefDto(parcel.getOwner()))
                 .description(parcel.getDescription())
                 .weightKg(parcel.getWeightKg())
                 .size(parcel.getSize())

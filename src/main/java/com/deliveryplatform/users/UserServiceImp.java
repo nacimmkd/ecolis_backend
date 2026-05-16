@@ -148,7 +148,7 @@ public class UserServiceImp implements UserService {
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.USER)
-                .isVerified(false)
+                .verified(false)
                 .deleted(false)
                 .deletedAt(null)
                 .build();

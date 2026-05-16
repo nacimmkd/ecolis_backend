@@ -31,7 +31,7 @@ public class User {
 
     @Column(name = "is_verified")
     @Builder.Default
-    private boolean isVerified = true; // just for dev, to be changed later
+    private boolean verified = false;
 
     @Column(name = "registered_at")
     @Builder.Default

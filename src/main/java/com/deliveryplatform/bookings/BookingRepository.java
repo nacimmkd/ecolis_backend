@@ -27,4 +27,6 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
        ORDER BY b.createdAt DESC
        """)
     List<Booking> findAllByInvolvedUser(@Param("userId") UUID userId);
+
+
 }

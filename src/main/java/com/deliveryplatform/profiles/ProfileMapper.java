@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class ProfileMapper {
 
     private final ImageMapper imageMapper;
+    private final ProfileStatsResolver resolver;
 
     public ProfileDetails toDetailedDto(Profile profile) {
         if (profile == null) {
@@ -22,10 +23,10 @@ public class ProfileMapper {
                 .firstName(profile.getFirstName())
                 .lastName(profile.getLastName())
                 .phone(profile.getPhone())
-                .avgRating(profile.getAvgRating())
-                .totalReviews(profile.getTotalReviews())
-                .totalDeliveries(profile.getTotalDeliveries())
-                .totalOrders(profile.getTotalOrders())
+                .avgRating(resolver.resolveAvgRating(profile))
+                .reviewCount(profile.getReviewCount())
+                .completedTrips(profile.getDeliveredParcels())
+                .deliveredParcels(profile.getDeliveredParcels())
                 .avatar(imageMapper.toDto(profile.getAvatar()))
                 .build();
     }
