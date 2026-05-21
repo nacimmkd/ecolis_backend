@@ -6,8 +6,8 @@ import lombok.Builder;
 import java.util.UUID;
 
 @Builder(toBuilder = true)
-public record TripStopSummary(
-        UUID tripStopId,
+public record StopPoint(
+        UUID stopId,
         Integer stopOrder,
         GeocodedAddress address
 ) {}

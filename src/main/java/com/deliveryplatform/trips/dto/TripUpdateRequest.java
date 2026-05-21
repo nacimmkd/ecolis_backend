@@ -23,6 +23,6 @@ public record TripUpdateRequest(
 
         String notes,
 
-        @Valid List<TripStopRequest> stops
+        @Valid List<StopPointRequest> stops
 ) {}
 

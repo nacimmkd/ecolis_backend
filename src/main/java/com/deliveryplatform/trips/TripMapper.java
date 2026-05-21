@@ -18,7 +18,6 @@ public class TripMapper {
         }
         return TripSummary.builder()
                 .tripId(trip.getId())
-                .owner(userMapper.toRefDto(trip.getOwner()))
                 .departureAddress(trip.getDepartureAddress())
                 .arrivalAddress(trip.getArrivalAddress())
                 .departureDate(trip.getDepartureDate())
@@ -28,7 +27,7 @@ public class TripMapper {
                 .pricePerKg(trip.getPricePerKg())
                 .instantBooking(trip.isInstantBooking())
                 .status(trip.getStatus())
-                .stops(trip.getStops().stream().map(this::toSummaryDto).toList())
+                .stopCount(trip.getStops().size())
                 .createdAt(trip.getCreatedAt())
                 .build();
     }
@@ -56,12 +55,12 @@ public class TripMapper {
                 .build();
     }
 
-    public TripStopSummary toSummaryDto(TripStop stop) {
+    public StopPoint toSummaryDto(TripStop stop) {
         if (stop == null) {
             return null;
         }
-        return TripStopSummary.builder()
-                .tripStopId(stop.getId())
+        return StopPoint.builder()
+                .stopId(stop.getId())
                 .stopOrder(stop.getStopOrder())
                 .address(stop.getAddress())
                 .build();

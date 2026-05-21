@@ -7,9 +7,9 @@ import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.trips.dto.*;
 import com.deliveryplatform.users.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +19,6 @@ import java.util.UUID;
 public class TripServiceImp implements TripService {
 
     private final TripRepository     tripRepository;
-    private final TripStopRepository stopRepository; // to be removed later
     private final UserRepository     userRepository;
     private final GeocodingService   geocodingService;
     private final TripMapper         tripMapper;
@@ -30,15 +29,15 @@ public class TripServiceImp implements TripService {
     }
 
     @Override
-    public List<TripSummary> getUserTrips(UUID currentUserId) {
-        return tripRepository.findByOwnerId(currentUserId).stream()
+    public List<TripSummary> getAllTrips() {
+        return tripRepository.findAll().stream()
                 .map(tripMapper::toSummaryDto)
                 .toList();
     }
 
     @Override
-    public List<TripSummary> getAllTrips() {
-        return tripRepository.findAll().stream()
+    public List<TripSummary> getMyTrips(UUID currentUserId) {
+        return tripRepository.findByOwnerId(currentUserId).stream()
                 .map(tripMapper::toSummaryDto)
                 .toList();
     }
@@ -83,7 +82,7 @@ public class TripServiceImp implements TripService {
 
     @Override
     @Transactional
-    public TripStopSummary addStop(UUID tripId, UUID currentUserId, Address address) {
+    public StopPoint addStop(UUID tripId, UUID currentUserId, Address address) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
@@ -93,21 +92,22 @@ public class TripServiceImp implements TripService {
                 .build();
 
         trip.addStop(stop);
-
-        return tripMapper.toSummaryDto(stopRepository.save(stop));
+        tripRepository.save(trip);
+        return tripMapper.toSummaryDto(stop);
     }
 
     @Override
     @Transactional
-    public TripStopSummary updateStop(UUID stopId, UUID tripId, UUID currentUserId, TripStopRequest request) {
+    public StopPoint updateStop(UUID stopId, UUID tripId, UUID currentUserId, StopPointRequest request) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
         if (request.address() == null) throw new InvalidDomainStateException("Address is required");
+
         var stop = findStopInTrip(trip, stopId);
         stop.setAddress(geocodingService.geocode(request.address()));
-
-        return tripMapper.toSummaryDto(stopRepository.save(stop));
+        tripRepository.save(trip);
+        return tripMapper.toSummaryDto(stop);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class TripServiceImp implements TripService {
 
     // ----------------------------------------------------------------
 
-    private List<TripStop> buildStopEntities(List<TripStopRequest> stops) {
+    private List<TripStop> buildStopEntities(List<StopPointRequest> stops) {
         if (stops == null) return List.of();
         return stops.stream()
                 .map(req -> TripStop.builder()
@@ -158,7 +158,7 @@ public class TripServiceImp implements TripService {
         trip.reorderStops();
     }
 
-    private void validateStopsSequence(List<TripStopRequest> stops) {
+    private void validateStopsSequence(List<StopPointRequest> stops) {
         for (int i = 0; i < stops.size(); i++) {
             if (stops.get(i).stopOrder() != i + 1)
                 throw new InvalidDomainStateException("Trip stops must be in sequence order");

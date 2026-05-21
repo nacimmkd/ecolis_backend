@@ -31,7 +31,7 @@ public class TripController {
     public ResponseEntity<List<TripSummary>> getMyTrips(
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return ResponseEntity.ok(tripService.getUserTrips(principal.getId()));
+        return ResponseEntity.ok(tripService.getMyTrips(principal.getId()));
     }
 
     @PostMapping
@@ -67,7 +67,7 @@ public class TripController {
     // STOPS
 
     @PostMapping("/{tripId}/stops")
-    public ResponseEntity<TripStopSummary> addStop(
+    public ResponseEntity<StopPoint> addStop(
             @PathVariable UUID tripId,
             @RequestBody Address address,
             @AuthenticationPrincipal UserPrincipal principal
@@ -89,10 +89,10 @@ public class TripController {
 
 
     @PatchMapping("/{tripId}/stops/{stopId}")
-    public ResponseEntity<TripStopSummary> updateTripStop(
+    public ResponseEntity<StopPoint> updateTripStop(
             @PathVariable UUID tripId,
             @PathVariable UUID stopId,
-            @RequestBody TripStopRequest stopRequest,
+            @RequestBody StopPointRequest stopRequest,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(
                 tripService.updateStop(stopId, tripId, principal.getId(), stopRequest)

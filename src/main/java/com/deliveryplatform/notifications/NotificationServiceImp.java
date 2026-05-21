@@ -2,14 +2,12 @@ package com.deliveryplatform.notifications;
 
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.notifications.channels.ChannelType;
-import com.deliveryplatform.notifications.channels.NotificationChannel;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -29,7 +27,7 @@ public class NotificationServiceImp implements NotificationService {
         var notification = notificationRepository.save(Notification.createFromNotificationPayload(payload));
 
         var isConnected = this.isUserConnected(notification.getUserId());
-        if(isConnected){
+        if(!isConnected){
             payload.channels().remove(ChannelType.IN_APP);
             payload.channels().add(ChannelType.EMAIL);
         }

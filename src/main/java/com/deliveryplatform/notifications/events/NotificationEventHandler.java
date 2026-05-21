@@ -1,6 +1,6 @@
 package com.deliveryplatform.notifications.events;
 
-import com.deliveryplatform.notifications.NotificationServiceImp;
+import com.deliveryplatform.notifications.NotificationService;
 import com.deliveryplatform.notifications.NotificationType;
 import com.deliveryplatform.notifications.NotificationPayload;
 import lombok.RequiredArgsConstructor;
@@ -14,12 +14,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NotificationEventHandler {
 
-    private final NotificationServiceImp notificationServiceImp;
+    private final NotificationService notificationService;
 
     @EventListener
     @Async
     public void onBookingRequested(BookingRequestedEvent event) {
-        notificationServiceImp.notify(
+        notificationService.notify(
                 NotificationPayload.builder()
                         .receiverId(event.carrierId())
                         .receiverEmail(event.carrierEmail())
@@ -33,7 +33,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onBookingAccepted(BookingAcceptedEvent event) {
-        notificationServiceImp.notify(
+        notificationService.notify(
                 NotificationPayload.builder()
                         .receiverId(event.senderId())
                         .receiverEmail(event.senderEmail())
@@ -46,7 +46,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onBookingCancelled(BookingCancelledEvent event) {
-        notificationServiceImp.notify(
+        notificationService.notify(
                 NotificationPayload.builder()
                         .referenceId(event.userId())
                         .receiverEmail(event.userEmail())
@@ -59,7 +59,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onPaymentReceived(PaymentReceivedEvent event) {
-        notificationServiceImp.notify(
+        notificationService.notify(
                 NotificationPayload.builder()
                         .receiverId(event.userId())
                         .receiverEmail(event.userEmail())
@@ -72,7 +72,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onTripCancelled(TripCancelledEvent event) {
-        notificationServiceImp.notify(
+        notificationService.notify(
                 NotificationPayload.builder()
                         .receiverId(event.userId())
                         .receiverEmail(event.userEmail())
@@ -85,7 +85,7 @@ public class NotificationEventHandler {
     @EventListener
     @Async
     public void onParcelDelivered(ParcelDeliveredEvent event) {
-        notificationServiceImp.notify(
+        notificationService.notify(
                 NotificationPayload.builder()
                         .receiverId(event.userId())
                         .receiverEmail(event.userEmail())

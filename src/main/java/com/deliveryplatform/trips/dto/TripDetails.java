@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 
-@Builder(toBuilder = true)
+@Builder
 public record TripDetails(
         UUID tripId,
         UserBrief owner,
@@ -27,6 +27,6 @@ public record TripDetails(
         BigDecimal maxDetourKm,
         TripStatus status,
         String notes,
-        List<TripStopSummary> stops,
+        List<StopPoint> stops,
         OffsetDateTime createdAt
 ) {}

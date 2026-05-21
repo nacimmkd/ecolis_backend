@@ -10,9 +10,10 @@ public interface TripService {
 
     TripDetails getTrip(UUID id);
 
-    List<TripSummary> getUserTrips(UUID userId);
-
     List<TripSummary> getAllTrips();
+
+
+    List<TripSummary> getMyTrips(UUID currentUserId);
 
     TripDetails createTrip(UUID userId, TripCreateRequest request);
 
@@ -20,9 +21,9 @@ public interface TripService {
 
     void deleteTrip(UUID tripId, UUID userId);
 
-    TripStopSummary addStop(UUID tripId, UUID userId, Address address);
+    StopPoint addStop(UUID tripId, UUID userId, Address address);
 
-    TripStopSummary updateStop(UUID stopId, UUID tripId, UUID userId, TripStopRequest request);
+    StopPoint updateStop(UUID stopId, UUID tripId, UUID userId, StopPointRequest request);
 
     void deleteStop(UUID stopId, UUID tripId, UUID userId);
 }
