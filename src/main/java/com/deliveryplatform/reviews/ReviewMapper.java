@@ -17,6 +17,7 @@ public class ReviewMapper {
         return ReviewDto.builder()
                 .id(review.getId())
                 .reviewer(userMapper.toRefDto(review.getReviewer()))
+                .reviewed(userMapper.toRefDto(review.getReviewee()))
                 .rating(review.getRating())
                 .comment(review.getComment())
                 .createdAt(review.getCreatedAt())

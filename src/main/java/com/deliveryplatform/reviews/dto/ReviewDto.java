@@ -10,6 +10,7 @@ import java.util.UUID;
 public record ReviewDto(
         UUID id,
         UserBrief reviewer,
+        UserBrief reviewed,
         Short rating,
         String comment,
         OffsetDateTime createdAt
