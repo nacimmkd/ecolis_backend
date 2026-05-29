@@ -3,6 +3,7 @@ package com.deliveryplatform.profiles.dto;
 import com.deliveryplatform.images.dto.ImageDto;
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Builder
@@ -11,9 +12,9 @@ public record ProfileDetails(
         String firstName,
         String lastName,
         String phone,
-        Double avgRating,
-        Long reviewCount,
-        Long completedTrips,
-        Long deliveredParcels,
+        BigDecimal avgRating,
+        int reviewCount,
+        int completedTrips,
+        int deliveredParcels,
         ImageDto avatar
 ) {}

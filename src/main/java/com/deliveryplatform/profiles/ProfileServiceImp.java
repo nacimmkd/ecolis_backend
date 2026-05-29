@@ -22,9 +22,6 @@ public class ProfileServiceImp implements ProfileService {
     @Override
     public ProfileDetails getUserProfile(UUID userId) {
         var profile = getByIdOrThrow(userId);
-        profile.setStatistics(
-                profileRepository.getProfileStats(profile.getId())
-        );
         return profileMapper.toDetailedDto(profile);
     }
 
@@ -36,9 +33,8 @@ public class ProfileServiceImp implements ProfileService {
         if (request.firstName() != null) profile.setFirstName(request.firstName());
         if (request.lastName() != null)  profile.setLastName(request.lastName());
         if (request.phone() != null)     profile.setPhone(request.phone());
-
-        profileRepository.save(profile);
-        return profileMapper.toSummaryDto(profile);
+        ;
+        return profileMapper.toSummaryDto(profileRepository.save(profile));
     }
 
     @Override

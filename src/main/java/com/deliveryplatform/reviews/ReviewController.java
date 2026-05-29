@@ -20,16 +20,17 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    // public
-    @GetMapping("/{id}")
-    public List<ReviewDto> getUserReviews(@PathVariable UUID id) {
-        return reviewService.getUserReviews(id);
-    }
-
-    @GetMapping
+    @GetMapping("/me")
     public List<ReviewDto> getReviewsMe(
             @AuthenticationPrincipal UserPrincipal user){
         return reviewService.getUserReviews(user.getId());
+    }
+
+    @GetMapping
+    public List<ReviewDto> getUserReviews(
+            @RequestParam UUID revieweeId
+            ){
+        return reviewService.getUserReviews(revieweeId);
     }
 
     @PostMapping

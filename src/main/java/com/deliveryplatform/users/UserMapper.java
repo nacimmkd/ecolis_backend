@@ -2,7 +2,6 @@ package com.deliveryplatform.users;
 
 import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.profiles.ProfileMapper;
-import com.deliveryplatform.profiles.ProfileStatsResolver;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserBrief;
 import com.deliveryplatform.users.dto.UserSummary;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
 
     private final ProfileMapper profileMapper;
-    private final ProfileStatsResolver resolver;
     private final ImageMapper imageMapper;
 
     public UserDetails toDetailsDto(User user) {
@@ -52,9 +50,8 @@ public class UserMapper {
                 .avatar(
                         profile != null ? imageMapper.toDto(profile.getAvatar()) : null
                 )
-                .avgRating(
-                        profile != null ? resolver.resolveAvgRating(profile) : null
-                )
+                .avgRating(profile.getAvgRating())
+                .reviewCount(profile.getReviewCount())
                 .verified(user.isVerified())
                 .build();
 
