@@ -34,17 +34,4 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
             """)
     List<Trip> findByOwnerId(@Param("userId") UUID userId);
 
-
-    @Query("""
-            SELECT t FROM Trip t
-            LEFT JOIN FETCH t.stops
-            LEFT JOIN FETCH t.owner u
-            LEFT JOIN FETCH u.profile p
-            LEFT JOIN FETCH p.avatar
-            WHERE t.id = :tripId
-            AND u.id = :userId
-            """)
-    Optional<Trip> findByTripIdAndOwnerId(@Param("tripId") UUID tripId, @Param("userId") UUID userId);
-
-
 }

@@ -12,7 +12,6 @@ public interface TripService {
 
     List<TripSummary> getAllTrips();
 
-
     List<TripSummary> getMyTrips(UUID currentUserId);
 
     TripDetails createTrip(UUID userId, TripCreateRequest request);

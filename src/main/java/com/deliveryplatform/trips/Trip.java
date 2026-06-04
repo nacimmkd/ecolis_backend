@@ -21,7 +21,7 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @SQLRestriction("deleted = false")
-public class Trip {
+public class  Trip {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
