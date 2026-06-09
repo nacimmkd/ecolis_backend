@@ -23,5 +23,5 @@ public record TripSummary(
         boolean instantBooking,
         TripStatus status,
         int stopCount,
-        OffsetDateTime createdAt
+        OffsetDateTime publishedAt
 ) {}

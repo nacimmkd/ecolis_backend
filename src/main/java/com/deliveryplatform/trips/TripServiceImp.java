@@ -20,7 +20,7 @@ public class TripServiceImp implements TripService {
 
     private final TripRepository     tripRepository;
     private final UserRepository     userRepository;
-    private final GeocodingService   geocodingService;
+    private final GeocodingService geocodingService;
     private final TripMapper         tripMapper;
 
     @Override

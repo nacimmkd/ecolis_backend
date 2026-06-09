@@ -28,7 +28,7 @@ public class ParcelMapper {
                 .dropoffAddress(parcel.getDropoffAddress())
                 .status(parcel.getStatus())
                 .thumbnailImage(imageMapper.toDto(parcel.getThumbnailImage()))
-                .createdAt(parcel.getCreatedAt())
+                .publishedAt(parcel.getCreatedAt())
                 .build();
     }
 

@@ -22,8 +22,10 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     @Query("""
        SELECT b FROM Booking b
-       WHERE b.trip.owner.id = :userId
-       OR b.parcel.owner.id = :userId
+       LEFT JOIN Parcel p
+       LEFT JOIN Trip t
+       WHERE t.owner.id = :userId
+       OR p.owner.id = :userId
        ORDER BY b.createdAt DESC
        """)
     List<Booking> findAllByInvolvedUser(@Param("userId") UUID userId);

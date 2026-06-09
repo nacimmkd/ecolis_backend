@@ -28,7 +28,7 @@ public class TripMapper {
                 .instantBooking(trip.isInstantBooking())
                 .status(trip.getStatus())
                 .stopCount(trip.getStops().size())
-                .createdAt(trip.getCreatedAt())
+                .publishedAt(trip.getCreatedAt())
                 .build();
     }
 
@@ -51,7 +51,7 @@ public class TripMapper {
                 .status(trip.getStatus())
                 .notes(trip.getNotes())
                 .stops(trip.getStops().stream().map(this::toSummaryDto).toList())
-                .createdAt(trip.getCreatedAt())
+                .publishedAt(trip.getCreatedAt())
                 .build();
     }
 

@@ -25,14 +25,15 @@ public class BookingController {
         return bookingService.getBooking(bookingId, user.getId());
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<List<BookingDto>> getMyBookings(
+    @GetMapping
+    public ResponseEntity<List<BookingDto>> getBookings(
             @RequestParam(required = false) UUID tripId,
             @RequestParam(required = false) UUID parcelId,
             @AuthenticationPrincipal UserPrincipal user
     ) throws BadRequestException {
 
         if (tripId != null && parcelId != null)
+            // to be changed later by returning booking with same parcelid and tripid
             throw new BadRequestException("tripId and parcelId cannot be presented at same time");
 
         List<BookingDto> bookings;

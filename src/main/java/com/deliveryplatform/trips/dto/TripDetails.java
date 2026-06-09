@@ -28,5 +28,5 @@ public record TripDetails(
         TripStatus status,
         String notes,
         List<StopPoint> stops,
-        OffsetDateTime createdAt
+        OffsetDateTime publishedAt
 ) {}

@@ -22,5 +22,5 @@ public record ParcelSummary(
         GeocodedAddress dropoffAddress,
         ParcelStatus status,
         ImageDto thumbnailImage,
-        OffsetDateTime createdAt
+        OffsetDateTime publishedAt
 ) {}
