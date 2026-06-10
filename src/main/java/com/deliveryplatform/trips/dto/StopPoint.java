@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips.dto;
 
-import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.addresses.Address;
 import lombok.Builder;
 
 import java.util.UUID;
@@ -9,5 +9,5 @@ import java.util.UUID;
 public record StopPoint(
         UUID stopId,
         Integer stopOrder,
-        GeocodedAddress address
+        Address address
 ) {}

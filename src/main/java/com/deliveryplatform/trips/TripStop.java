@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.addresses.Address;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,7 +32,7 @@ public class TripStop {
     private int stopOrder;
 
     @Embedded
-    private GeocodedAddress address;
+    private Address address;
 
     @Builder.Default
     private boolean deleted = false;

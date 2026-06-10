@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/geocoding")
 @RequiredArgsConstructor
-public class GeocodingController {
+public class AddressController {
 
-    private final GeocodingService geocodingService;
+    private final AddressService addressService;
 
     @PostMapping("/geocode")
-    public ResponseEntity<GeocodedAddress> geocode(@Valid @RequestBody Address address) {
-        GeocodedAddress result = geocodingService.geocode(address);
+    public ResponseEntity<Address> geocode(@Valid @RequestBody AddressRequest address) {
+        Address result = addressService.geocode(address);
         return ResponseEntity.ok(result);
     }
 }

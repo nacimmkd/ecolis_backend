@@ -1,8 +1,8 @@
-package com.deliveryplatform.addresses.nominatim;
+package com.deliveryplatform.addresses.geocoding.nominatim;
 
+import com.deliveryplatform.addresses.AddressRequest;
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.addresses.GeocodedAddress;
-import com.deliveryplatform.addresses.GeocodingService;
+import com.deliveryplatform.addresses.AddressService;
 import com.deliveryplatform.common.exceptions.ExternalServiceException;
 import com.deliveryplatform.common.exceptions.UnprocessableEntityException;
 import lombok.RequiredArgsConstructor;
@@ -18,17 +18,17 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class NominatimGeocodingService implements GeocodingService {
+public class NominatimGeocodingService implements AddressService {
 
     private final WebClient nominatimWebClient;
 
     @Override
-    public GeocodedAddress geocode(Address address) {
+    public Address geocode(AddressRequest address) {
         if (address == null) {
             return null;
         }
         return fetchFirstResult(address)
-                .map(result -> GeocodedAddress.of(
+                .map(result -> Address.of(
                         address,
                         Double.parseDouble((String) result.get("lat")),
                         Double.parseDouble((String) result.get("lon"))
@@ -36,7 +36,7 @@ public class NominatimGeocodingService implements GeocodingService {
                 .orElseThrow(() -> new UnprocessableEntityException("The provided address [ %s ] could not be found".formatted(address)));
     }
 
-    private Optional<Map<String, Object>> fetchFirstResult(Address address) {
+    private Optional<Map<String, Object>> fetchFirstResult(AddressRequest address) {
         try {
             List<Map<String, Object>> results = nominatimWebClient.get()
                     .uri(uriBuilder -> uriBuilder

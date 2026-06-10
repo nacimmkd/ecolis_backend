@@ -1,6 +1,6 @@
 package com.deliveryplatform.parcels.dto;
 
-import com.deliveryplatform.addresses.Address;
+import com.deliveryplatform.addresses.AddressRequest;
 import com.deliveryplatform.parcels.ParcelSize;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
@@ -21,9 +21,9 @@ public record ParcelUpdateRequest(
 
         Boolean fragile,
 
-        @Valid Address pickupAddress,
+        @Valid AddressRequest pickupAddress,
 
-        @Valid Address dropoffAddress,
+        @Valid AddressRequest dropoffAddress,
 
         UUID thumbnailImageId,
 

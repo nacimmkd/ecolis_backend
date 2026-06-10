@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -38,7 +38,7 @@ public class  Trip {
     @AttributeOverride(name = "country",    column = @Column(name = "departure_country",     nullable = false, length = 60))
     @AttributeOverride(name = "latitude",   column = @Column(name = "departure_lat"))
     @AttributeOverride(name = "longitude",  column = @Column(name = "departure_lng"))
-    private GeocodedAddress departureAddress;
+    private Address departureAddress;
 
     @Embedded
     @AttributeOverride(name = "street",     column = @Column(name = "arrival_street",      nullable = false, columnDefinition = "TEXT"))
@@ -47,7 +47,7 @@ public class  Trip {
     @AttributeOverride(name = "country",    column = @Column(name = "arrival_country",     nullable = false, length = 60))
     @AttributeOverride(name = "latitude",   column = @Column(name = "arrival_lat"))
     @AttributeOverride(name = "longitude",  column = @Column(name = "arrival_lng"))
-    private GeocodedAddress arrivalAddress;
+    private Address arrivalAddress;
 
     @Column(name = "departure_date")
     private LocalDate departureDate;

@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips.dto;
 
-import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.trips.TripStatus;
 import lombok.Builder;
 
@@ -13,8 +13,8 @@ import java.util.UUID;
 @Builder
 public record TripSummary(
         UUID tripId,
-        GeocodedAddress departureAddress,
-        GeocodedAddress arrivalAddress,
+        Address departureAddress,
+        Address arrivalAddress,
         LocalDate departureDate,
         LocalDate arrivalDate,
         BigDecimal availableWeightKg,

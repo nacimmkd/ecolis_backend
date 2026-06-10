@@ -1,6 +1,6 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.addresses.GeocodingService;
+import com.deliveryplatform.addresses.AddressService;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
@@ -26,7 +26,7 @@ public class ParcelServiceImp implements ParcelService {
 
     private final ParcelRepository parcelRepository;
     private final UserRepository   userRepository;
-    private final GeocodingService geocodingService;
+    private final AddressService addressService;
     private final ImageService     imageService;
     private final ParcelMapper     parcelMapper;
 
@@ -59,8 +59,8 @@ public class ParcelServiceImp implements ParcelService {
         updateParcelThumbnail(parcel, request.thumbnailImageId());
         updateParcelImages(parcel, request.imageIds());
 
-        parcel.setPickupAddress(geocodingService.geocode(request.pickupAddress()));
-        parcel.setDropoffAddress(geocodingService.geocode(request.dropoffAddress()));
+        parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
+        parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
 
         return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
     }
@@ -106,8 +106,8 @@ public class ParcelServiceImp implements ParcelService {
         if (request.weightKg()       != null) parcel.setWeightKg(request.weightKg());
         if (request.size()           != null) parcel.setSize(request.size());
         if (request.fragile()        != null) parcel.setFragile(request.fragile());
-        if (request.pickupAddress()  != null) parcel.setPickupAddress(geocodingService.geocode(request.pickupAddress()));
-        if (request.dropoffAddress() != null) parcel.setDropoffAddress(geocodingService.geocode(request.dropoffAddress()));
+        if (request.pickupAddress()  != null) parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
+        if (request.dropoffAddress() != null) parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
     }
 
     private void updateParcelThumbnail(Parcel parcel, UUID thumbnailImageId) {

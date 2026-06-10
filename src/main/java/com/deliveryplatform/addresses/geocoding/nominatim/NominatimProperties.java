@@ -1,4 +1,4 @@
-package com.deliveryplatform.addresses.nominatim;
+package com.deliveryplatform.addresses.geocoding.nominatim;
 
 import lombok.Getter;
 import lombok.Setter;

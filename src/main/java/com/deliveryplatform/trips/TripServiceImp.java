@@ -1,7 +1,7 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.addresses.GeocodingService;
+import com.deliveryplatform.addresses.AddressRequest;
+import com.deliveryplatform.addresses.AddressService;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
@@ -20,7 +20,7 @@ public class TripServiceImp implements TripService {
 
     private final TripRepository     tripRepository;
     private final UserRepository     userRepository;
-    private final GeocodingService geocodingService;
+    private final AddressService addressService;
     private final TripMapper         tripMapper;
 
     @Override
@@ -53,8 +53,8 @@ public class TripServiceImp implements TripService {
         var trip = tripMapper.toEntity(request);
         trip.setOwner(owner);
         trip.setStatus(TripStatus.PUBLISHED);
-        trip.setDepartureAddress(geocodingService.geocode(request.departureAddress()));
-        trip.setArrivalAddress(geocodingService.geocode(request.arrivalAddress()));
+        trip.setDepartureAddress(addressService.geocode(request.departureAddress()));
+        trip.setArrivalAddress(addressService.geocode(request.arrivalAddress()));
         trip.updateStops(buildStopEntities(request.stops()));
 
         return tripMapper.toDetailsDto(tripRepository.save(trip));
@@ -84,13 +84,13 @@ public class TripServiceImp implements TripService {
 
     @Override
     @Transactional
-    public StopPoint addStop(UUID tripId, UUID currentUserId, Address address) {
+    public StopPoint addStop(UUID tripId, UUID currentUserId, AddressRequest address) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
         var stop = TripStop.builder()
                 .stopOrder(trip.getStops().size() + 1)
-                .address(geocodingService.geocode(address))
+                .address(addressService.geocode(address))
                 .build();
 
         trip.addStop(stop);
@@ -105,7 +105,7 @@ public class TripServiceImp implements TripService {
         assertOwnership(trip, currentUserId);
 
         var stop = findStopInTrip(trip, stopId);
-        stop.setAddress(geocodingService.geocode(request.address()));
+        stop.setAddress(addressService.geocode(request.address()));
         tripRepository.save(trip);
         return tripMapper.toSummaryDto(stop);
     }
@@ -126,7 +126,7 @@ public class TripServiceImp implements TripService {
         return stops.stream()
                 .map(req -> TripStop.builder()
                         .stopOrder(req.stopOrder())
-                        .address(geocodingService.geocode(req.address()))
+                        .address(addressService.geocode(req.address()))
                         .build())
                 .toList();
     }
@@ -166,8 +166,8 @@ public class TripServiceImp implements TripService {
     }
 
     private void applyUpdates(Trip trip, TripUpdateRequest request) {
-        if (request.departureAddress()   != null) trip.setDepartureAddress(geocodingService.geocode(request.departureAddress()));
-        if (request.arrivalAddress()     != null) trip.setArrivalAddress(geocodingService.geocode(request.arrivalAddress()));
+        if (request.departureAddress()   != null) trip.setDepartureAddress(addressService.geocode(request.departureAddress()));
+        if (request.arrivalAddress()     != null) trip.setArrivalAddress(addressService.geocode(request.arrivalAddress()));
         if (request.departureDate()      != null) trip.setDepartureDate(request.departureDate());
         if (request.arrivalDate()        != null) trip.setArrivalDate(request.arrivalDate());
         if (request.availableWeightKg()  != null) trip.setAvailableWeightKg(request.availableWeightKg());

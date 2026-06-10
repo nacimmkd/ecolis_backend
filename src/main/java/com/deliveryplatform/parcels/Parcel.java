@@ -1,6 +1,6 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.addresses.GeocodedAddress;
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -54,7 +54,7 @@ public class Parcel {
     @AttributeOverride(name = "country", column = @Column(name = "pickup_country", nullable = false))
     @AttributeOverride(name = "latitude", column = @Column(name = "pickup_lat"))
     @AttributeOverride(name = "longitude", column = @Column(name = "pickup_lng"))
-    private GeocodedAddress pickupAddress;
+    private Address pickupAddress;
 
 
     @Embedded
@@ -64,7 +64,7 @@ public class Parcel {
     @AttributeOverride(name = "country", column = @Column(name = "dropoff_country", nullable = false))
     @AttributeOverride(name = "latitude", column = @Column(name = "dropoff_lat"))
     @AttributeOverride(name = "longitude", column = @Column(name = "dropoff_lng"))
-    private GeocodedAddress dropoffAddress;
+    private Address dropoffAddress;
 
     @OneToOne
     @JoinColumn(name = "thumbnail_image_id")

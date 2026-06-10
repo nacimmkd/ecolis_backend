@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.addresses.Address;
+import com.deliveryplatform.addresses.AddressRequest;
 import com.deliveryplatform.trips.dto.*;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
@@ -69,7 +69,7 @@ public class TripController {
     @PostMapping("/{tripId}/stops")
     public ResponseEntity<StopPoint> addStop(
             @PathVariable UUID tripId,
-            @RequestBody Address address,
+            @RequestBody AddressRequest address,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         var stop = tripService.addStop(tripId, principal.getId(), address);

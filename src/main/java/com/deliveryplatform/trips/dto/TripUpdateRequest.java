@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips.dto;
 
-import com.deliveryplatform.addresses.Address;
+import com.deliveryplatform.addresses.AddressRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Future;
@@ -10,8 +10,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record TripUpdateRequest(
-        @Valid Address departureAddress,
-        @Valid Address arrivalAddress,
+        @Valid AddressRequest departureAddress,
+        @Valid AddressRequest arrivalAddress,
 
         @Future LocalDate departureDate,
         @Future LocalDate arrivalDate,
