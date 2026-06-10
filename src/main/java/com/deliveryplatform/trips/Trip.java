@@ -58,8 +58,9 @@ public class  Trip {
     @Column(name = "available_weight_kg", precision = 8, scale = 2)
     private BigDecimal availableWeightKg;
 
-    @Column(name = "remaining_weight_kg", precision = 8, scale = 2)
-    private BigDecimal remainingWeightKg;
+    @Transient
+    @Builder.Default
+    private BigDecimal remainingWeightKg = BigDecimal.ZERO;
 
     @Column(name = "price_per_kg", precision = 10, scale = 2)
     private BigDecimal pricePerKg;

@@ -12,9 +12,24 @@ import java.util.UUID;
 @Repository
 public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
 
-    @Query("SELECT p FROM Parcel p LEFT JOIN FETCH p.owner o LEFT JOIN FETCH p.thumbnailImage LEFT JOIN FETCH p.images WHERE o.id = :userId ORDER BY p.createdAt DESC")
+    @Query("""
+        SELECT p FROM Parcel p
+        LEFT JOIN FETCH p.owner o
+        LEFT JOIN FETCH o.profile
+        LEFT JOIN FETCH p.thumbnailImage
+        LEFT JOIN FETCH p.images
+        WHERE o.id = :userId
+        ORDER BY p.createdAt DESC
+    """)
     List<Parcel> findWithOwnerByUserId(@Param("userId") UUID userId);
 
-    @Query("SELECT p FROM Parcel p LEFT JOIN FETCH p.thumbnailImage LEFT JOIN FETCH p.images LEFT JOIN FETCH p.owner WHERE p.id = :id")
+    @Query("""
+        SELECT p FROM Parcel p
+        LEFT JOIN FETCH p.owner o
+        LEFT JOIN FETCH o.profile
+        LEFT JOIN FETCH p.thumbnailImage
+        LEFT JOIN FETCH p.images
+        WHERE p.id = :id
+    """)
     Optional<Parcel> findParcelWithImagesAndOwnerById(@Param("id") UUID id);
 }

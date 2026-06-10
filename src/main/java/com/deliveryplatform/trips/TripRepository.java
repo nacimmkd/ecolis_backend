@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,5 +34,14 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
             WHERE u.id = :userId
             """)
     List<Trip> findByOwnerId(@Param("userId") UUID userId);
+
+    @Query("""
+            SELECT t.availableWeightKg - COALESCE(SUM(p.weightKg), 0)
+            FROM Trip t
+            LEFT JOIN t.bookings b
+            LEFT JOIN b.parcel p
+            WHERE t.id = :tripId
+    """)
+    BigDecimal getRemainingWeight(@Param("tripId") UUID tripId);
 
 }

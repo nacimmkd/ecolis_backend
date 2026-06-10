@@ -16,11 +16,9 @@ public interface ImageService {
 
     List<Image> getImageEntities(List<UUID> imageIds);
 
-    String getReadUrl(UUID id); // to be deleted
-
     ImageDto confirmUpload(String key, UUID uploadedBy);
 
-    void removeImage(UUID imageId, UUID currentUserId);
+    void remove(UUID imageId, UUID currentUserId);
 
     void removeAll(List<UUID> imageIds);
 }

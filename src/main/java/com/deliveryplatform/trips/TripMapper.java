@@ -23,7 +23,6 @@ public class TripMapper {
                 .departureDate(trip.getDepartureDate())
                 .arrivalDate(trip.getArrivalDate())
                 .availableWeightKg(trip.getAvailableWeightKg())
-                .remainingWeightKg(trip.getRemainingWeightKg())
                 .pricePerKg(trip.getPricePerKg())
                 .instantBooking(trip.isInstantBooking())
                 .status(trip.getStatus())

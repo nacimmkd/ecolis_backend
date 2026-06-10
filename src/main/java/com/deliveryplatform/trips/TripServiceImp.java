@@ -25,7 +25,9 @@ public class TripServiceImp implements TripService {
 
     @Override
     public TripDetails getTrip(UUID tripId) {
-        return tripMapper.toDetailsDto(getTripByIdOrThrow(tripId));
+        var trip = getTripByIdOrThrow(tripId);
+        trip.setRemainingWeightKg(tripRepository.getRemainingWeight(tripId));
+        return tripMapper.toDetailsDto(trip);
     }
 
     @Override
@@ -101,8 +103,6 @@ public class TripServiceImp implements TripService {
     public StopPoint updateStop(UUID stopId, UUID tripId, UUID currentUserId, StopPointRequest request) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
-
-        if (request.address() == null) throw new InvalidDomainStateException("Address is required");
 
         var stop = findStopInTrip(trip, stopId);
         stop.setAddress(geocodingService.geocode(request.address()));

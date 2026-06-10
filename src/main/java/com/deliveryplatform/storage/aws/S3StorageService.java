@@ -63,7 +63,6 @@ public class S3StorageService implements StorageService {
         } catch (NoSuchKeyException e) {
             return false;
         } catch (S3Exception e) {
-            log.error("Error while checking existence of key: {}", key, e);
             throw new ExternalServiceException(
                     S3StorageService.class,
                     "Error while checking file existence: " + key

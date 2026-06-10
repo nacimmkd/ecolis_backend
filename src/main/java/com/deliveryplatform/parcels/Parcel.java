@@ -72,6 +72,7 @@ public class Parcel {
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "parcel_images", joinColumns = @JoinColumn(name = "parcel_id"), inverseJoinColumns = @JoinColumn(name = "image_id"))
+    @Builder.Default
     private List<Image> images = new ArrayList<>();
 
 

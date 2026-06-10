@@ -42,23 +42,6 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
-    public String getReadUrl(UUID id) {
-        var image = getByIdOrThrow(id);
-        return s3StorageService.generateReadUrl(image.getKey());
-    }
-
-
-    @Override
-    public Image getImageEntity(UUID imageId) {
-        return getByIdOrThrow(imageId);
-    }
-
-    @Override
-    public List<Image> getImageEntities(List<UUID> imageIds) {
-        return imageRepository.findAllById(imageIds);
-    }
-
-    @Override
     public ImageDto confirmUpload(String key, UUID uploadedBy) {
         var image = getByKeyOrThrow(key);
         assertOwnership(image, uploadedBy);
@@ -67,9 +50,8 @@ public class ImageServiceImp implements ImageService {
         return imageMapper.toDto(imageRepository.save(image));
     }
 
-
     @Override
-    public void removeImage(UUID imageId, UUID currentUserId) {
+    public void remove(UUID imageId, UUID currentUserId) {
         var image = getByIdOrThrow(imageId);
         assertOwnership(image, currentUserId);
         s3StorageService.delete(image.getKey());
@@ -84,6 +66,16 @@ public class ImageServiceImp implements ImageService {
         var images = imageRepository.findAllById(imageIds);
         images.forEach(image -> s3StorageService.delete(image.getKey()));
         imageRepository.deleteAll(images);
+    }
+
+    @Override
+    public Image getImageEntity(UUID imageId) {
+        return getByIdOrThrow(imageId);
+    }
+
+    @Override
+    public List<Image> getImageEntities(List<UUID> imageIds) {
+        return imageRepository.findAllById(imageIds);
     }
 
 

@@ -44,7 +44,6 @@ INSERT INTO trips (
     arrival_date,
 
     available_weight_kg,
-    remaining_weight_kg,
 
     price_per_kg,
     max_detour_km,
@@ -76,8 +75,7 @@ VALUES (
            20.00,
            15.00,
 
-           5.50,
-           10.00,
+           5.00,
            'PUBLISHED',
            true,
            'Trip Paris -> Marseille'

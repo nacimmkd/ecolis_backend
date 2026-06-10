@@ -49,7 +49,7 @@ public class ImageController {
             @PathVariable @NotNull UUID imageId,
             @AuthenticationPrincipal UserPrincipal user) {
 
-        imageService.removeImage(imageId, user.getId());
+        imageService.remove(imageId, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

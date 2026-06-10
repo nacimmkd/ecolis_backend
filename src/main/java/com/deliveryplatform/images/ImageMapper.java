@@ -21,7 +21,7 @@ public class ImageMapper {
                 .id(image.getId())
                 .url(storageService.generateReadUrl(image.getKey()))
                 .mediaType(image.getMediaType())
-                .createdAt(image.getCreatedAt())
+                .uploadedAt(image.getCreatedAt())
                 .build();
     }
 

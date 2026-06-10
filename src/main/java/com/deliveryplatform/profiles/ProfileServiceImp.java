@@ -58,7 +58,7 @@ public class ProfileServiceImp implements ProfileService {
         var avatarId = profile.getAvatar().getId();
         profile.setAvatar(null);
         profileRepository.save(profile);
-        imageService.removeImage(avatarId, userId);
+        imageService.remove(avatarId, userId);
     }
 
     // ----------------------------------------------------------------

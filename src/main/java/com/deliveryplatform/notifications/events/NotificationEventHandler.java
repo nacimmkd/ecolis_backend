@@ -3,6 +3,7 @@ package com.deliveryplatform.notifications.events;
 import com.deliveryplatform.notifications.NotificationService;
 import com.deliveryplatform.notifications.NotificationType;
 import com.deliveryplatform.notifications.NotificationPayload;
+import com.deliveryplatform.parcels.events.ParcelDeliveredEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;

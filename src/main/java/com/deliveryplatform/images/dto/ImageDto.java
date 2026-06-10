@@ -11,5 +11,5 @@ public record ImageDto(
         UUID id,
         String url,
         MediaType mediaType,
-        OffsetDateTime createdAt
+        OffsetDateTime uploadedAt
 ) {}

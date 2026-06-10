@@ -54,9 +54,13 @@ public class ParcelServiceImp implements ParcelService {
     public ParcelDetails createParcel(UUID userId, ParcelCreateRequest request) {
         var owner  = getUserByIdOrThrow(userId);
         var parcel = parcelMapper.toEntity(request);
+
         parcel.setOwner(owner);
         updateParcelThumbnail(parcel, request.thumbnailImageId());
         updateParcelImages(parcel, request.imageIds());
+
+        parcel.setPickupAddress(geocodingService.geocode(request.pickupAddress()));
+        parcel.setDropoffAddress(geocodingService.geocode(request.dropoffAddress()));
 
         return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
     }
@@ -126,7 +130,7 @@ public class ParcelServiceImp implements ParcelService {
     }
 
     private User getUserByIdOrThrow(UUID id) {
-        return userRepository.findById(id)
+        return userRepository.findWithProfileById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 

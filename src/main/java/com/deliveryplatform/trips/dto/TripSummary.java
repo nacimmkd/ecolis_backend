@@ -18,7 +18,6 @@ public record TripSummary(
         LocalDate departureDate,
         LocalDate arrivalDate,
         BigDecimal availableWeightKg,
-        BigDecimal remainingWeightKg,
         BigDecimal pricePerKg,
         boolean instantBooking,
         TripStatus status,
