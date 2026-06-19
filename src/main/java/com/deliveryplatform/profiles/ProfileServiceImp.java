@@ -41,7 +41,7 @@ public class ProfileServiceImp implements ProfileService {
     @Transactional
     public ProfileSummary updateAvatar(UUID userId, UUID imageId) {
         var profile = getByIdOrThrow(userId);
-        var image = imageService.getImageEntity(imageId);
+        var image = imageService.getImage(imageId);
 
         if (!image.isConfirmed()) throw new IllegalStateException("Image not confirmed yet");
 
@@ -55,10 +55,9 @@ public class ProfileServiceImp implements ProfileService {
     public void removeAvatar(UUID userId) {
         var profile = getByIdOrThrow(userId);
         assertAvatarExists(profile);
-        var avatarId = profile.getAvatar().getId();
+        imageService.remove(profile.getAvatar(), userId);
         profile.setAvatar(null);
         profileRepository.save(profile);
-        imageService.remove(avatarId, userId);
     }
 
     // ----------------------------------------------------------------

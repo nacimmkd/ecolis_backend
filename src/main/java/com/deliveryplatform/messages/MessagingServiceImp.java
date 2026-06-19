@@ -103,7 +103,7 @@ public class MessagingServiceImp implements MessagingService {
 
     private List<Image> resolveImages(List<UUID> imageIds) {
         if (imageIds == null || imageIds.isEmpty()) return List.of();
-        return imageService.getImageEntities(imageIds);
+        return imageService.getImages(imageIds);
     }
 
 

@@ -36,12 +36,6 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
-    public ImageDto getImage(UUID id) {
-        var image = getByIdOrThrow(id);
-        return imageMapper.toDto(image);
-    }
-
-    @Override
     public ImageDto confirmUpload(String key, UUID uploadedBy) {
         var image = getByKeyOrThrow(key);
         assertOwnership(image, uploadedBy);
@@ -51,8 +45,8 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
-    public void remove(UUID imageId, UUID currentUserId) {
-        var image = getByIdOrThrow(imageId);
+    public void remove(Image img, UUID currentUserId) {
+        var image = getByIdOrThrow(img.getId());
         assertOwnership(image, currentUserId);
         s3StorageService.delete(image.getKey());
         imageRepository.delete(image);
@@ -60,21 +54,23 @@ public class ImageServiceImp implements ImageService {
 
 
     @Override
-    public void removeAll(List<UUID> imageIds) {
-        if (imageIds == null || imageIds.isEmpty()) return;
+    public void remove(List<Image> images) {
+        if (images == null || images.isEmpty()) return;
 
-        var images = imageRepository.findAllById(imageIds);
-        images.forEach(image -> s3StorageService.delete(image.getKey()));
+        var imagesToDelete = imageRepository.findAllById(
+                images.stream().map(Image::getId).toList()
+        );
+        imagesToDelete.forEach(image -> s3StorageService.delete(image.getKey()));
         imageRepository.deleteAll(images);
     }
 
     @Override
-    public Image getImageEntity(UUID imageId) {
+    public Image getImage(UUID imageId) {
         return getByIdOrThrow(imageId);
     }
 
     @Override
-    public List<Image> getImageEntities(List<UUID> imageIds) {
+    public List<Image> getImages(List<UUID> imageIds) {
         return imageRepository.findAllById(imageIds);
     }
 

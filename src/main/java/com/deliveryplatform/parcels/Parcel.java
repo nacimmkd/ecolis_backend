@@ -87,16 +87,9 @@ public class Parcel {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-
-    public boolean isAvailable() {
-        return this.status == ParcelStatus.PUBLISHED;
-    }
-
     public boolean isOwner(UUID userId) {
         return this.owner.getId().equals(userId);
     }
-
-    public void clearImages() { images.clear();}
 
     public void softDelete() {
         this.deleted = true;
@@ -107,7 +100,21 @@ public class Parcel {
     }
 
     public void addImage(Image image) {
-        this.images.add(image);
+        if (image.isConfirmed() && image.isOwnedBy(this.owner)) {
+            this.images.add(image);
+        }
+    }
+
+    public void addImages(List<Image> images) {
+        images.forEach(this::addImage);
+    }
+
+    public void removeAllImages() { images.clear();}
+
+    public void removeImages(List<Image> toDelete) {
+        images.removeIf(image -> toDelete.stream()
+                .anyMatch(d -> d.getId().equals(image.getId()))
+        );
     }
 
 

@@ -1,6 +1,7 @@
 package com.deliveryplatform.images;
 
 import com.deliveryplatform.storage.MediaType;
+import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,4 +36,9 @@ public class Image {
     @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    public boolean isOwnedBy(User user) {
+        if (user == null) return false;
+        return this.uploadedBy.equals(user.getId());
+    }
 }

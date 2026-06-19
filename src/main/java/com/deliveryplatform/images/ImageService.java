@@ -10,15 +10,13 @@ public interface ImageService {
 
     PresignedUrl getPresignUrl(String contentType, UUID uploadedBy);
 
-    ImageDto getImage(UUID id);
+    Image getImage(UUID imageId);
 
-    Image getImageEntity(UUID imageId);
-
-    List<Image> getImageEntities(List<UUID> imageIds);
+    List<Image> getImages(List<UUID> imageIds);
 
     ImageDto confirmUpload(String key, UUID uploadedBy);
 
-    void remove(UUID imageId, UUID currentUserId);
+    void remove(Image image, UUID currentUserId);
 
-    void removeAll(List<UUID> imageIds);
+    void remove(List<Image> images);
 }

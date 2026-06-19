@@ -29,8 +29,6 @@ public record ParcelCreateRequest(
         @NotNull @Valid
         AddressRequest dropoffAddress,
 
-        UUID thumbnailImageId,
-
         List<UUID> imageIds
 ) {
 }

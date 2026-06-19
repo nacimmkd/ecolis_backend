@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,12 +51,12 @@ public class ParcelServiceImp implements ParcelService {
     @Override
     @Transactional
     public ParcelDetails createParcel(UUID userId, ParcelCreateRequest request) {
+
         var owner  = getUserByIdOrThrow(userId);
         var parcel = parcelMapper.toEntity(request);
 
         parcel.setOwner(owner);
-        updateParcelThumbnail(parcel, request.thumbnailImageId());
-        updateParcelImages(parcel, request.imageIds());
+        parcel.addImages(imageService.getImages(request.imageIds()));
 
         parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
         parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
@@ -70,12 +69,8 @@ public class ParcelServiceImp implements ParcelService {
     public ParcelDetails updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
-        assertParcelIsInStatusAvailable(parcel);
-
+        assertParcelIsInState(parcel, List.of(ParcelStatus.PUBLISHED));
         applyUpdates(parcel, request);
-        updateParcelThumbnail(parcel, request.thumbnailImageId());
-        updateParcelImages(parcel, request.imageIds());
-
         return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
     }
 
@@ -84,17 +79,12 @@ public class ParcelServiceImp implements ParcelService {
     public void deleteParcel(UUID parcelId, UUID userId) {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
-        assertParcelIsInStatusAvailable(parcel);
+        assertParcelIsInState(parcel, List.of(ParcelStatus.PUBLISHED));
 
-        var imageIds = parcel.getImages().stream()
-                .map(Image::getId)
-                .collect(Collectors.toList());
-
-        if (parcel.getThumbnailImage() != null)
-            imageIds.add(parcel.getThumbnailImage().getId());
+        imageService.remove(parcel.getImages());
+        parcel.removeAllImages();
 
         parcel.softDelete();
-        imageService.removeAll(imageIds);
         parcelRepository.save(parcel);
     }
 
@@ -108,20 +98,27 @@ public class ParcelServiceImp implements ParcelService {
         if (request.fragile()        != null) parcel.setFragile(request.fragile());
         if (request.pickupAddress()  != null) parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
         if (request.dropoffAddress() != null) parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
-    }
-
-    private void updateParcelThumbnail(Parcel parcel, UUID thumbnailImageId) {
-        if (thumbnailImageId == null) return;
-        var image = imageService.getImageEntity(thumbnailImageId);
-        if (image.isConfirmed()) parcel.setThumbnailImage(image);
+        updateParcelImages(parcel, request.imageIds());
     }
 
     private void updateParcelImages(Parcel parcel, List<UUID> imageIds) {
         if (imageIds == null) return;
-        parcel.clearImages();
-        imageService.getImageEntities(imageIds).forEach(image -> {
-            if (image.isConfirmed()) parcel.addImage(image);
-        });
+
+        if (!imageIds.isEmpty()) {
+            List<Image> toDelete = parcel.getImages().stream()
+                    .filter(img -> !imageIds.contains(img.getId()))
+                    .toList();
+            imageService.remove(toDelete);
+            parcel.removeImages(toDelete);
+        } else {
+            imageService.remove(parcel.getImages());
+            parcel.removeAllImages();
+        }
+
+        parcel.removeAllImages();
+        if (!imageIds.isEmpty()) {
+            parcel.addImages(imageService.getImages(imageIds));
+        }
     }
 
     private Parcel getParcelByIdOrThrow(UUID id) {
@@ -139,8 +136,8 @@ public class ParcelServiceImp implements ParcelService {
             throw new UnauthorizedActionException("User is not owner of this parcel");
     }
 
-    private void assertParcelIsInStatusAvailable(Parcel parcel) {
-        if (!parcel.isAvailable())
+    private void assertParcelIsInState(Parcel parcel, List<ParcelStatus> state) {
+        if (!state.contains(parcel.getStatus()))
             throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
     }
 }
