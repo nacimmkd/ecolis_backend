@@ -1,6 +1,5 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.profiles.dto.ProfileAvatarRequest;
 import com.deliveryplatform.profiles.dto.ProfileSummary;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
 import com.deliveryplatform.profiles.dto.ProfileDetails;
@@ -34,24 +33,11 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getUserProfile(profileId));
     }
 
-    @PatchMapping("/me")
+    @PutMapping("/me")
     public ResponseEntity<ProfileSummary> updateProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody @Valid ProfileUpdateRequest request) {
         return ResponseEntity.ok(profileService.updateProfile(principal.getId(), request));
     }
 
-    @PatchMapping("/me/avatar")
-    public ResponseEntity<ProfileSummary> updateAvatar(
-            @AuthenticationPrincipal UserPrincipal principal,
-            @RequestBody ProfileAvatarRequest request) {
-        return ResponseEntity.ok(profileService.updateAvatar(principal.getId(), request.avatarId()));
-    }
-
-    @DeleteMapping("/me/avatar")
-    public ResponseEntity<Void> removeAvatar(
-            @AuthenticationPrincipal UserPrincipal principal) {
-        profileService.removeAvatar(principal.getId());
-        return ResponseEntity.noContent().build();
-    }
 }

@@ -20,7 +20,7 @@ public class ImageMapper {
         return ImageDto.builder()
                 .id(image.getId())
                 .url(storageService.generateReadUrl(image.getKey()))
-                .mediaType(image.getMediaType())
+                .content(image.getMediaType().getContent())
                 .uploadedAt(image.getCreatedAt())
                 .build();
     }

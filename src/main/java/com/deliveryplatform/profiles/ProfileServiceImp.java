@@ -1,5 +1,6 @@
 package com.deliveryplatform.profiles;
 
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.dto.ProfileSummary;
@@ -16,13 +17,12 @@ import java.util.UUID;
 public class ProfileServiceImp implements ProfileService {
 
     private final ProfileRepository profileRepository;
-    private final ProfileMapper profileMapper;
-    private final ImageService imageService;
+    private final ProfileMapper     profileMapper;
+    private final ImageService      imageService;
 
     @Override
     public ProfileDetails getUserProfile(UUID userId) {
-        var profile = getByIdOrThrow(userId);
-        return profileMapper.toDetailedDto(profile);
+        return profileMapper.toDetailedDto(getByIdOrThrow(userId));
     }
 
     @Override
@@ -30,34 +30,12 @@ public class ProfileServiceImp implements ProfileService {
     public ProfileSummary updateProfile(UUID userId, ProfileUpdateRequest request) {
         var profile = getByIdOrThrow(userId);
 
-        if (request.firstName() != null) profile.setFirstName(request.firstName());
-        if (request.lastName() != null)  profile.setLastName(request.lastName());
-        if (request.phone() != null)     profile.setPhone(request.phone());
-        ;
+        profile.setFirstName(request.firstName());
+        profile.setLastName(request.lastName());
+        profile.setPhone(request.phone());
+        updateAvatar(profile, request.avatarId());
+
         return profileMapper.toSummaryDto(profileRepository.save(profile));
-    }
-
-    @Override
-    @Transactional
-    public ProfileSummary updateAvatar(UUID userId, UUID imageId) {
-        var profile = getByIdOrThrow(userId);
-        var image = imageService.getImage(imageId);
-
-        if (!image.isConfirmed()) throw new IllegalStateException("Image not confirmed yet");
-
-        profile.setAvatar(image);
-        profileRepository.save(profile);
-        return profileMapper.toSummaryDto(profile);
-    }
-
-    @Override
-    @Transactional
-    public void removeAvatar(UUID userId) {
-        var profile = getByIdOrThrow(userId);
-        assertAvatarExists(profile);
-        imageService.remove(profile.getAvatar(), userId);
-        profile.setAvatar(null);
-        profileRepository.save(profile);
     }
 
     // ----------------------------------------------------------------
@@ -67,8 +45,13 @@ public class ProfileServiceImp implements ProfileService {
                 .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
     }
 
-    private void assertAvatarExists(Profile profile) {
-        if (profile.getAvatar() == null || !profile.getAvatar().isConfirmed())
-            throw new ResourceNotFoundException("User doesn't have an avatar");
+    private void updateAvatar(Profile profile, UUID avatarId) {
+        if (avatarId == null) {
+            profile.setAvatar(null);
+            return;
+        }
+        // if avatarId in not null, we update avatar with new one
+        var image = imageService.getImage(avatarId, profile.getUser());
+        profile.setAvatar(image);
     }
 }

@@ -1,15 +1,20 @@
 package com.deliveryplatform.profiles.dto;
 
 import com.deliveryplatform.common.validations.Phone;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 public record ProfileUpdateRequest(
-        @Size(max = 100)
+        @NotNull @Size(max = 100)
         String firstName,
 
-        @Size(max = 100)
+        @NotNull @Size(max = 100)
         String lastName,
 
-        @Phone
-        String phone
+        @NotNull @Phone
+        String phone,
+
+        UUID avatarId
 ) {}

@@ -7,6 +7,7 @@ import com.deliveryplatform.images.dto.ImageDto;
 import com.deliveryplatform.storage.MediaType;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.storage.PresignedUrl;
+import com.deliveryplatform.users.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -45,9 +46,8 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
-    public void remove(Image img, UUID currentUserId) {
+    public void remove(Image img) {
         var image = getByIdOrThrow(img.getId());
-        assertOwnership(image, currentUserId);
         s3StorageService.delete(image.getKey());
         imageRepository.delete(image);
     }
@@ -65,8 +65,11 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
-    public Image getImage(UUID imageId) {
-        return getByIdOrThrow(imageId);
+    public Image getImage(UUID imageId, User user) {
+        var image = getByIdOrThrow(imageId);
+        if (!image.isOwnedBy(user)) throw new UnauthorizedActionException("User is not the owner of image");
+        if (!image.isConfirmed()) return null;
+        return image;
     }
 
     @Override

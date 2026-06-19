@@ -10,6 +10,6 @@ import java.util.UUID;
 public record ImageDto(
         UUID id,
         String url,
-        MediaType mediaType,
+        String content,
         OffsetDateTime uploadedAt
 ) {}

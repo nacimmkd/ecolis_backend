@@ -4,6 +4,7 @@ import com.deliveryplatform.storage.MediaType;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
