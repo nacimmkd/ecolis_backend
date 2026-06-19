@@ -109,10 +109,8 @@ public class ParcelServiceImp implements ParcelService {
                     .filter(img -> !imageIds.contains(img.getId()))
                     .toList();
             imageService.remove(toDelete);
-            parcel.removeImages(toDelete);
         } else {
             imageService.remove(parcel.getImages());
-            parcel.removeAllImages();
         }
 
         parcel.removeAllImages();
