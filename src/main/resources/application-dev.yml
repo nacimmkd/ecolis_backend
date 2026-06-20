@@ -9,11 +9,6 @@ spring:
     hibernate:
       ddl-auto: validate
 
-  sql:
-    init:
-      mode: always
-      data-locations: classpath:data-test.sql
-
   data:
     redis:
       host: localhost

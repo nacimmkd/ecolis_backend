@@ -32,3 +32,15 @@ CREATE TABLE parcels (
 
                          CONSTRAINT fk_parcels_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 );
+
+
+CREATE TABLE parcel_tracking_events (
+                                        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                        parcel_id   UUID        NOT NULL,
+                                        status      VARCHAR(20) NOT NULL
+                                            CHECK (status IN ('PUBLISHED','BOOKED','PICKED_UP','IN_TRANSIT','DELIVERED','CANCELLED')),
+                                        note        TEXT,
+                                        occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+                                        CONSTRAINT fk_parcels_events FOREIGN KEY (id) REFERENCES parcels(id) ON DELETE CASCADE
+);

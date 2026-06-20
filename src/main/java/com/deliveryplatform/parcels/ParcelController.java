@@ -50,7 +50,7 @@ public class ParcelController {
     }
 
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ParcelDetails> updateParcel(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal userPrincipal,

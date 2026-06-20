@@ -70,7 +70,16 @@ public class ParcelServiceImp implements ParcelService {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
         assertParcelIsInState(parcel, List.of(ParcelStatus.PUBLISHED));
-        applyUpdates(parcel, request);
+
+        parcel.setDescription(request.description());
+        parcel.setWeightKg(request.weightKg());
+        parcel.setSize(request.size());
+        parcel.setFragile(request.fragile());
+        parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
+        parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
+
+        updateParcelImages(parcel, request.imageIds());
+
         return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
     }
 
@@ -90,35 +99,6 @@ public class ParcelServiceImp implements ParcelService {
 
     // ----------------------------------------------------------------
 
-
-    private void applyUpdates(Parcel parcel, ParcelUpdateRequest request) {
-        if (request.description()    != null) parcel.setDescription(request.description());
-        if (request.weightKg()       != null) parcel.setWeightKg(request.weightKg());
-        if (request.size()           != null) parcel.setSize(request.size());
-        if (request.fragile()        != null) parcel.setFragile(request.fragile());
-        if (request.pickupAddress()  != null) parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
-        if (request.dropoffAddress() != null) parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
-        updateParcelImages(parcel, request.imageIds());
-    }
-
-    private void updateParcelImages(Parcel parcel, List<UUID> imageIds) {
-        if (imageIds == null) return;
-
-        if (!imageIds.isEmpty()) {
-            List<Image> toDelete = parcel.getImages().stream()
-                    .filter(img -> !imageIds.contains(img.getId()))
-                    .toList();
-            imageService.remove(toDelete);
-        } else {
-            imageService.remove(parcel.getImages());
-        }
-
-        parcel.removeAllImages();
-        if (!imageIds.isEmpty()) {
-            parcel.addImages(imageService.getImages(imageIds));
-        }
-    }
-
     private Parcel getParcelByIdOrThrow(UUID id) {
         return parcelRepository.findParcelWithImagesAndOwnerById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
@@ -137,5 +117,21 @@ public class ParcelServiceImp implements ParcelService {
     private void assertParcelIsInState(Parcel parcel, List<ParcelStatus> state) {
         if (!state.contains(parcel.getStatus()))
             throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
+    }
+
+    private void updateParcelImages(Parcel parcel, List<UUID> imageIds) {
+        if (imageIds == null || parcel == null) return;
+
+        if (imageIds.isEmpty()) {
+            imageService.remove(parcel.getImages());
+            parcel.removeAllImages();
+        } else {
+            List<Image> toDelete = parcel.getImages().stream()
+                    .filter(img -> !imageIds.contains(img.getId()))
+                    .toList();
+            imageService.remove(toDelete);
+            parcel.removeImages(toDelete);
+            parcel.addImages(imageService.getImages(imageIds));
+        }
     }
 }

@@ -75,6 +75,9 @@ public class Parcel {
     @Builder.Default
     private List<Image> images = new ArrayList<>();
 
+    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<TrackEvent> trackEvents;
+
 
     @Column(name = "created_at")
     @Builder.Default
@@ -86,6 +89,10 @@ public class Parcel {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
+
+
+
+    // methods
 
     public boolean isOwner(UUID userId) {
         return this.owner.getId().equals(userId);
@@ -115,6 +122,10 @@ public class Parcel {
         images.removeIf(image -> toDelete.stream()
                 .anyMatch(d -> d.getId().equals(image.getId()))
         );
+    }
+
+    public void addTrackingEvent(TrackEvent event) {
+        this.trackEvents.add(event);
     }
 
 
