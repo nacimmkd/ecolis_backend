@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.stream.Collectors.toSet;
+
 @Entity
 @Table(name = "parcels")
 @Getter
@@ -46,7 +48,6 @@ public class Parcel {
     @Builder.Default
     private ParcelStatus status = ParcelStatus.PUBLISHED;
 
-
     @Embedded
     @AttributeOverride(name = "street", column = @Column(name = "pickup_street", nullable = false))
     @AttributeOverride(name = "city", column = @Column(name = "pickup_city", nullable = false))
@@ -71,40 +72,50 @@ public class Parcel {
     private Image thumbnailImage;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "parcel_images", joinColumns = @JoinColumn(name = "parcel_id"), inverseJoinColumns = @JoinColumn(name = "image_id"))
+    @JoinTable(
+            name = "parcel_images",
+            joinColumns = @JoinColumn(name = "parcel_id"),
+            inverseJoinColumns = @JoinColumn(name = "image_id")
+    )
     @Builder.Default
     private List<Image> images = new ArrayList<>();
 
     @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    private List<TrackEvent> trackEvents;
-
+    @Builder.Default
+    private List<TrackEvent> trackEvents = new ArrayList<>();
 
     @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
-    @Column(name = "deleted")
+    @Column(name = "deleted", nullable = false)
     @Builder.Default
     private boolean deleted = false;
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-
-
-    // methods
+    // ── Ownership ────────────────────────────────────────────────────────────
 
     public boolean isOwner(UUID userId) {
         return this.owner.getId().equals(userId);
     }
 
+    // ── Lifecycle ────────────────────────────────────────────────────────────
+
     public void softDelete() {
         this.deleted = true;
         this.deletedAt = OffsetDateTime.now();
-        // images
         this.thumbnailImage = null;
         this.images.clear();
     }
+
+    public void updateStatus(ParcelStatus status, String message) {
+        this.status = status;
+        addTrackingEvent(TrackEvent.of(status, message));
+    }
+
+    // ── Images ───────────────────────────────────────────────────────────────
 
     public void addImage(Image image) {
         if (image.isConfirmed() && image.isOwnedBy(this.owner)) {
@@ -116,17 +127,19 @@ public class Parcel {
         images.forEach(this::addImage);
     }
 
-    public void removeAllImages() { images.clear();}
-
-    public void removeImages(List<Image> toDelete) {
-        images.removeIf(image -> toDelete.stream()
-                .anyMatch(d -> d.getId().equals(image.getId()))
-        );
+    public void removeImages(List<Image> toRemove) {
+        var idsToRemove = toRemove.stream().map(Image::getId).collect(toSet());
+        this.images.removeIf(img -> idsToRemove.contains(img.getId()));
     }
 
-    public void addTrackingEvent(TrackEvent event) {
+    public void removeAllImages() {
+        this.images.clear();
+    }
+
+    // ── Tracking ─────────────────────────────────────────────────────────────
+
+    private void addTrackingEvent(TrackEvent event) {
+        event.setParcel(this);
         this.trackEvents.add(event);
     }
-
-
 }

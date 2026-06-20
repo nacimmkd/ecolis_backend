@@ -5,9 +5,12 @@ import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.dto.ParcelDetails;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
+import com.deliveryplatform.parcels.dto.TrackEventDto;
 import com.deliveryplatform.users.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 
 @Component
@@ -56,5 +59,18 @@ public class ParcelMapper {
                 .size(request.size())
                 .fragile(request.fragile())
                 .build();
+    }
+
+    public TrackEventDto toTrackingEventDto(TrackEvent trackEvent) {
+        return TrackEventDto.builder()
+                .id(trackEvent.getId())
+                .status(trackEvent.getStatus())
+                .note(trackEvent.getNote())
+                .occurredAt(trackEvent.getOccurredAt())
+                .build();
+    }
+
+    public List<TrackEventDto> toListTrackingEventDto(List<TrackEvent> trackEvents) {
+        return trackEvents.stream().map(this::toTrackingEventDto).toList();
     }
 }

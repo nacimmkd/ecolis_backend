@@ -35,4 +35,12 @@ public class TrackEvent {
     private Parcel parcel;
 
 
+    public static TrackEvent of(ParcelStatus status, String note) {
+        return TrackEvent.builder()
+                .status(status)
+                .note(note)
+                .build();
+    }
+
+
 }

@@ -1,9 +1,6 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
-import com.deliveryplatform.parcels.dto.ParcelDetails;
-import com.deliveryplatform.parcels.dto.ParcelSummary;
-import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
+import com.deliveryplatform.parcels.dto.*;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +63,11 @@ public class ParcelController {
 
         parcelService.deleteParcel(id, userPrincipal.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{parcelId}/tracking")
+    public ResponseEntity<List<TrackEventDto>> getTrackingEvents(@PathVariable UUID parcelId) {
+        return ResponseEntity.ok().body(parcelService.getTrackingEvents(parcelId));
     }
 
 

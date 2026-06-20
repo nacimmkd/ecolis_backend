@@ -29,7 +29,8 @@ public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
         LEFT JOIN FETCH o.profile
         LEFT JOIN FETCH p.thumbnailImage
         LEFT JOIN FETCH p.images
+        LEFT JOIN FETCH p.trackEvents
         WHERE p.id = :id
     """)
-    Optional<Parcel> findParcelWithImagesAndOwnerById(@Param("id") UUID id);
+    Optional<Parcel> findParcelWithImagesAndOwnerAndTrackingById(@Param("id") UUID id);
 }

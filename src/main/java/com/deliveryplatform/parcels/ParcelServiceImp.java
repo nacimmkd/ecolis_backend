@@ -6,10 +6,7 @@ import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
-import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
-import com.deliveryplatform.parcels.dto.ParcelDetails;
-import com.deliveryplatform.parcels.dto.ParcelSummary;
-import com.deliveryplatform.parcels.dto.ParcelUpdateRequest;
+import com.deliveryplatform.parcels.dto.*;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -97,10 +94,16 @@ public class ParcelServiceImp implements ParcelService {
         parcelRepository.save(parcel);
     }
 
+    @Override
+    public List<TrackEventDto> getTrackingEvents(UUID parcelId) {
+        var parcel = getParcelByIdOrThrow(parcelId);
+        return parcelMapper.toListTrackingEventDto(parcel.getTrackEvents());
+    }
+
     // ----------------------------------------------------------------
 
     private Parcel getParcelByIdOrThrow(UUID id) {
-        return parcelRepository.findParcelWithImagesAndOwnerById(id)
+        return parcelRepository.findParcelWithImagesAndOwnerAndTrackingById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
     }
 
