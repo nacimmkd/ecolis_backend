@@ -6,7 +6,7 @@ import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.ParcelRepository;
-import com.deliveryplatform.parcels.ParcelStatus;
+import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.dto.CreateRequest;
 import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.trips.TripRepository;
@@ -81,7 +81,7 @@ public class RequestServiceImp implements RequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
         assertOwnership(parcel.getOwner().getId(), senderId);
-        assertParcelAvailable(parcel.getStatus());
+        assertParcelAvailable(parcel.getState());
 
         var trip = tripRepository.findById(dto.tripId())
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
@@ -92,7 +92,7 @@ public class RequestServiceImp implements RequestService {
 
         if (trip.isInstantBooking()) {
             bookingRequest.accept();
-            parcel.setStatus(ParcelStatus.BOOKED);
+            parcel.updateState(ParcelState.BOOKED);
             bookingService.create(bookingRequest); // ccreate and save booking
             requestRepository.save(bookingRequest);
         } else {
@@ -120,7 +120,7 @@ public class RequestServiceImp implements RequestService {
         assertRequestIsPending(request);
 
         request.accept();
-        request.getParcel().setStatus(ParcelStatus.BOOKED);
+        request.getParcel().updateState(ParcelState.BOOKED);
         bookingService.create(request);
         requestRepository.save(request);
     }
@@ -152,8 +152,8 @@ public class RequestServiceImp implements RequestService {
             throw new UnauthorizedActionException("You are not authorized to perform this action");
     }
 
-    private void assertParcelAvailable(ParcelStatus status) {
-        if (!ParcelStatus.PUBLISHED.equals(status))
+    private void assertParcelAvailable(ParcelState status) {
+        if (!ParcelState.PUBLISHED.equals(status))
             throw new InvalidDomainStateException("Parcel is not available for booking");
     }
 
@@ -175,7 +175,7 @@ public class RequestServiceImp implements RequestService {
     private void assertRequestIsPending(Request request) {
         if (!request.isPending())
             throw new InvalidDomainStateException(
-                    "Booking request is not pending, current status: " + request.getStatus()
+                    "Booking request is not pending, current state: " + request.getStatus()
             );
     }
 

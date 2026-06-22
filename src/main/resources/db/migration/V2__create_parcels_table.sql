@@ -23,8 +23,8 @@ CREATE TABLE parcels (
                          dropoff_lat         DOUBLE PRECISION,
                          dropoff_lng         DOUBLE PRECISION,
 
-                         status              VARCHAR(20) NOT NULL DEFAULT 'PUBLISHED'
-                             CHECK (status IN ('PUBLISHED','BOOKED','PICKED_UP','IN_TRANSIT','DELIVERED','CANCELLED')),
+                         state               VARCHAR(20) NOT NULL DEFAULT 'PUBLISHED'
+                             CHECK (state IN ('PUBLISHED','BOOKED','PICKED_UP','IN_TRANSIT','DELIVERED','CANCELLED')),
 
                          created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                          deleted               BOOLEAN       DEFAULT FALSE,
@@ -37,10 +37,10 @@ CREATE TABLE parcels (
 CREATE TABLE parcel_tracking_events (
                                         id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                                         parcel_id   UUID        NOT NULL,
-                                        status      VARCHAR(20) NOT NULL
-                                            CHECK (status IN ('PUBLISHED','BOOKED','PICKED_UP','IN_TRANSIT','DELIVERED','CANCELLED')),
+                                        state       VARCHAR(20) NOT NULL
+                                            CHECK (state IN ('PUBLISHED','BOOKED','PICKED_UP','IN_TRANSIT','DELIVERED','CANCELLED')),
                                         note        TEXT,
                                         occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-                                        CONSTRAINT fk_parcels_events FOREIGN KEY (id) REFERENCES parcels(id) ON DELETE CASCADE
+                                        CONSTRAINT fk_parcels_events FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE CASCADE
 );

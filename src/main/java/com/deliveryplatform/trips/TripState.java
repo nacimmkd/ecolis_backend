@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips;
 
-public enum TripStatus {
+public enum TripState {
     PUBLISHED,
     FULL,
     IN_TRANSIT,

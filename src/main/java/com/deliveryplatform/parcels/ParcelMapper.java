@@ -29,8 +29,8 @@ public class ParcelMapper {
                 .fragile(parcel.isFragile())
                 .pickupAddress(parcel.getPickupAddress())
                 .dropoffAddress(parcel.getDropoffAddress())
-                .status(parcel.getStatus())
-                .thumbnailImage(imageMapper.toDto(parcel.getThumbnailImage()))
+                .state(parcel.getState())
+                .thumbnailImage(imageMapper.toDto(parcel.getThumbnail()))
                 .publishedAt(parcel.getCreatedAt())
                 .build();
     }
@@ -45,8 +45,8 @@ public class ParcelMapper {
                 .fragile(parcel.isFragile())
                 .pickupAddress(parcel.getPickupAddress())
                 .dropoffAddress(parcel.getDropoffAddress())
-                .status(parcel.getStatus())
-                .thumbnailImage(imageMapper.toDto(parcel.getThumbnailImage()))
+                .state(parcel.getState())
+                .thumbnailImage(imageMapper.toDto(parcel.getThumbnail()))
                 .images(imageMapper.toDto(parcel.getImages()))
                 .createdAt(parcel.getCreatedAt())
                 .build();
@@ -64,8 +64,8 @@ public class ParcelMapper {
     public TrackEventDto toTrackingEventDto(TrackEvent trackEvent) {
         return TrackEventDto.builder()
                 .id(trackEvent.getId())
-                .status(trackEvent.getStatus())
-                .note(trackEvent.getNote())
+                .status(trackEvent.getState())
+                .note(trackEvent.getMessage())
                 .occurredAt(trackEvent.getOccurredAt())
                 .build();
     }

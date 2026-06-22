@@ -25,12 +25,12 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_profile_completed_trips()
     RETURNS TRIGGER AS $$
 BEGIN
-    IF (NEW.status IS DISTINCT FROM OLD.status) THEN
-        IF (NEW.status = 'COMPLETED' OR OLD.status = 'COMPLETED') THEN
+    IF (NEW.state IS DISTINCT FROM OLD.state) THEN
+        IF (NEW.state = 'COMPLETED' OR OLD.state = 'COMPLETED') THEN
             UPDATE profiles
             SET completed_trips = (
                 SELECT COUNT(*) FROM trips
-                WHERE user_id = NEW.user_id AND status = 'COMPLETED' AND deleted = FALSE
+                WHERE user_id = NEW.user_id AND state = 'COMPLETED' AND deleted = FALSE
             )
             WHERE id = NEW.user_id;
         END IF;
@@ -45,12 +45,12 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_profile_delivered_parcels()
     RETURNS TRIGGER AS $$
 BEGIN
-    IF (NEW.status IS DISTINCT FROM OLD.status) THEN
-        IF (NEW.status = 'DELIVERED' OR OLD.status = 'DELIVERED') THEN
+    IF (NEW.state IS DISTINCT FROM OLD.state) THEN
+        IF (NEW.state = 'DELIVERED' OR OLD.state = 'DELIVERED') THEN
             UPDATE profiles
             SET delivered_parcels = (
                 SELECT COUNT(*) FROM parcels
-                WHERE user_id = NEW.user_id AND status = 'DELIVERED' AND deleted = FALSE
+                WHERE user_id = NEW.user_id AND state = 'DELIVERED' AND deleted = FALSE
             )
             WHERE id = NEW.user_id;
         END IF;
@@ -66,9 +66,9 @@ CREATE TRIGGER trigger_update_review_stats
     FOR EACH ROW EXECUTE FUNCTION update_profile_review_stats();
 
 CREATE TRIGGER trigger_update_completed_trips
-    AFTER UPDATE OF status ON trips
+    AFTER UPDATE OF state ON trips
     FOR EACH ROW EXECUTE FUNCTION update_profile_completed_trips();
 
 CREATE TRIGGER trigger_update_delivered_parcels
-    AFTER UPDATE OF status ON parcels
+    AFTER UPDATE OF state ON parcels
     FOR EACH ROW EXECUTE FUNCTION update_profile_delivered_parcels();

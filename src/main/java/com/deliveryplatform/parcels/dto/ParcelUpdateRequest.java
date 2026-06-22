@@ -26,6 +26,8 @@ public record ParcelUpdateRequest(
 
         @Valid AddressRequest dropoffAddress,
 
-        List<UUID> imageIds
+        @NotNull List<UUID> imageIds,
+
+        UUID thumbnailId
 ) {
 }

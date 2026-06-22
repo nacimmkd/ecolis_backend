@@ -3,7 +3,7 @@ package com.deliveryplatform.parcels.dto;
 import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.images.dto.ImageDto;
 import com.deliveryplatform.parcels.ParcelSize;
-import com.deliveryplatform.parcels.ParcelStatus;
+import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.users.dto.UserBrief;
 import lombok.Builder;
 
@@ -20,7 +20,7 @@ public record ParcelSummary(
         boolean fragile,
         Address pickupAddress,
         Address dropoffAddress,
-        ParcelStatus status,
+        ParcelState state,
         ImageDto thumbnailImage,
         OffsetDateTime publishedAt
 ) {}

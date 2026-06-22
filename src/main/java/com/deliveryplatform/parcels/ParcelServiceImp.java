@@ -7,6 +7,7 @@ import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.*;
+import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -54,6 +55,7 @@ public class ParcelServiceImp implements ParcelService {
 
         parcel.setOwner(owner);
         parcel.addImages(imageService.getImages(request.imageIds()));
+        parcel.setThumbnail(imageService.getImage(request.thumbnailId(),owner));
 
         parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
         parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
@@ -66,7 +68,7 @@ public class ParcelServiceImp implements ParcelService {
     public ParcelDetails updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
-        assertParcelIsInState(parcel, List.of(ParcelStatus.PUBLISHED));
+        assertParcelIsInState(parcel, List.of(ParcelState.PUBLISHED));
 
         parcel.setDescription(request.description());
         parcel.setWeightKg(request.weightKg());
@@ -75,6 +77,7 @@ public class ParcelServiceImp implements ParcelService {
         parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
         parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
 
+        updateThumbnail(parcel, request.thumbnailId());
         updateParcelImages(parcel, request.imageIds());
 
         return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
@@ -85,7 +88,7 @@ public class ParcelServiceImp implements ParcelService {
     public void deleteParcel(UUID parcelId, UUID userId) {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
-        assertParcelIsInState(parcel, List.of(ParcelStatus.PUBLISHED));
+        assertParcelIsInState(parcel, List.of(ParcelState.PUBLISHED));
 
         imageService.remove(parcel.getImages());
         parcel.removeAllImages();
@@ -117,8 +120,8 @@ public class ParcelServiceImp implements ParcelService {
             throw new UnauthorizedActionException("User is not owner of this parcel");
     }
 
-    private void assertParcelIsInState(Parcel parcel, List<ParcelStatus> state) {
-        if (!state.contains(parcel.getStatus()))
+    private void assertParcelIsInState(Parcel parcel, List<ParcelState> state) {
+        if (!state.contains(parcel.getState()))
             throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
     }
 
@@ -136,5 +139,15 @@ public class ParcelServiceImp implements ParcelService {
             parcel.removeImages(toDelete);
             parcel.addImages(imageService.getImages(imageIds));
         }
+    }
+
+    private void updateThumbnail(Parcel parcel, UUID thumbnailId) {
+        if (thumbnailId == null) {
+            parcel.setThumbnail(null);
+            return;
+        }
+        // if thumbnailId in not null, we update thumbnail with new one
+        var image = imageService.getImage(thumbnailId, parcel.getOwner());
+        parcel.setThumbnail(image);
     }
 }

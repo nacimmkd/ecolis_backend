@@ -46,7 +46,8 @@ public class Parcel {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private ParcelStatus status = ParcelStatus.PUBLISHED;
+    @Setter(AccessLevel.NONE)
+    private ParcelState state = ParcelState.PUBLISHED;
 
     @Embedded
     @AttributeOverride(name = "street", column = @Column(name = "pickup_street", nullable = false))
@@ -69,7 +70,7 @@ public class Parcel {
 
     @OneToOne
     @JoinColumn(name = "thumbnail_image_id")
-    private Image thumbnailImage;
+    private Image thumbnail;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
@@ -77,10 +78,9 @@ public class Parcel {
             joinColumns = @JoinColumn(name = "parcel_id"),
             inverseJoinColumns = @JoinColumn(name = "image_id")
     )
-    @Builder.Default
     private List<Image> images = new ArrayList<>();
 
-    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @OneToMany(mappedBy = "parcel", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<TrackEvent> trackEvents = new ArrayList<>();
 
@@ -106,13 +106,13 @@ public class Parcel {
     public void softDelete() {
         this.deleted = true;
         this.deletedAt = OffsetDateTime.now();
-        this.thumbnailImage = null;
+        this.thumbnail = null;
         this.images.clear();
     }
 
-    public void updateStatus(ParcelStatus status, String message) {
-        this.status = status;
-        addTrackingEvent(TrackEvent.of(status, message));
+    public void updateState(ParcelState state) {
+        this.state = state;
+        addTrackingEvent(TrackEvent.of(state, state.getMessage()));
     }
 
     // ── Images ───────────────────────────────────────────────────────────────

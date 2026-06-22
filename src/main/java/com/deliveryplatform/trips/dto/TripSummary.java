@@ -1,7 +1,7 @@
 package com.deliveryplatform.trips.dto;
 
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.trips.TripStatus;
+import com.deliveryplatform.trips.TripState;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -20,7 +20,7 @@ public record TripSummary(
         BigDecimal availableWeightKg,
         BigDecimal pricePerKg,
         boolean instantBooking,
-        TripStatus status,
+        TripState status,
         int stopCount,
         OffsetDateTime publishedAt
 ) {}

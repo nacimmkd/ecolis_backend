@@ -1,9 +1,7 @@
 package com.deliveryplatform.parcels;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -21,10 +19,12 @@ public class TrackEvent {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private ParcelStatus status;
+    @Enumerated(EnumType.STRING)
+    private ParcelState state;
 
     @Builder.Default
-    private String note = "";
+    @Column(name = "note")
+    private String message = "";
 
     @Column(name = "occurred_at")
     @Builder.Default
@@ -35,10 +35,10 @@ public class TrackEvent {
     private Parcel parcel;
 
 
-    public static TrackEvent of(ParcelStatus status, String note) {
+    public static TrackEvent of(ParcelState state, String message) {
         return TrackEvent.builder()
-                .status(status)
-                .note(note)
+                .state(state)
+                .message(message)
                 .build();
     }
 

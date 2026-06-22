@@ -52,7 +52,7 @@ public class TripServiceImp implements TripService {
 
         var trip = tripMapper.toEntity(request);
         trip.setOwner(owner);
-        trip.setStatus(TripStatus.PUBLISHED);
+        trip.setState(TripState.PUBLISHED);
         trip.setDepartureAddress(addressService.geocode(request.departureAddress()));
         trip.setArrivalAddress(addressService.geocode(request.arrivalAddress()));
         trip.updateStops(buildStopEntities(request.stops()));
@@ -142,7 +142,7 @@ public class TripServiceImp implements TripService {
     }
 
     private void assertTripInStatusPublished(Trip trip) {
-        if (!trip.getStatus().equals(TripStatus.PUBLISHED))
+        if (!trip.getState().equals(TripState.PUBLISHED))
             throw new InvalidDomainStateException("Trip is not published");
     }
 

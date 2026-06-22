@@ -25,7 +25,7 @@ public class TripMapper {
                 .availableWeightKg(trip.getAvailableWeightKg())
                 .pricePerKg(trip.getPricePerKg())
                 .instantBooking(trip.isInstantBooking())
-                .status(trip.getStatus())
+                .status(trip.getState())
                 .stopCount(trip.getStops().size())
                 .publishedAt(trip.getCreatedAt())
                 .build();
@@ -47,7 +47,7 @@ public class TripMapper {
                 .pricePerKg(trip.getPricePerKg())
                 .instantBooking(trip.isInstantBooking())
                 .maxDetourKm(trip.getMaxDetourKm())
-                .status(trip.getStatus())
+                .status(trip.getState())
                 .notes(trip.getNotes())
                 .stops(trip.getStops().stream().map(this::toSummaryDto).toList())
                 .publishedAt(trip.getCreatedAt())

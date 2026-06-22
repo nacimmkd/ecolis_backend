@@ -5,7 +5,7 @@ import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.ParcelRepository;
-import com.deliveryplatform.parcels.ParcelStatus;
+import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.Request;
 import com.deliveryplatform.trips.TripRepository;
 import jakarta.transaction.Transactional;
@@ -75,7 +75,7 @@ public class BookingServiceImp implements BookingService {
         var cancelledBy = booking.resolveCanceller(currentUserId);
         booking.cancel(reason, cancelledBy);
 
-        booking.getParcel().setStatus(ParcelStatus.PUBLISHED);
+        booking.getParcel().updateState(ParcelState.PUBLISHED);
         bookingRepository.save(booking);
     }
 
@@ -96,7 +96,7 @@ public class BookingServiceImp implements BookingService {
         assertIsCarrier(booking.getTrip().getOwner().getId(), carrierId);
         assertBookingInStatus(booking, BookingStatus.PAID, "Only PAID bookings can be completed");
         booking.complete();
-        booking.getParcel().setStatus(ParcelStatus.DELIVERED);
+        booking.getParcel().updateState(ParcelState.DELIVERED);
         bookingRepository.save(booking);
     }
 

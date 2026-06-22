@@ -73,16 +73,15 @@ public class  Trip {
     private BigDecimal maxDetourKm = BigDecimal.ONE;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private TripStatus status = TripStatus.PUBLISHED;
+    private TripState state = TripState.PUBLISHED;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+    @Builder.Default
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("stopOrder ASC")
