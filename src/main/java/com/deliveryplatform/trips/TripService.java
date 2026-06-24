@@ -20,9 +20,9 @@ public interface TripService {
 
     void deleteTrip(UUID tripId, UUID userId);
 
-    StopPoint addStop(UUID tripId, UUID userId, AddressRequest address);
+    StopPointResponse addStop(UUID tripId, UUID userId, AddressRequest address);
 
-    StopPoint updateStop(UUID stopId, UUID tripId, UUID userId, StopPointRequest request);
+    List<StopPointResponse>  updateStops(UUID tripId, UUID userId, List<StopPointRequest> newStops);
 
     void deleteStop(UUID stopId, UUID tripId, UUID userId);
 }

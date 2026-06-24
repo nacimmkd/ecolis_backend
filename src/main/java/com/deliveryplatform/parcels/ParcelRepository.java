@@ -16,7 +16,7 @@ public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
         SELECT p FROM Parcel p
         LEFT JOIN FETCH p.owner o
         LEFT JOIN FETCH o.profile
-        LEFT JOIN FETCH p.thumbnailImage
+        LEFT JOIN FETCH p.thumbnail
         LEFT JOIN FETCH p.images
         WHERE o.id = :userId
         ORDER BY p.createdAt DESC
@@ -27,7 +27,7 @@ public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
         SELECT p FROM Parcel p
         LEFT JOIN FETCH p.owner o
         LEFT JOIN FETCH o.profile
-        LEFT JOIN FETCH p.thumbnailImage
+        LEFT JOIN FETCH p.thumbnail
         LEFT JOIN FETCH p.images
         LEFT JOIN FETCH p.trackEvents
         WHERE p.id = :id

@@ -29,7 +29,7 @@ public class TripStop {
     private Trip trip;
 
     @Column(name = "stop_order")
-    private int stopOrder;
+    private int order;
 
     @Embedded
     private Address address;

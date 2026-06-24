@@ -3,6 +3,7 @@ package com.deliveryplatform.addresses.geocoding.nominatim;
 import com.deliveryplatform.addresses.AddressRequest;
 import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.addresses.AddressService;
+import com.deliveryplatform.addresses.geocoding.GeocodingService;
 import com.deliveryplatform.common.exceptions.ExternalServiceException;
 import com.deliveryplatform.common.exceptions.UnprocessableEntityException;
 import lombok.RequiredArgsConstructor;

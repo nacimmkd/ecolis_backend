@@ -5,9 +5,9 @@ import lombok.Builder;
 
 import java.util.UUID;
 
-@Builder(toBuilder = true)
-public record StopPoint(
-        UUID stopId,
-        Integer stopOrder,
+@Builder
+public record StopPointResponse(
+        UUID id,
+        Integer order,
         Address address
 ) {}

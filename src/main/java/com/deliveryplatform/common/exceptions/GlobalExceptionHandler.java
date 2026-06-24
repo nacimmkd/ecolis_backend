@@ -13,6 +13,7 @@ import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 
@@ -96,6 +97,18 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(
                         HttpStatus.BAD_REQUEST.value(),
                         ex.getMessage(),
+                        request.getRequestURI()
+                ));
+    }
+
+    // OTHERS
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleUnexpected(Exception ex, HttpServletRequest request) {
+        log.error("Unexpected error on {} : {}", request.getRequestURI(), ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiError.of(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "Internal server error",
                         request.getRequestURI()
                 ));
     }

@@ -41,6 +41,7 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
             LEFT JOIN t.bookings b
             LEFT JOIN b.parcel p
             WHERE t.id = :tripId
+            GROUP BY t.id, t.availableWeightKg
     """)
     BigDecimal getRemainingWeight(@Param("tripId") UUID tripId);
 

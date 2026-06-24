@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Builder
 public record TripSummary(
-        UUID tripId,
+        UUID id,
         Address departureAddress,
         Address arrivalAddress,
         LocalDate departureDate,

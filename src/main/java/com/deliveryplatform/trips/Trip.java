@@ -2,10 +2,11 @@ package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.bookings.Booking;
+import com.deliveryplatform.bookings.BookingStatus;
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
@@ -21,7 +22,7 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @SQLRestriction("deleted = false")
-public class  Trip {
+public class Trip {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -57,10 +58,9 @@ public class  Trip {
 
     @Column(name = "available_weight_kg", precision = 8, scale = 2)
     private BigDecimal availableWeightKg;
-
+    
     @Transient
-    @Builder.Default
-    private BigDecimal remainingWeightKg = BigDecimal.ZERO;
+    private BigDecimal remainingWeightKg;
 
     @Column(name = "price_per_kg", precision = 10, scale = 2)
     private BigDecimal pricePerKg;
@@ -84,14 +84,13 @@ public class  Trip {
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("stopOrder ASC")
+    @OrderBy("order ASC")
     @Builder.Default
     private List<TripStop> stops = new ArrayList<>();
 
     @OneToMany(mappedBy = "trip")
     @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
-
 
     @Builder.Default
     private boolean deleted = false;
@@ -102,47 +101,55 @@ public class  Trip {
 
     // methods ---------------------------------------------------------------------------------
 
-    public void addStop(TripStop stop) {
-        stops.add(stop);
-        stop.setTrip(this);
+    public void addStop(TripStop newStop) {
+        newStop.setTrip(this);
+        this.stops.add(newStop);
     }
 
-    public void updateStops(List<TripStop> newStops) {
-        removeStops(newStops);
-        newStops.forEach(stop -> stop.setTrip(this));
-        this.stops.addAll(newStops);
+    public void addStops(List<TripStop> newStops) {
+        validateStopsSequence(newStops);
+        newStops.forEach(this::addStop);
     }
 
     public void removeStop(TripStop stop) {
-        stops.remove(stop);
-        stop.setTrip(null);
+        this.stops.remove(stop);
     }
 
-    public void removeStops(List<TripStop> stops) {
-        stops.forEach(stop -> stop.setTrip(null));
+    public void removeAllStops() {
         this.stops.clear();
     }
 
     public void reorderStops() {
         for (int i = 0; i < stops.size(); i++) {
-            stops.get(i).setStopOrder(i + 1);
+            stops.get(i).setOrder(i + 1);
         }
     }
 
-    public void softDelete(){
-        this.stops.forEach(stop -> {
-            stop.setDeleted(true);
-            stop.setDeletedAt(OffsetDateTime.now());
-        });
+    public void softDelete() {
+        removeAllStops();
         this.deleted = true;
         this.deletedAt = OffsetDateTime.now();
     }
 
     public BigDecimal getRemainingWeightKg() {
+        if (availableWeightKg == null) return BigDecimal.ZERO;
         var usedWeight = bookings.stream()
-                .map(booking -> booking.getParcel().getWeightKg())
+                .filter(b -> !b.getStatus().equals(BookingStatus.CANCELLED))
+                .map(b -> b.getParcel().getWeightKg())
+                .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         return availableWeightKg.subtract(usedWeight);
     }
 
+    private void validateStopsSequence(List<TripStop> newStops) {
+        int offset = this.stops.size();
+        for (int i = 0; i < newStops.size(); i++) {
+            int expected = offset + i + 1;
+            if (newStops.get(i).getOrder() != expected)
+                throw new InvalidDomainStateException(
+                        "Stop at index " + i + " must have order " + expected +
+                                " but got " + newStops.get(i).getOrder()
+                );
+        }
+    }
 }

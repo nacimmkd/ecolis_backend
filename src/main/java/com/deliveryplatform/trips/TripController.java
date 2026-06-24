@@ -41,11 +41,11 @@ public class TripController {
             UriComponentsBuilder uriBuilder
     ) {
         var trip = tripService.createTrip(principal.getId(), request);
-        var uri  = uriBuilder.path("/api/v1/trips/{id}").build(trip.tripId());
+        var uri  = uriBuilder.path("/api/v1/trips/{id}").build(trip.id());
         return ResponseEntity.created(uri).body(trip);
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<TripDetails> updateTrip(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
@@ -67,7 +67,7 @@ public class TripController {
     // STOPS
 
     @PostMapping("/{tripId}/stops")
-    public ResponseEntity<StopPoint> addStop(
+    public ResponseEntity<StopPointResponse> addTripStop(
             @PathVariable UUID tripId,
             @RequestBody AddressRequest address,
             @AuthenticationPrincipal UserPrincipal principal
@@ -76,6 +76,15 @@ public class TripController {
         return ResponseEntity.ok(stop);
     }
 
+    @PutMapping("/{tripId}/stops")
+    public ResponseEntity<List<StopPointResponse>> updateTripStops(
+            @PathVariable UUID tripId,
+            @RequestBody List<StopPointRequest> newStops,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                tripService.updateStops(tripId, principal.getId(), newStops)
+        );
+    }
 
     @DeleteMapping("/{tripId}/stops/{stopId}")
     public ResponseEntity<Void> deleteTripStop(
@@ -86,19 +95,6 @@ public class TripController {
         tripService.deleteStop(stopId,tripId, principal.getId());
         return ResponseEntity.noContent().build();
     }
-
-
-    @PatchMapping("/{tripId}/stops/{stopId}")
-    public ResponseEntity<StopPoint> updateTripStop(
-            @PathVariable UUID tripId,
-            @PathVariable UUID stopId,
-            @RequestBody StopPointRequest stopRequest,
-            @AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(
-                tripService.updateStop(stopId, tripId, principal.getId(), stopRequest)
-        );
-    }
-
 
 
     // ADMIN

@@ -18,7 +18,7 @@ public class BookingMapper {
     public BookingDto toDto(Booking booking) {
         return BookingDto.builder()
                 .bookingId(booking.getId())
-                .trip(tripMapper.toSummaryDto(booking.getTrip()))
+                .trip(tripMapper.toTripSummaryDto(booking.getTrip()))
                 .parcel(parcelMapper.toSummaryDto(booking.getParcel()))
                 .price(booking.getPrice())
                 .status(booking.getStatus())

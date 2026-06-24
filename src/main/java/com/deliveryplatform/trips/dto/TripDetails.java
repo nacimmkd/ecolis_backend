@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Builder
 public record TripDetails(
-        UUID tripId,
+        UUID id,
         UserBrief owner,
         Address departureAddress,
         Address arrivalAddress,
@@ -27,6 +27,6 @@ public record TripDetails(
         BigDecimal maxDetourKm,
         TripState status,
         String notes,
-        List<StopPoint> stops,
+        List<StopPointResponse> stops,
         OffsetDateTime publishedAt
 ) {}

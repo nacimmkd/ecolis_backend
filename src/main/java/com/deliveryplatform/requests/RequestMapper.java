@@ -19,7 +19,7 @@ public class RequestMapper {
     public RequestDto toRequestDto(Request request) {
         return RequestDto.builder()
                 .requestId(request.getId())
-                .trip(tripMapper.toSummaryDto(request.getTrip()))
+                .trip(tripMapper.toTripSummaryDto(request.getTrip()))
                 .parcel(parcelMapper.toSummaryDto(request.getParcel()))
                 .status(request.getStatus())
                 .rejectionReason(request.getRejectionReason())
