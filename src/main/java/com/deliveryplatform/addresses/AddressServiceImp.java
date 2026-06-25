@@ -14,7 +14,7 @@ public class AddressServiceImp implements AddressService {
     @Override
     public Address geocode(AddressRequest request) {
         var address = addressMapper.toEntity(request);
-        var coordinates = geocoding.geocode(address.getFullAddress());
+        var coordinates = geocoding.geocode(address.toFullAddress());
         return address.withCoordinates(coordinates);
     }
 }

@@ -29,7 +29,7 @@ public class Address {
                 .build();
     }
 
-    public String getFullAddress() {
+    public String toFullAddress() {
         return String.format("%s, %s %s, %s", street, postalCode, city, country);
     }
 }
