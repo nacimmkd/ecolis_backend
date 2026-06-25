@@ -7,9 +7,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AddressMapper {
 
-    private final AddressResolver resolver;
-
-    public Address toEntity(AddressRequest addressRequest) {
-        return resolver.resolve(addressRequest);
+    public Address toEntity(AddressRequest request) {
+        return Address.builder()
+                .street(request.street())
+                .city(request.city())
+                .postalCode(request.postalCode())
+                .country(request.country())
+                .build();
     }
 }

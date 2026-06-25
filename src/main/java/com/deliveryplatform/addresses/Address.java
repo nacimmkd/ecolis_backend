@@ -5,11 +5,11 @@ import lombok.*;
 
 @Embeddable
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class Address {
+
     private String street;
     private String city;
     private String postalCode;
@@ -17,14 +17,19 @@ public class Address {
     private double latitude;
     private double longitude;
 
-    public static Address of(AddressRequest address, double latitude, double longitude) {
+
+    public Address withCoordinates(Coordinates coordinates) {
         return Address.builder()
-                .street(address.street())
-                .city(address.city())
-                .postalCode(address.postalCode())
-                .country(address.country())
-                .latitude(latitude)
-                .longitude(longitude)
+                .street(this.street)
+                .city(this.city)
+                .postalCode(this.postalCode)
+                .country(this.country)
+                .latitude(coordinates.latitude())
+                .longitude(coordinates.longitude())
                 .build();
+    }
+
+    public String getFullAddress() {
+        return String.format("%s, %s %s, %s", street, postalCode, city, country);
     }
 }

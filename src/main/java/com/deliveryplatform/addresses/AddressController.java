@@ -14,8 +14,8 @@ public class AddressController {
     private final AddressService addressService;
 
     @PostMapping("/geocode")
-    public ResponseEntity<Address> geocode(@Valid @RequestBody AddressRequest address) {
-        Address result = addressService.geocode(address);
+    public ResponseEntity<Address> geocode(@Valid @RequestBody AddressRequest request) {
+        Address result = addressService.geocode(request);
         return ResponseEntity.ok(result);
     }
 }

@@ -1,4 +1,4 @@
-package com.deliveryplatform.addresses.geocoding.nominatim;
+package com.deliveryplatform.addresses.nominatim;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "geocoding.nominatim")
-public class NominatimProperties {
+class NominatimProperties {
     private String baseUrl;
     private String userAgent;
 }

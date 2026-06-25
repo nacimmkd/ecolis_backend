@@ -1,4 +1,4 @@
-package com.deliveryplatform.addresses.geocoding.nominatim;
+package com.deliveryplatform.addresses.nominatim;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 @RequiredArgsConstructor
-public class NominatimConfig {
+class NominatimConfig {
 
     private final NominatimProperties nominatimProperties;
 
