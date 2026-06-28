@@ -132,7 +132,7 @@ public class TripServiceImp implements TripService {
     // ----------------------------------------------------------------
 
     private Trip getTripByIdOrThrow(UUID id) {
-        return tripRepository.findByIdWithStopsAndOwner(id)
+        return tripRepository.findTripById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
     }
 

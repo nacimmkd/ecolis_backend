@@ -131,16 +131,6 @@ public class Trip {
         this.deletedAt = OffsetDateTime.now();
     }
 
-    public BigDecimal getRemainingWeightKg() {
-        if (availableWeightKg == null) return BigDecimal.ZERO;
-        var usedWeight = bookings.stream()
-                .filter(b -> !b.getStatus().equals(BookingStatus.CANCELLED))
-                .map(b -> b.getParcel().getWeightKg())
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return availableWeightKg.subtract(usedWeight);
-    }
-
     private void validateStopsSequence(List<TripStop> newStops) {
         int offset = this.stops.size();
         for (int i = 0; i < newStops.size(); i++) {
