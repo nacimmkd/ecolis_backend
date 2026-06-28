@@ -47,7 +47,7 @@ public class TripServiceImp implements TripService {
     @Override
     @Transactional
     public TripDetails createTrip(UUID currentUserId, TripCreateRequest request) {
-        var owner = userRepository.findWithProfileById(currentUserId)
+        var owner = userRepository.findUserWithProfileById(currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         var trip = tripMapper.toTripEntity(request);

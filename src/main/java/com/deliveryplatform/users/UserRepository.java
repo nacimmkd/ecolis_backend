@@ -21,5 +21,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     WHERE u.id = :id
     AND u.deleted = false
 """)
-    Optional<User> findWithProfileById(@Param("id") UUID id);
+    Optional<User> findUserWithProfileById(@Param("id") UUID id);
 }

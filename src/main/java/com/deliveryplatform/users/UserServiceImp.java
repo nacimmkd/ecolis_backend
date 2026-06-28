@@ -122,7 +122,7 @@ public class UserServiceImp implements UserService {
     // ----------------------------------------------------------------
 
     public User getUserByIdOrThrow(UUID id) {
-        return userRepository.findById(id)
+        return userRepository.findUserWithProfileById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
