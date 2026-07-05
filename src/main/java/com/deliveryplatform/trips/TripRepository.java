@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,5 +30,25 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
             GROUP BY t.id, t.availableWeightKg
     """)
     BigDecimal getRemainingWeight(@Param("tripId") UUID tripId);
+
+
+    @Query("""
+        SELECT t FROM Trip t
+        LEFT JOIN FETCH t.stops
+        WHERE t.state = :state
+          AND t.departureDate >= :departureDate
+          AND t.availableWeightKg >= :weightKg
+          AND t.departureAddress.latitude  BETWEEN :minLat AND :maxLat
+          AND t.departureAddress.longitude BETWEEN :minLng AND :maxLng
+    """)
+    List<Trip> findCandidateTrips(
+            @Param("state")         TripState  state,
+            @Param("departureDate") LocalDate  departureDate,
+            @Param("weightKg")      BigDecimal weightKg,
+            @Param("minLat")        double     minLat,
+            @Param("maxLat")        double     maxLat,
+            @Param("minLng")        double     minLng,
+            @Param("maxLng")        double     maxLng
+    );
 
 }

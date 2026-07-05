@@ -54,7 +54,9 @@ public class ParcelServiceImp implements ParcelService {
 
         parcel.setOwner(owner);
         parcel.addImages(imageService.getImages(request.imageIds()));
-        parcel.setThumbnail(imageService.getImage(request.thumbnailId(),owner));
+        parcel.setThumbnail(
+                request.thumbnailId() == null ? null : imageService.getImage(request.thumbnailId(),owner)
+        );
 
         parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
         parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
