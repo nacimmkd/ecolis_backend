@@ -32,11 +32,11 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
     BigDecimal getRemainingWeight(@Param("tripId") UUID tripId);
 
 
+    @EntityGraph(attributePaths = {"stops", "owner.profile"})
     @Query("""
         SELECT t FROM Trip t
-        LEFT JOIN FETCH t.stops
         WHERE t.state = :state
-          AND t.departureDate >= :departureDate
+          AND t.departureDate = :departureDate
           AND t.availableWeightKg >= :weightKg
           AND t.departureAddress.latitude  BETWEEN :minLat AND :maxLat
           AND t.departureAddress.longitude BETWEEN :minLng AND :maxLng

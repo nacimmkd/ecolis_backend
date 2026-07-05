@@ -33,7 +33,7 @@ public class ParcelServiceImp implements ParcelService {
 
     @Override
     public List<ParcelSummary> getUserParcels(UUID userId) {
-        return parcelRepository.findWithOwnerByUserId(userId).stream()
+        return parcelRepository.findByOwnerId(userId).stream()
                 .map(parcelMapper::toSummaryDto)
                 .toList();
     }
@@ -100,14 +100,15 @@ public class ParcelServiceImp implements ParcelService {
 
     @Override
     public List<TrackEventDto> getTrackingEvents(UUID parcelId) {
-        var parcel = getParcelByIdOrThrow(parcelId);
+        var parcel = parcelRepository.findParcelWithTrackingById(parcelId)
+                .orElseThrow(() -> new ResourceNotFoundException("parcel not found"));
         return parcelMapper.toListTrackingEventDto(parcel.getTrackEvents());
     }
 
     // ----------------------------------------------------------------
 
     private Parcel getParcelByIdOrThrow(UUID id) {
-        return parcelRepository.findParcelWithImagesAndOwnerAndTrackingById(id)
+        return parcelRepository.findParcelWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
     }
 

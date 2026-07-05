@@ -1,5 +1,6 @@
 package com.deliveryplatform.parcels;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,25 +13,15 @@ import java.util.UUID;
 @Repository
 public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
 
-    @Query("""
-        SELECT p FROM Parcel p
-        LEFT JOIN FETCH p.owner o
-        LEFT JOIN FETCH o.profile
-        LEFT JOIN FETCH p.thumbnail
-        LEFT JOIN FETCH p.images
-        WHERE o.id = :userId
-        ORDER BY p.createdAt DESC
-    """)
-    List<Parcel> findWithOwnerByUserId(@Param("userId") UUID userId);
+    @EntityGraph(attributePaths = {"owner", "owner.profile", "thumbnail", "images"})
+    @Query("SELECT p FROM Parcel p WHERE p.owner.id = :userId ORDER BY p.createdAt DESC")
+    List<Parcel> findByOwnerId(@Param("userId") UUID userId);
 
-    @Query("""
-        SELECT p FROM Parcel p
-        LEFT JOIN FETCH p.owner o
-        LEFT JOIN FETCH o.profile
-        LEFT JOIN FETCH p.thumbnail
-        LEFT JOIN FETCH p.images
-        LEFT JOIN FETCH p.trackEvents
-        WHERE p.id = :id
-    """)
-    Optional<Parcel> findParcelWithImagesAndOwnerAndTrackingById(@Param("id") UUID id);
+    @EntityGraph(attributePaths = {"owner", "owner.profile", "thumbnail", "trackEvents"})
+    Optional<Parcel> findParcelWithTrackingById(UUID id);
+
+    @EntityGraph(attributePaths = {"owner", "owner.profile", "thumbnail", "images"})
+    Optional<Parcel> findParcelWithDetailsById(UUID id);
+
+
 }

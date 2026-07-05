@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -26,13 +27,13 @@ public class MatchingFinderService {
     private final TripViabilityService viabilityCalculator;
 
     @Transactional(readOnly = true)
-    public List<MatchResult> findMatchingTrips(Parcel parcel) {
+    public List<MatchResult> findMatchingTrips(Parcel parcel, LocalDate date) {
         Address pickup = parcel.getPickupAddress();
         var box = GeoUtils.boundingBox(pickup.getLatitude(), pickup.getLongitude(), SEARCH_RADIUS_KM);
 
         List<Trip> preMatchingTrips = tripRepository.findCandidateTrips(
                 TripState.PUBLISHED,
-                LocalDate.now(),
+                date,
                 parcel.getWeightKg(),
                 box.minLat(), box.maxLat(),
                 box.minLng(), box.maxLng()

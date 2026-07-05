@@ -7,6 +7,7 @@ import com.deliveryplatform.parcels.ParcelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,10 +19,12 @@ public class MatchingQueryService {
     private final ParcelRepository parcelRepository;
     private final MatchingMapper mapper;
 
-    public List<MatchResultDto> findMatchingTrips(UUID parcelId, UUID actualUserId) {
+    public List<MatchResultDto> findMatchingTrips(UUID parcelId, LocalDate date, UUID actualUserId) {
+
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, actualUserId);
-        return matchingFinderService.findMatchingTrips(parcel).stream()
+
+        return matchingFinderService.findMatchingTrips(parcel, date).stream()
                 .map(mapper::toDto)
                 .toList();
     }
