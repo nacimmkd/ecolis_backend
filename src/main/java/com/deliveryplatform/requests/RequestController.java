@@ -3,6 +3,7 @@ package com.deliveryplatform.requests;
 import com.deliveryplatform.requests.dto.CreateRequest;
 import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.users.UserPrincipal;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +31,8 @@ public class RequestController {
 
     @GetMapping
     public ResponseEntity<List<RequestDto>> getRequests(
-            @RequestParam("tripId")  UUID tripId,
-            @RequestParam("parcelId")  UUID parcelId,
+            @RequestParam(name = "tripId", required = false)  UUID tripId,
+            @RequestParam(name = "parcelId", required = false)  UUID parcelId,
             @AuthenticationPrincipal UserPrincipal user
     ) throws BadRequestException
     {
@@ -67,7 +68,7 @@ public class RequestController {
 
     @PostMapping
     public ResponseEntity<RequestDto> createRequest(
-            @RequestBody CreateRequest dto,
+            @RequestBody @Valid CreateRequest dto,
             @AuthenticationPrincipal UserPrincipal user,
             UriComponentsBuilder uriBuilder
     ) {

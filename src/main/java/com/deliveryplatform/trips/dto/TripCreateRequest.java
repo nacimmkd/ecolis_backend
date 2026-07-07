@@ -34,7 +34,5 @@ public record TripCreateRequest(
 
         @DecimalMin("0.5") BigDecimal maxDetourKm,
 
-        String notes,
-
-        @Valid List<StopPointRequest> stops
+        String notes
 ) {}

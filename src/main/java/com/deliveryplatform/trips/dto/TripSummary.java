@@ -12,12 +12,13 @@ import java.util.UUID;
 
 @Builder
 public record TripSummary(
-        UUID id,
-        Address departureAddress,
-        Address arrivalAddress,
+        UUID tripId,
+        String departureCity,
+        String arrivalCity,
         LocalDate departureDate,
         LocalDate arrivalDate,
         BigDecimal availableWeightKg,
+        BigDecimal remainingWeightKg,
         BigDecimal pricePerKg,
         boolean instantBooking,
         TripState status,

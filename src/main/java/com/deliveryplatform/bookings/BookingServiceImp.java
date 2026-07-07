@@ -4,9 +4,11 @@ import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.Request;
+import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.trips.TripRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +27,6 @@ public class BookingServiceImp implements BookingService {
     private final BookingMapper            bookingMapper;
 
 
-
-
     @Override
     public BookingDto getBooking(UUID bookingId, UUID currentUserId) {
         var booking = getBookingByIdOrThrow(bookingId);
@@ -43,8 +43,7 @@ public class BookingServiceImp implements BookingService {
     public List<BookingDto> getTripBookings(UUID tripId, UUID currentUserId) {
         var trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
-
-        assertIsCarrier(trip.getOwner().getId(), currentUserId);
+        assertIsTripOwner(trip, currentUserId);
         return bookingMapper.toDto(bookingRepository.findByTripId(tripId));
     }
 
@@ -53,7 +52,7 @@ public class BookingServiceImp implements BookingService {
         var parcel = parcelRepository.findById(parcelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
-        assertIsSender(parcel.getOwner().getId(), currentUserId);
+        assertIsParcelOwner(parcel, currentUserId);
         return bookingMapper.toDto(bookingRepository.findByParcelId(parcelId));
     }
 
@@ -75,7 +74,6 @@ public class BookingServiceImp implements BookingService {
         var cancelledBy = booking.resolveCanceller(currentUserId);
         booking.cancel(reason, cancelledBy);
 
-        booking.getParcel().updateState(ParcelState.PUBLISHED);
         bookingRepository.save(booking);
     }
 
@@ -83,7 +81,7 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public void pay(UUID bookingId, UUID senderId) {
         var booking = getBookingByIdOrThrow(bookingId);
-        assertIsSender(booking.getParcel().getOwner().getId(), senderId);
+        assertIsParcelOwner(booking.getParcel(), senderId);
         assertBookingInStatus(booking, BookingStatus.PENDING, "Only PENDING bookings can be paid");
         booking.pay();
         bookingRepository.save(booking);
@@ -91,9 +89,28 @@ public class BookingServiceImp implements BookingService {
 
     @Override
     @Transactional
-    public void complete(UUID bookingId, UUID carrierId) {
+    public void confirmPickUp(UUID bookingId, String pickUpCode, UUID userId) {
         var booking = getBookingByIdOrThrow(bookingId);
-        assertIsCarrier(booking.getTrip().getOwner().getId(), carrierId);
+        assertIsTripOwner(booking.getTrip(), userId);
+        booking.confirmPickUp(pickUpCode);
+        bookingRepository.save(booking);
+    }
+
+    @Override
+    @Transactional
+    public void confirmDropOff(UUID bookingId, String dropOffCode, UUID userId) {
+        var booking = getBookingByIdOrThrow(bookingId);
+        assertIsTripOwner(booking.getTrip(), userId);
+        booking.confirmDropOff(dropOffCode);
+        bookingRepository.save(booking);
+    }
+
+
+    @Override
+    @Transactional
+    public void complete(UUID bookingId, UUID currentUserId) {
+        var booking = getBookingByIdOrThrow(bookingId);
+        assertIsTripOwner(booking.getTrip(), currentUserId);
         assertBookingInStatus(booking, BookingStatus.PAID, "Only PAID bookings can be completed");
         booking.complete();
         booking.getParcel().updateState(ParcelState.DELIVERED);
@@ -107,14 +124,14 @@ public class BookingServiceImp implements BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
     }
 
-    private void assertIsCarrier(UUID carrierId, UUID currentUserId) {
-        if (!carrierId.equals(currentUserId))
+    private void assertIsTripOwner(Trip trip, UUID currentUserId) {
+        if (!currentUserId.equals(trip.getOwnerId()))
             throw new UnauthorizedActionException("You are not the carrier of this trip");
     }
 
-    private void assertIsSender(UUID senderId, UUID currentUserId) {
-        if (!senderId.equals(currentUserId))
-            throw new UnauthorizedActionException("You are not the sender of this booking");
+    private void assertIsParcelOwner(Parcel parcel, UUID currentUserId) {
+        if (!currentUserId.equals(parcel.getOwnerId()))
+            throw new UnauthorizedActionException("You are not the sender of this parcel");
     }
 
     private void assertInvolves(boolean involves) {

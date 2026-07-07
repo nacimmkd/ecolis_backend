@@ -26,7 +26,6 @@ public class TripServiceImp implements TripService {
     @Override
     public TripDetails getTrip(UUID tripId) {
         var trip = getTripByIdOrThrow(tripId);
-        trip.setRemainingWeightKg(tripRepository.getRemainingWeight(tripId));
         return tripMapper.toTripDetailsDto(trip);
     }
 
@@ -52,10 +51,9 @@ public class TripServiceImp implements TripService {
 
         var trip = tripMapper.toTripEntity(request);
         trip.setOwner(owner);
-        trip.setState(TripState.PUBLISHED);
+        trip.updateState(TripState.PUBLISHED);
         trip.setDepartureAddress(addressService.geocode(request.departureAddress()));
         trip.setArrivalAddress(addressService.geocode(request.arrivalAddress()));
-        trip.addStops(tripMapper.toTripStopEntity(request.stops()));
 
         return tripMapper.toTripDetailsDto(tripRepository.save(trip));
     }
@@ -67,7 +65,7 @@ public class TripServiceImp implements TripService {
         assertOwnership(trip, currentUserId);
         assertTripInStatusPublished(trip);
 
-        updateTrip(trip, request);
+        applyUpdates(trip, request);
 
         return tripMapper.toTripDetailsDto(tripRepository.save(trip));
     }
@@ -88,17 +86,10 @@ public class TripServiceImp implements TripService {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
-        var stop = TripStop.builder()
-                .order(trip.getStops().size() + 1)
-                .address(addressService.geocode(address))
-                .build();
-
-        trip.addStop(stop);
+        var stop = trip.addStop(addressService.geocode(address));
         tripRepository.saveAndFlush(trip);
         return tripMapper.toTripStopDto(stop);
     }
-
-
 
     @Override
     @Transactional
@@ -124,8 +115,6 @@ public class TripServiceImp implements TripService {
 
         var stop = findStopInTrip(trip, stopId);
         trip.removeStop(stop);
-        trip.reorderStops();
-
         tripRepository.save(trip);
     }
 
@@ -153,12 +142,12 @@ public class TripServiceImp implements TripService {
                 .orElseThrow(() -> new ResourceNotFoundException("Trip stop not found"));
     }
 
-    private void updateTrip(Trip trip, TripUpdateRequest request) {
+    private void applyUpdates(Trip trip, TripUpdateRequest request) {
         trip.setDepartureAddress(addressService.geocode(request.departureAddress()));
         trip.setArrivalAddress(addressService.geocode(request.arrivalAddress()));
         trip.setDepartureDate(request.departureDate());
         trip.setArrivalDate(request.arrivalDate());
-        trip.setAvailableWeightKg(request.availableWeightKg());
+        trip.updateAvailableWeightKg(request.availableWeightKg());
         trip.setPricePerKg(request.pricePerKg());
         trip.setMaxDetourKm(request.maxDetourKm());
         trip.setNotes(request.notes());

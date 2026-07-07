@@ -5,10 +5,12 @@ import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.dto.CreateRequest;
 import com.deliveryplatform.requests.dto.RequestDto;
+import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.trips.TripRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +55,7 @@ public class RequestServiceImp implements RequestService {
         var trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
 
-        assertOwnership(trip.getOwner().getId(), currentUserId);
+        assertIsTripOwner(trip, currentUserId);
         var requests = requestRepository.findByTripId(tripId);
         return requestMapper.toRequestDto(requests);
     }
@@ -63,7 +65,7 @@ public class RequestServiceImp implements RequestService {
         var parcel = parcelRepository.findById(parcelId)
                         .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
-        assertOwnership(parcel.getOwner().getId(), currentUserId);
+        assertIsParcelOwner(parcel, currentUserId);
         var requests = requestRepository.findByParcelId(parcelId);
         return requestMapper.toRequestDto(requests);
     }
@@ -80,19 +82,16 @@ public class RequestServiceImp implements RequestService {
         var parcel = parcelRepository.findById(dto.parcelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
-        assertOwnership(parcel.getOwner().getId(), senderId);
+        assertIsParcelOwner(parcel, senderId);
         assertParcelAvailable(parcel.getState());
 
         var trip = tripRepository.findById(dto.tripId())
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
 
-        assertNoDuplicateRequest(dto.parcelId(), dto.tripId());
-
         var bookingRequest = Request.create(trip, parcel);
 
         if (trip.isInstantBooking()) {
             bookingRequest.accept();
-            parcel.updateState(ParcelState.BOOKED);
             bookingService.create(bookingRequest); // ccreate and save booking
             requestRepository.save(bookingRequest);
         } else {
@@ -142,13 +141,13 @@ public class RequestServiceImp implements RequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking request not found"));
     }
 
-    private void assertNoDuplicateRequest(UUID parcelId, UUID tripId) {
-        if (requestRepository.existsByParcelIdAndTripId(parcelId, tripId))
-            throw new ConflictException("A booking request already exists for this parcel and trip");
+    private void assertIsParcelOwner(Parcel parcel, UUID currentUserId) {
+        if (!currentUserId.equals(parcel.getOwnerId()))
+            throw new UnauthorizedActionException("You are not authorized to perform this action");
     }
 
-    private void assertOwnership(UUID ownerId, UUID requesterId) {
-        if (!ownerId.equals(requesterId))
+    private void assertIsTripOwner(Trip trip, UUID currentUserId){
+        if (!currentUserId.equals(trip.getOwnerId()))
             throw new UnauthorizedActionException("You are not authorized to perform this action");
     }
 

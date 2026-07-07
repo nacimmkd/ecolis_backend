@@ -1,12 +1,15 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.addresses.Address;
+import com.deliveryplatform.bookings.Booking;
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.awt.print.Book;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -101,6 +104,10 @@ public class Parcel {
         return this.owner.getId().equals(userId);
     }
 
+    public UUID getOwnerId() {
+        return this.owner.getId();
+    }
+
     // ── Lifecycle ────────────────────────────────────────────────────────────
 
     public void softDelete() {
@@ -111,8 +118,13 @@ public class Parcel {
     }
 
     public void updateState(ParcelState state) {
+        assertParcelNotDeleted();
         this.state = state;
         addTrackingEvent(TrackEvent.of(state, state.getMessage()));
+    }
+
+    private void assertParcelNotDeleted() {
+        if (this.deleted) throw new InvalidDomainStateException("action can not be performed because parcel is deleted");
     }
 
     // ── Images ───────────────────────────────────────────────────────────────

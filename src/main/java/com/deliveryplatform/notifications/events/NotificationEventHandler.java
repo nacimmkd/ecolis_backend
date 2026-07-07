@@ -1,5 +1,8 @@
 package com.deliveryplatform.notifications.events;
 
+import com.deliveryplatform.bookings.events.BookingAcceptedEvent;
+import com.deliveryplatform.bookings.events.BookingCancelledEvent;
+import com.deliveryplatform.bookings.events.BookingRequestedEvent;
 import com.deliveryplatform.notifications.NotificationService;
 import com.deliveryplatform.notifications.NotificationType;
 import com.deliveryplatform.notifications.NotificationPayload;

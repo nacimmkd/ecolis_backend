@@ -15,29 +15,20 @@ import java.util.UUID;
 @Repository
 public interface TripRepository extends JpaRepository<Trip, UUID> {
 
-    @EntityGraph(attributePaths = {"stops", "owner.profile.avatar"})
-    Optional<Trip> findTripById(@Param("id") UUID id);
+    @EntityGraph(attributePaths = {"stops"})
+    @Query("SELECT t FROM Trip t WHERE t.id = :tripId")
+    Optional<Trip> findTripById(@Param("tripId")UUID tripId);
 
-    @EntityGraph(attributePaths = {"stops", "owner.profile.avatar"})
+    @EntityGraph(attributePaths = {"stops"})
+    @Query("SELECT t FROM Trip t WHERE t.owner.id = :ownerId")
     List<Trip> findByOwnerId(@Param("ownerId") UUID ownerId);
-
-    @Query("""
-            SELECT t.availableWeightKg - COALESCE(SUM(p.weightKg), 0)
-            FROM Trip t
-            LEFT JOIN t.bookings b
-            LEFT JOIN b.parcel p
-            WHERE t.id = :tripId
-            GROUP BY t.id, t.availableWeightKg
-    """)
-    BigDecimal getRemainingWeight(@Param("tripId") UUID tripId);
-
 
     @EntityGraph(attributePaths = {"stops", "owner.profile"})
     @Query("""
         SELECT t FROM Trip t
         WHERE t.state = :state
           AND t.departureDate = :departureDate
-          AND t.availableWeightKg >= :weightKg
+          AND t.remainingWeightKg >= :weightKg
           AND t.departureAddress.latitude  BETWEEN :minLat AND :maxLat
           AND t.departureAddress.longitude BETWEEN :minLng AND :maxLng
     """)

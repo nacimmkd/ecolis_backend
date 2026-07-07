@@ -23,14 +23,13 @@ public class ParcelMapper {
     public ParcelSummary toSummaryDto(Parcel parcel) {
         return ParcelSummary.builder()
                 .parcelId(parcel.getId())
-                .owner(userMapper.toRefDto(parcel.getOwner()))
                 .weightKg(parcel.getWeightKg())
                 .size(parcel.getSize())
                 .fragile(parcel.isFragile())
-                .pickupAddress(parcel.getPickupAddress())
-                .dropoffAddress(parcel.getDropoffAddress())
+                .pickupCity(parcel.getPickupAddress().toShortAddress())
+                .dropoffCity(parcel.getDropoffAddress().toShortAddress())
                 .state(parcel.getState())
-                .thumbnailImage(imageMapper.toDto(parcel.getThumbnail()))
+                .thumbnail(imageMapper.toDto(parcel.getThumbnail()))
                 .publishedAt(parcel.getCreatedAt())
                 .build();
     }
@@ -46,7 +45,7 @@ public class ParcelMapper {
                 .pickupAddress(parcel.getPickupAddress())
                 .dropoffAddress(parcel.getDropoffAddress())
                 .state(parcel.getState())
-                .thumbnailImage(imageMapper.toDto(parcel.getThumbnail()))
+                .thumbnailI(imageMapper.toDto(parcel.getThumbnail()))
                 .images(imageMapper.toDto(parcel.getImages()))
                 .createdAt(parcel.getCreatedAt())
                 .build();

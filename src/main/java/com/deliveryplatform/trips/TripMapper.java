@@ -21,12 +21,13 @@ public class TripMapper {
             return null;
         }
         return TripSummary.builder()
-                .id(trip.getId())
-                .departureAddress(trip.getDepartureAddress())
-                .arrivalAddress(trip.getArrivalAddress())
+                .tripId(trip.getId())
+                .departureCity(trip.getDepartureAddress().toShortAddress())
+                .arrivalCity(trip.getArrivalAddress().toShortAddress())
                 .departureDate(trip.getDepartureDate())
                 .arrivalDate(trip.getArrivalDate())
                 .availableWeightKg(trip.getAvailableWeightKg())
+                .remainingWeightKg(trip.getRemainingWeightKg())
                 .pricePerKg(trip.getPricePerKg())
                 .instantBooking(trip.isInstantBooking())
                 .status(trip.getState())
@@ -40,8 +41,7 @@ public class TripMapper {
             return null;
         }
         return TripDetails.builder()
-                .id(trip.getId())
-                .owner(userMapper.toRefDto(trip.getOwner()))
+                .tripId(trip.getId())
                 .departureAddress(trip.getDepartureAddress())
                 .arrivalAddress(trip.getArrivalAddress())
                 .departureDate(trip.getDepartureDate())
@@ -82,6 +82,7 @@ public class TripMapper {
                 .departureDate(request.departureDate())
                 .arrivalDate(request.arrivalDate())
                 .availableWeightKg(request.availableWeightKg())
+                .remainingWeightKg(request.availableWeightKg())
                 .pricePerKg(request.pricePerKg())
                 .instantBooking(request.instantBooking())
                 .maxDetourKm(request.maxDetourKm())
@@ -91,10 +92,10 @@ public class TripMapper {
 
     public TripStop toTripStopEntity(StopPointRequest request) {
         if (request == null) return null;
-        return TripStop.builder()
-                .order(request.order())
-                .address(addressMapper.toEntity(request.address()))
-                .build();
+        return TripStop.create(
+                addressMapper.toEntity(request.address()),
+                request.order()
+        );
     }
 
     public List<TripStop> toTripStopEntity(List<StopPointRequest> stopPointRequests) {

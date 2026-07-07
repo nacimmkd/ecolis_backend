@@ -41,7 +41,7 @@ public class TripController {
             UriComponentsBuilder uriBuilder
     ) {
         var trip = tripService.createTrip(principal.getId(), request);
-        var uri  = uriBuilder.path("/api/v1/trips/{id}").build(trip.id());
+        var uri  = uriBuilder.path("/api/v1/trips/{id}").build(trip.tripId());
         return ResponseEntity.created(uri).body(trip);
     }
 
@@ -67,7 +67,7 @@ public class TripController {
     // STOPS
 
     @PostMapping("/{tripId}/stops")
-    public ResponseEntity<StopPointResponse> addTripStop(
+    public ResponseEntity<StopPointResponse> addStop(
             @PathVariable UUID tripId,
             @RequestBody AddressRequest address,
             @AuthenticationPrincipal UserPrincipal principal

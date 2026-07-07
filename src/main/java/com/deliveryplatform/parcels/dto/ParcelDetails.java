@@ -23,7 +23,7 @@ public record ParcelDetails(
         Address pickupAddress,
         Address dropoffAddress,
         ParcelState state,
-        ImageDto thumbnailImage,
+        ImageDto thumbnailI,
         List<ImageDto> images,
         OffsetDateTime createdAt
 ) {}

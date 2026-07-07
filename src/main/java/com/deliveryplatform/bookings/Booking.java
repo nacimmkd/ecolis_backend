@@ -1,7 +1,9 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.common.CodeGeneratorUtil;
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.parcels.Parcel;
+import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.Request;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
@@ -15,7 +17,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "bookings")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,10 +28,12 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
+    @Setter
     private Trip trip;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parcel_id", nullable = false)
+    @Setter
     private Parcel parcel;
 
     @Enumerated(EnumType.STRING)
@@ -45,37 +48,48 @@ public class Booking {
     private String pickupCode;
 
     @Column(name = "dropoff_code")
-    private String dropOffCode;
+    @Builder.Default
+    private String dropOffCode = null;
 
     @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @Column(name = "paid_at")
-    private OffsetDateTime paidAt;
+    @Builder.Default
+    private OffsetDateTime paidAt = null;
 
     @Column(name = "completed_at")
-    private OffsetDateTime completedAt;
+    @Builder.Default
+    private OffsetDateTime completedAt = null;
 
     @Column(name = "cancelled_at")
-    private OffsetDateTime cancelledAt;
+    @Builder.Default
+    private OffsetDateTime cancelledAt = null;
 
     @Column(name = "cancelled_by")
     @Enumerated(EnumType.STRING)
-    private CancelledBy cancelledBy;
+    @Builder.Default
+    private CancelledBy cancelledBy = null;
 
     @Column(name = "cancel_reason")
-    private String cancelReason;
+    @Builder.Default
+    private String cancelReason = null;
 
     // ----------------------------------------------------------------
 
     public static Booking createFromRequest(Request request) {
-        return Booking.builder()
-                .trip(request.getTrip())
+        var parcel = request.getParcel();
+        var trip = request.getTrip();
+        var booking = Booking.builder()
                 .parcel(request.getParcel())
+                .trip(request.getTrip())
                 .price(BookingPriceCalculator.calculate(request.getParcel(), request.getTrip()))
                 .pickupCode(CodeGeneratorUtil.generateBookingCode())
                 .build();
+        parcel.updateState(ParcelState.BOOKED);
+        trip.addBooking(booking);
+        return booking;
     }
 
     public void pay() {
@@ -90,14 +104,37 @@ public class Booking {
 
     public void cancel(String reason, CancelledBy cancelledBy) {
         this.status = BookingStatus.CANCELLED;
+        this.parcel.updateState(ParcelState.PUBLISHED);
+        this.trip.removeBooking(this);
         this.cancelledAt = OffsetDateTime.now();
         this.cancelledBy = cancelledBy;
         this.cancelReason = reason;
     }
 
+    public void confirmPickUp(String pickupCode) {
+        if (!this.pickupCode.equals(pickupCode))
+            throw new InvalidDomainStateException("pickup code is incorrect");
+        this.parcel.updateState(ParcelState.IN_TRANSIT);
+        this.pickupCode = null;
+
+        // set dropOff code
+        this.dropOffCode = CodeGeneratorUtil.generateBookingCode();
+    }
+
+    public void confirmDropOff(String dropOffCode) {
+        if (!this.dropOffCode.equals(dropOffCode))
+            throw new InvalidDomainStateException("dropOff code is incorrect");
+        this.parcel.updateState(ParcelState.DELIVERED);
+        this.dropOffCode = null;
+    }
+
     public boolean isCompleted() {
         return BookingStatus.COMPLETED.equals(this.status);
     }
+
+//    public User getSender() {
+//        return this.parcel.getOwner();
+//    }
 
     public boolean involves(UUID userId) {
         return this.trip.getOwner().getId().equals(userId)
@@ -121,4 +158,10 @@ public class Booking {
         if (currentUserId.equals(this.getTrip().getOwner().getId())) return CancelledBy.CARRIER;
         return CancelledBy.ADMIN;
     }
+
+    public BigDecimal getBookingWeight() {
+        return this.parcel.getWeightKg();
+    }
+
+
 }

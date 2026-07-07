@@ -1,4 +1,4 @@
-package com.deliveryplatform.notifications.events;
+package com.deliveryplatform.bookings.events;
 
 import lombok.Builder;
 

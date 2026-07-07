@@ -2,6 +2,7 @@ package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.users.UserPrincipal;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +56,24 @@ public class BookingController {
             @PathVariable UUID bookingId,
             @AuthenticationPrincipal UserPrincipal user) {
         bookingService.pay(bookingId, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{bookingId}/confirm-pickup")
+    public ResponseEntity<Void> confirmPickUp(
+            @PathVariable UUID bookingId,
+            @RequestParam @NotNull String code,
+            @AuthenticationPrincipal UserPrincipal user) {
+        bookingService.confirmPickUp(bookingId, code, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{bookingId}/confirm-dropoff")
+    public ResponseEntity<Void> confirmDropOff(
+            @PathVariable UUID bookingId,
+            @RequestParam @NotNull String code,
+            @AuthenticationPrincipal UserPrincipal user) {
+        bookingService.confirmDropOff(bookingId, code, user.getId());
         return ResponseEntity.noContent().build();
     }
 

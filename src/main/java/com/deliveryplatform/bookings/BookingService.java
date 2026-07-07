@@ -22,5 +22,9 @@ public interface BookingService {
 
     void pay(UUID bookingId, UUID senderId);
 
+    void confirmPickUp(UUID bookingId, String pickUpCode, UUID userId);
+
+    void confirmDropOff(UUID bookingId, String pickUpCode, UUID userId);
+
     void complete(UUID bookingId, UUID carrierId);
 }

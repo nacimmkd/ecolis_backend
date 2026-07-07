@@ -36,7 +36,6 @@ CREATE TABLE booking_requests (
                                   responded_at     TIMESTAMPTZ,
                                   requested_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-                                  CONSTRAINT uq_booking_request_trip_parcel UNIQUE (trip_id, parcel_id),
                                   CONSTRAINT fk_booking_request_trip   FOREIGN KEY (trip_id)   REFERENCES trips(id)   ON DELETE RESTRICT,
                                   CONSTRAINT fk_booking_request_parcel FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE RESTRICT
 );

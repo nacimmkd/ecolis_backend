@@ -32,4 +32,6 @@ public class Address {
     public String toFullAddress() {
         return String.format("%s, %s %s, %s", street, postalCode, city, country);
     }
+
+    public String toShortAddress() {return String.format("%s, %s", city, country);}
 }

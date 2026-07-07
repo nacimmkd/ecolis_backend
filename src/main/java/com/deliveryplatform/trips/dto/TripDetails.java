@@ -14,8 +14,7 @@ import java.util.UUID;
 
 @Builder
 public record TripDetails(
-        UUID id,
-        UserBrief owner,
+        UUID tripId,
         Address departureAddress,
         Address arrivalAddress,
         LocalDate departureDate,
