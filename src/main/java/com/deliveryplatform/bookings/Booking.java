@@ -97,7 +97,8 @@ public class Booking {
         this.paidAt = OffsetDateTime.now();
     }
 
-    public void complete() {
+    public void complete(String dropOffCode) {
+        confirmDropOff(dropOffCode);
         this.status = BookingStatus.COMPLETED;
         this.completedAt = OffsetDateTime.now();
     }
@@ -121,7 +122,7 @@ public class Booking {
         this.dropOffCode = CodeGeneratorUtil.generateBookingCode();
     }
 
-    public void confirmDropOff(String dropOffCode) {
+    private void confirmDropOff(String dropOffCode) {
         if (!this.dropOffCode.equals(dropOffCode))
             throw new InvalidDomainStateException("dropOff code is incorrect");
         this.parcel.updateState(ParcelState.DELIVERED);

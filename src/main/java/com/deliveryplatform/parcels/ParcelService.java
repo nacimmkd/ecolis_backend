@@ -7,15 +7,15 @@ import java.util.UUID;
 
 public interface ParcelService {
 
-    ParcelDetails getParcel(UUID id);
+    ParcelOwnerDto getParcel(UUID id);
 
-    List<ParcelSummary> getUserParcels(UUID userId);
+    List<ParcelSummaryDto> getUserParcels(UUID userId);
 
-    List<ParcelSummary> getParcels();
+    List<ParcelSummaryDto> getParcels();
 
-    ParcelDetails createParcel(UUID userId, ParcelCreateRequest request);
+    ParcelOwnerDto createParcel(UUID userId, ParcelCreateRequest request);
 
-    ParcelDetails updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request);
+    ParcelOwnerDto updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request);
 
     void deleteParcel(UUID parcelId, UUID userId);
 

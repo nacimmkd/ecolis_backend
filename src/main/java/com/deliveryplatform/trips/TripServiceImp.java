@@ -82,29 +82,29 @@ public class TripServiceImp implements TripService {
 
     @Override
     @Transactional
-    public StopPointResponse addStop(UUID tripId, UUID currentUserId, AddressRequest address) {
+    public void addStop(UUID tripId, UUID currentUserId, AddressRequest address) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
-        var stop = trip.addStop(addressService.geocode(address));
-        tripRepository.saveAndFlush(trip);
-        return tripMapper.toTripStopDto(stop);
+        trip.addStop(addressService.geocode(address));
+        tripRepository.save(trip);
     }
 
     @Override
     @Transactional
-    public List<StopPointResponse> updateStops(UUID tripId, UUID currentUserId, List<StopPointRequest> newStops) {
+    public List<TripStopDto> updateStops(UUID tripId, UUID currentUserId, List<TripStopRequest> newStopsRequest) {
         var trip = getTripByIdOrThrow(tripId);
         assertOwnership(trip, currentUserId);
 
-        var stopEntities = newStops.stream()
-                .map(tripMapper::toTripStopEntity)
-                .toList();
+        var stops = newStopsRequest.stream()
+                .map(request -> {
+                    var address = addressService.geocode(request.address());
+                    return TripStop.create(address, request.order());
+                }).toList();
 
-        trip.removeAllStops();
-        trip.addStops(stopEntities);
-        tripRepository.save(trip);
-        return tripMapper.toTripStopDto(stopEntities);
+        trip.updateStops(stops);
+        var updatedTrip = tripRepository.save(trip);
+        return tripMapper.toTripStopDto(updatedTrip.getStops());
     }
 
     @Override
@@ -114,7 +114,7 @@ public class TripServiceImp implements TripService {
         assertOwnership(trip, currentUserId);
 
         var stop = findStopInTrip(trip, stopId);
-        trip.removeStop(stop);
+        trip.removeStopAndReorder(stop);
         tripRepository.save(trip);
     }
 
@@ -152,16 +152,6 @@ public class TripServiceImp implements TripService {
         trip.setMaxDetourKm(request.maxDetourKm());
         trip.setNotes(request.notes());
         trip.setInstantBooking(request.instantBooking());
-
-        updateStops(trip, request.stops());
-    }
-
-    public void updateStops(Trip trip, List<StopPointRequest> newStops) {
-        if (newStops == null) return;
-        trip.removeAllStops();
-        if (!newStops.isEmpty()) {
-            trip.addStops(tripMapper.toTripStopEntity(newStops));
-        }
     }
 
 }

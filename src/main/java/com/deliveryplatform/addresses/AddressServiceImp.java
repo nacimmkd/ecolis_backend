@@ -8,13 +8,11 @@ import org.springframework.stereotype.Service;
 public class AddressServiceImp implements AddressService {
 
     private final GeocodingPort geocoding;
-    private final AddressMapper addressMapper;
 
 
     @Override
     public Address geocode(AddressRequest request) {
-        var address = addressMapper.toEntity(request);
-        var coordinates = geocoding.geocode(address.toFullAddress());
-        return address.withCoordinates(coordinates);
+        var coordinates = geocoding.geocode(request.toString());
+        return Address.create(request, coordinates);
     }
 }

@@ -21,19 +21,19 @@ public class ParcelController {
     private final ParcelService parcelService;
 
     @GetMapping("/{id}") // public
-    public ResponseEntity<ParcelDetails> getParcel(@PathVariable UUID id) {
+    public ResponseEntity<ParcelOwnerDto> getParcel(@PathVariable UUID id) {
         return ResponseEntity.ok(parcelService.getParcel(id));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<ParcelSummary>> getMyParcels(
+    public ResponseEntity<List<ParcelSummaryDto>> getMyParcels(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId()));
     }
 
 
     @PostMapping
-    public ResponseEntity<ParcelDetails> createParcel(
+    public ResponseEntity<ParcelOwnerDto> createParcel(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelCreateRequest request,
             UriComponentsBuilder uriBuilder) {
@@ -48,7 +48,7 @@ public class ParcelController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<ParcelDetails> updateParcel(
+    public ResponseEntity<ParcelOwnerDto> updateParcel(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelUpdateRequest request) {
@@ -75,7 +75,7 @@ public class ParcelController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<ParcelSummary>> getParcels() {
+    public ResponseEntity<List<ParcelSummaryDto>> getParcels() {
         return ResponseEntity.ok(parcelService.getParcels());
     }
 

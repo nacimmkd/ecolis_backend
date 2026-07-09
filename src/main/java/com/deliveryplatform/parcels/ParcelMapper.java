@@ -2,10 +2,7 @@ package com.deliveryplatform.parcels;
 
 
 import com.deliveryplatform.images.ImageMapper;
-import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
-import com.deliveryplatform.parcels.dto.ParcelDetails;
-import com.deliveryplatform.parcels.dto.ParcelSummary;
-import com.deliveryplatform.parcels.dto.TrackEventDto;
+import com.deliveryplatform.parcels.dto.*;
 import com.deliveryplatform.users.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,22 +17,38 @@ public class ParcelMapper {
     private final UserMapper userMapper;
     private final ImageMapper imageMapper;
 
-    public ParcelSummary toSummaryDto(Parcel parcel) {
-        return ParcelSummary.builder()
+    public ParcelSummaryDto toSummaryDto(Parcel parcel) {
+        return ParcelSummaryDto.builder()
                 .parcelId(parcel.getId())
                 .weightKg(parcel.getWeightKg())
                 .size(parcel.getSize())
                 .fragile(parcel.isFragile())
-                .pickupCity(parcel.getPickupAddress().toShortAddress())
-                .dropoffCity(parcel.getDropoffAddress().toShortAddress())
+                .pickupCity(parcel.getPickupAddress().toBriefAddress())
+                .dropoffCity(parcel.getDropoffAddress().toBriefAddress())
                 .state(parcel.getState())
                 .thumbnail(imageMapper.toDto(parcel.getThumbnail()))
                 .publishedAt(parcel.getCreatedAt())
                 .build();
     }
 
-    public ParcelDetails toDetailedDto(Parcel parcel) {
-        return ParcelDetails.builder()
+    public ParcelOwnerDto toDetailedDto(Parcel parcel) {
+        return ParcelOwnerDto.builder()
+                .parcelId(parcel.getId())
+                .description(parcel.getDescription())
+                .weightKg(parcel.getWeightKg())
+                .size(parcel.getSize())
+                .fragile(parcel.isFragile())
+                .pickupAddress(parcel.getPickupAddress())
+                .dropoffAddress(parcel.getDropoffAddress())
+                .state(parcel.getState())
+                .thumbnail(imageMapper.toDto(parcel.getThumbnail()))
+                .images(imageMapper.toDto(parcel.getImages()))
+                .createdAt(parcel.getCreatedAt())
+                .build();
+    }
+
+    public ParcelPublicDto toPublicDto(Parcel parcel) {
+        return ParcelPublicDto.builder()
                 .parcelId(parcel.getId())
                 .owner(userMapper.toRefDto(parcel.getOwner()))
                 .description(parcel.getDescription())
@@ -44,10 +57,8 @@ public class ParcelMapper {
                 .fragile(parcel.isFragile())
                 .pickupAddress(parcel.getPickupAddress())
                 .dropoffAddress(parcel.getDropoffAddress())
-                .state(parcel.getState())
-                .thumbnailI(imageMapper.toDto(parcel.getThumbnail()))
+                .thumbnail(imageMapper.toDto(parcel.getThumbnail()))
                 .images(imageMapper.toDto(parcel.getImages()))
-                .createdAt(parcel.getCreatedAt())
                 .build();
     }
 

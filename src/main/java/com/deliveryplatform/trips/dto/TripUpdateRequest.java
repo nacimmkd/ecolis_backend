@@ -39,8 +39,6 @@ public record TripUpdateRequest(
         @NotNull @DecimalMin("0.5")
         BigDecimal maxDetourKm,
 
-        @NotNull String notes,
-
-        @Valid List<StopPointRequest> stops
+        @NotNull String notes
 ) {}
 

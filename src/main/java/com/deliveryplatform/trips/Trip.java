@@ -94,7 +94,7 @@ public class Trip {
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("order ASC")
     @Builder.Default
     private List<TripStop> stops = new ArrayList<>();
@@ -117,7 +117,6 @@ public class Trip {
         if (this.remainingWeightKg == null) {
             this.remainingWeightKg = this.availableWeightKg;
         }
-        this.state = TripState.PUBLISHED;
     }
 
     // trips ---------------------------------------------------------------------------------
@@ -155,30 +154,59 @@ public class Trip {
         this.availableWeightKg = newAvailableWeightKg;
     }
 
-    // stops ---------------------------------------------------------------------------------
+    public List<Address> getWayPoints() {
+        var wayPoints = new ArrayList<Address>();
+        wayPoints.add(departureAddress);
+        this.stops.stream()
+                .sorted(Comparator.comparingInt(TripStop::getOrder))
+                .map(TripStop::getAddress)
+                .forEach(wayPoints::add);
+        wayPoints.add(arrivalAddress);
+        return wayPoints;
+    }
 
-    public TripStop addStop(Address address) {
+    // stops ---------------------------------------------------------------------------------
+    public void addStop(Address address) {
+        assertAddressUniquenessInTripOrThrow(address);
         var newStop = TripStop.create(
                 address,
                 this.stops.size() + 1
         );
         newStop.setTrip(this);
         this.stops.add(newStop);
-        return newStop;
     }
 
     public void addStops(List<TripStop> newStops) {
+        assertStopUniquenessInTripOrThrow(newStops);
         validateStopsSequence(newStops);
         newStops.forEach(stop -> stop.setTrip(this));
         this.stops.addAll(newStops);
     }
 
-    public void removeStop(TripStop stop) {
+    public void updateStops(List<TripStop> newStops) {
+        if (newStops == null) return;
+        if (newStops.isEmpty()) {
+            this.stops.clear();
+        } else {
+            var toDelete = this.stops.stream()
+                    .filter(stop -> !newStops.contains(stop))
+                    .toList();
+            removeStops(toDelete);
+            addStops(newStops);
+            TripStop.reorderStops(this.stops);
+        }
+    }
+
+    public void removeStopAndReorder(TripStop stop) {
         this.stops.remove(stop);
         TripStop.reorderStops(this.stops);
     }
 
-    public void removeAllStops() {
+    private void removeStops(List<TripStop> stopsToRemove) {
+        this.stops.removeAll(stopsToRemove);
+    }
+
+    private void removeAllStops() {
         this.stops.clear();
     }
 
@@ -211,6 +239,24 @@ public class Trip {
 
     private void assertTripNotDeleted() {
         if (this.deleted) throw new InvalidDomainStateException("action can not be performed because trip is deleted");
+    }
+
+    private void assertAddressUniquenessInTripOrThrow(Address addressToAdd) {
+        var exists = this.getWayPoints().stream()
+                .anyMatch(address -> address.equals(addressToAdd));
+        if (exists) {
+            throw new InvalidDomainStateException("way point already in trip");
+        }
+    }
+
+    private void assertStopUniquenessInTripOrThrow(List<TripStop> stopsToAdd) {
+        var existingAddresses = new HashSet<>(this.getWayPoints());
+
+        for (TripStop stop : stopsToAdd) {
+            if (existingAddresses.contains(stop.getAddress())) {
+                throw new InvalidDomainStateException("way point already in trip: " + stop.getAddress());
+            }
+        }
     }
 
 

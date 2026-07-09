@@ -27,32 +27,26 @@ public class BookingController {
     }
 
     @GetMapping
-    public ResponseEntity<List<BookingDto>> getBookings(
+    public ResponseEntity<?> getBookings(
             @RequestParam(required = false) UUID tripId,
             @RequestParam(required = false) UUID parcelId,
             @AuthenticationPrincipal UserPrincipal user
     ) throws BadRequestException {
 
         if (tripId != null && parcelId != null)
-            // to be changed later by returning booking with same parcelid and tripid
             throw new BadRequestException("tripId and parcelId cannot be presented at same time");
 
-        List<BookingDto> bookings;
-
         if (tripId != null) {
-            bookings = bookingService.getTripBookings(tripId, user.getId());
+            return ResponseEntity.ok(bookingService.getTripBookings(tripId, user.getId()));
         } else if (parcelId != null) {
-            BookingDto booking = bookingService.getParcelBooking(parcelId, user.getId());
-            bookings = (booking != null) ? List.of(booking) : List.of();
+            return ResponseEntity.ok(bookingService.getParcelBooking(parcelId, user.getId()));
         } else {
-            bookings = bookingService.getMyBookings(user.getId());
+            return ResponseEntity.ok(bookingService.getMyBookings(user.getId()));
         }
-
-        return ResponseEntity.ok(bookings);
     }
 
     @PatchMapping("/{bookingId}/pay")
-    public ResponseEntity<Void> payBooking(
+    public ResponseEntity<Void> pay(
             @PathVariable UUID bookingId,
             @AuthenticationPrincipal UserPrincipal user) {
         bookingService.pay(bookingId, user.getId());
@@ -68,29 +62,21 @@ public class BookingController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{bookingId}/confirm-dropoff")
-    public ResponseEntity<Void> confirmDropOff(
-            @PathVariable UUID bookingId,
-            @RequestParam @NotNull String code,
-            @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.confirmDropOff(bookingId, code, user.getId());
-        return ResponseEntity.noContent().build();
-    }
-
     @PatchMapping("/{bookingId}/cancel")
-    public ResponseEntity<Void> cancelBooking(
+    public ResponseEntity<Void> cancel(
             @PathVariable UUID bookingId,
-            @RequestParam String reason,
+            @RequestParam(required = false) String reason,
             @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.cancel(bookingId,reason, user.getId());
+        bookingService.cancel(bookingId, reason, user.getId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{bookingId}/complete")
-    public ResponseEntity<Void> completeBooking(
+    public ResponseEntity<Void> complete(
             @PathVariable UUID bookingId,
+            @RequestParam String code,
             @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.complete(bookingId, user.getId());
+        bookingService.complete(bookingId, code, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

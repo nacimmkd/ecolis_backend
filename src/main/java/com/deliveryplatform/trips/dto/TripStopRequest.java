@@ -5,7 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-public record StopPointRequest(
+public record TripStopRequest(
 
         @NotNull @Min(1)
         Integer order,

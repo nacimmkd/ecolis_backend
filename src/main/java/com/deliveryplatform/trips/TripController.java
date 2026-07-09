@@ -63,23 +63,21 @@ public class TripController {
         return ResponseEntity.noContent().build();
     }
 
-
     // STOPS
-
-    @PostMapping("/{tripId}/stops")
-    public ResponseEntity<StopPointResponse> addStop(
+    @PatchMapping("/{tripId}/stops")
+    public ResponseEntity<Void> addStop(
             @PathVariable UUID tripId,
             @RequestBody AddressRequest address,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        var stop = tripService.addStop(tripId, principal.getId(), address);
-        return ResponseEntity.ok(stop);
+        tripService.addStop(tripId, principal.getId(), address);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{tripId}/stops")
-    public ResponseEntity<List<StopPointResponse>> updateTripStops(
+    public ResponseEntity<List<TripStopDto>> updateTripStops(
             @PathVariable UUID tripId,
-            @RequestBody List<StopPointRequest> newStops,
+            @RequestBody List<TripStopRequest> newStops,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(
                 tripService.updateStops(tripId, principal.getId(), newStops)

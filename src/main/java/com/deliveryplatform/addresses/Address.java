@@ -3,6 +3,8 @@ package com.deliveryplatform.addresses;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 
+import java.util.Objects;
+
 @Embeddable
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -18,20 +20,28 @@ public class Address {
     private double longitude;
 
 
-    public Address withCoordinates(Coordinates coordinates) {
+    public static Address create(AddressRequest request, Coordinates coordinates) {
         return Address.builder()
-                .street(this.street)
-                .city(this.city)
-                .postalCode(this.postalCode)
-                .country(this.country)
+                .street(request.street())
+                .city(request.city())
+                .postalCode(request.postalCode())
+                .country(request.country())
                 .latitude(coordinates.latitude())
                 .longitude(coordinates.longitude())
                 .build();
     }
 
-    public String toFullAddress() {
-        return String.format("%s, %s %s, %s", street, postalCode, city, country);
+    public String toBriefAddress() {return String.format("%s, %s", city, country);}
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Address address = (Address) o;
+        return Double.compare(latitude, address.latitude) == 0 && Double.compare(longitude, address.longitude) == 0 && Objects.equals(street, address.street) && Objects.equals(city, address.city) && Objects.equals(postalCode, address.postalCode) && Objects.equals(country, address.country);
     }
 
-    public String toShortAddress() {return String.format("%s, %s", city, country);}
+    @Override
+    public int hashCode() {
+        return Objects.hash(street, city, postalCode, country, latitude, longitude);
+    }
 }

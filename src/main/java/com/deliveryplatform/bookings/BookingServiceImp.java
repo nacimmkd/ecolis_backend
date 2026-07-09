@@ -1,12 +1,13 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
+import com.deliveryplatform.bookings.dto.ParcelBookingDto;
+import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelRepository;
-import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.Request;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.trips.TripRepository;
@@ -30,7 +31,7 @@ public class BookingServiceImp implements BookingService {
     @Override
     public BookingDto getBooking(UUID bookingId, UUID currentUserId) {
         var booking = getBookingByIdOrThrow(bookingId);
-        assertInvolves(booking.involves(currentUserId));
+        assertInvolves(booking, currentUserId);
         return bookingMapper.toDto(booking);
     }
 
@@ -40,20 +41,20 @@ public class BookingServiceImp implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getTripBookings(UUID tripId, UUID currentUserId) {
+    public List<TripBookingDto> getTripBookings(UUID tripId, UUID currentUserId) {
         var trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
         assertIsTripOwner(trip, currentUserId);
-        return bookingMapper.toDto(bookingRepository.findByTripId(tripId));
+        return bookingMapper.toTripBookingDto(bookingRepository.findByTripId(tripId));
     }
 
     @Override
-    public BookingDto getParcelBooking(UUID parcelId, UUID currentUserId) {
+    public List<ParcelBookingDto> getParcelBooking(UUID parcelId, UUID currentUserId) {
         var parcel = parcelRepository.findById(parcelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
         assertIsParcelOwner(parcel, currentUserId);
-        return bookingMapper.toDto(bookingRepository.findByParcelId(parcelId));
+        return bookingMapper.toParcelBookingDto(bookingRepository.findByParcelId(parcelId));
     }
 
     @Override
@@ -68,7 +69,7 @@ public class BookingServiceImp implements BookingService {
     public void cancel(UUID bookingId, String reason, UUID currentUserId) {
 
         var booking = getBookingByIdOrThrow(bookingId);
-        assertInvolves(booking.involves(currentUserId));
+        assertInvolves(booking, currentUserId);
         assertBookingInStatus(booking, BookingStatus.PENDING, "Only PENDING bookings can be cancelled");
 
         var cancelledBy = booking.resolveCanceller(currentUserId);
@@ -98,22 +99,11 @@ public class BookingServiceImp implements BookingService {
 
     @Override
     @Transactional
-    public void confirmDropOff(UUID bookingId, String dropOffCode, UUID userId) {
-        var booking = getBookingByIdOrThrow(bookingId);
-        assertIsTripOwner(booking.getTrip(), userId);
-        booking.confirmDropOff(dropOffCode);
-        bookingRepository.save(booking);
-    }
-
-
-    @Override
-    @Transactional
-    public void complete(UUID bookingId, UUID currentUserId) {
+    public void complete(UUID bookingId, String dropOfCode, UUID currentUserId) {
         var booking = getBookingByIdOrThrow(bookingId);
         assertIsTripOwner(booking.getTrip(), currentUserId);
         assertBookingInStatus(booking, BookingStatus.PAID, "Only PAID bookings can be completed");
-        booking.complete();
-        booking.getParcel().updateState(ParcelState.DELIVERED);
+        booking.complete(dropOfCode);
         bookingRepository.save(booking);
     }
 
@@ -134,8 +124,8 @@ public class BookingServiceImp implements BookingService {
             throw new UnauthorizedActionException("You are not the sender of this parcel");
     }
 
-    private void assertInvolves(boolean involves) {
-        if (!involves)
+    private void assertInvolves(Booking booking, UUID currentUserId) {
+        if (!booking.involves(currentUserId))
             throw new UnauthorizedActionException("You are not involved in this booking");
     }
 

@@ -6,7 +6,7 @@ import lombok.Builder;
 import java.util.UUID;
 
 @Builder
-public record StopPointResponse(
+public record TripStopDto(
         UUID id,
         Integer order,
         Address address

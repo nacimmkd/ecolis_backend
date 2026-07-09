@@ -1,20 +1,20 @@
 package com.deliveryplatform.trips.dto;
 
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.trips.TripState;
+import com.deliveryplatform.users.dto.UserBrief;
 import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
 
 @Builder
-public record TripDetails(
+public record TripPublicDto(
         UUID tripId,
+        UserBrief owner,
         Address departureAddress,
         Address arrivalAddress,
         LocalDate departureDate,
@@ -23,9 +23,7 @@ public record TripDetails(
         BigDecimal remainingWeightKg,
         BigDecimal pricePerKg,
         boolean instantBooking,
-        BigDecimal maxDetourKm,
         TripState status,
         String notes,
-        List<TripStopDto> stops,
-        OffsetDateTime publishedAt
+        List<TripStopDto> stops
 ) {}

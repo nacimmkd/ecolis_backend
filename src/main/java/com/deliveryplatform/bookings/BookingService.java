@@ -1,6 +1,8 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
+import com.deliveryplatform.bookings.dto.ParcelBookingDto;
+import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.requests.Request;
 
 import java.util.List;
@@ -12,9 +14,9 @@ public interface BookingService {
 
     List<BookingDto> getMyBookings(UUID currentUserId);
 
-    List<BookingDto> getTripBookings(UUID tripId, UUID currentUserId);
+    List<TripBookingDto> getTripBookings(UUID tripId, UUID currentUserId);
 
-    BookingDto getParcelBooking(UUID parcelId, UUID currentUserId);
+    List<ParcelBookingDto> getParcelBooking(UUID parcelId, UUID currentUserId);
 
     BookingDto create(Request request);
 
@@ -24,7 +26,5 @@ public interface BookingService {
 
     void confirmPickUp(UUID bookingId, String pickUpCode, UUID userId);
 
-    void confirmDropOff(UUID bookingId, String pickUpCode, UUID userId);
-
-    void complete(UUID bookingId, UUID carrierId);
+    void complete(UUID bookingId,String dropOfCode, UUID carrierId);
 }

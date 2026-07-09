@@ -27,19 +27,19 @@ public class ParcelServiceImp implements ParcelService {
     private final ParcelMapper     parcelMapper;
 
     @Override
-    public ParcelDetails getParcel(UUID id) {
+    public ParcelOwnerDto getParcel(UUID id) {
         return parcelMapper.toDetailedDto(getParcelByIdOrThrow(id));
     }
 
     @Override
-    public List<ParcelSummary> getUserParcels(UUID userId) {
+    public List<ParcelSummaryDto> getUserParcels(UUID userId) {
         return parcelRepository.findByOwnerId(userId).stream()
                 .map(parcelMapper::toSummaryDto)
                 .toList();
     }
 
     @Override
-    public List<ParcelSummary> getParcels() {
+    public List<ParcelSummaryDto> getParcels() {
         return parcelRepository.findAll().stream()
                 .map(parcelMapper::toSummaryDto)
                 .toList();
@@ -47,7 +47,7 @@ public class ParcelServiceImp implements ParcelService {
 
     @Override
     @Transactional
-    public ParcelDetails createParcel(UUID userId, ParcelCreateRequest request) {
+    public ParcelOwnerDto createParcel(UUID userId, ParcelCreateRequest request) {
 
         var owner  = getUserByIdOrThrow(userId);
         var parcel = parcelMapper.toEntity(request);
@@ -66,7 +66,7 @@ public class ParcelServiceImp implements ParcelService {
 
     @Override
     @Transactional
-    public ParcelDetails updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
+    public ParcelOwnerDto updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);
         assertParcelIsInState(parcel, List.of(ParcelState.PUBLISHED));

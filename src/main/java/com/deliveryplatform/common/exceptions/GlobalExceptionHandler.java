@@ -8,12 +8,12 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 
@@ -36,6 +36,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizedActionException.class)
     public ResponseEntity<ApiError> handleUnauthorizedActionException(UnauthorizedActionException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiError.of(HttpStatus.FORBIDDEN.value(), ex.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ApiError> handleAuthorizationDeniedException(AuthorizationDeniedException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiError.of(HttpStatus.FORBIDDEN.value(), ex.getMessage(), request.getRequestURI()));
     }
@@ -63,13 +69,13 @@ public class GlobalExceptionHandler {
 
     // AUTH
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiError> handleBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiError> handleBadCredentialsException(HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiError.of(HttpStatus.UNAUTHORIZED.value(), "Email or password is invalid", request.getRequestURI()));
     }
 
     @ExceptionHandler(MissingRequestCookieException.class)
-    public ResponseEntity<ApiError> handleMissingRequestCookieException(MissingRequestCookieException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiError> handleMissingRequestCookieException(HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiError.of(HttpStatus.UNAUTHORIZED.value(), "Authentication token is missing", request.getRequestURI()));
     }
