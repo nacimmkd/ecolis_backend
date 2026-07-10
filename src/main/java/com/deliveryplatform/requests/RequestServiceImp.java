@@ -1,6 +1,7 @@
 package com.deliveryplatform.requests;
 
 import com.deliveryplatform.bookings.BookingService;
+import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
@@ -84,9 +85,10 @@ public class RequestServiceImp implements RequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
         assertIsParcelOwner(parcel, senderId);
+        assertRequestUniqueness(dto.parcelId(), dto.tripId());
         assertParcelAvailable(parcel.getState());
 
-        var trip = tripRepository.findById(dto.tripId())
+        var trip = tripRepository.findTripById(dto.tripId())
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
 
         var detour = detourCalculator.calculate(trip,parcel);
@@ -102,6 +104,11 @@ public class RequestServiceImp implements RequestService {
         }
 
         return requestMapper.toRequestDto(bookingRequest);
+    }
+
+    private void assertRequestUniqueness(UUID parcelId, UUID tripId) {
+        if (requestRepository.existsByParcelIdAndTripId(parcelId,tripId))
+            throw new ConflictException("request for this trip and parcel already exists");
     }
 
     @Override

@@ -67,19 +67,18 @@ public class ParcelServiceImp implements ParcelService {
     @Override
     @Transactional
     public ParcelDetails createParcel(UUID userId, ParcelCreateRequest request) {
-
         var owner  = getUserByIdOrThrow(userId);
-        var parcel = parcelMapper.toEntity(request);
-
-        parcel.setOwner(owner);
-        parcel.addImages(imageService.getImages(request.imageIds()));
-        parcel.setThumbnail(
-                request.thumbnailId() == null ? null : imageService.getImage(request.thumbnailId(),owner)
+        var parcel = Parcel.create(
+               owner,
+               request.description(),
+                request.weightKg(),
+                request.size(),
+                request.fragile(),
+                addressService.geocode(request.pickupAddress()),
+                addressService.geocode(request.dropoffAddress()),
+                imageService.getImage(request.thumbnailId(),owner),
+                imageService.getImages(request.imageIds())
         );
-
-        parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
-        parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
-
         return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
     }
 

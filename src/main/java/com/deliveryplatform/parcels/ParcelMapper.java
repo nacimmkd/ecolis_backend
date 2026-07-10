@@ -45,15 +45,6 @@ public class ParcelMapper {
                 .build();
     }
 
-    public Parcel toEntity(ParcelCreateRequest request) {
-        return Parcel.builder()
-                .description(request.description())
-                .weightKg(request.weightKg())
-                .size(request.size())
-                .fragile(request.fragile())
-                .build();
-    }
-
     public TrackEventDto toTrackingEventDto(TrackEvent trackEvent) {
         return TrackEventDto.builder()
                 .id(trackEvent.getId())

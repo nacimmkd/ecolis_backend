@@ -1,5 +1,7 @@
 package com.deliveryplatform.requests;
 
+import com.deliveryplatform.parcels.Parcel;
+import com.deliveryplatform.trips.Trip;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -52,4 +54,6 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
             ORDER BY r.requestedAt DESC
             """)
     List<Request> findAllByInvolvedUser(@Param("userId") UUID userId);
+
+    boolean existsByParcelIdAndTripId(UUID parcelId, UUID tripId);
 }

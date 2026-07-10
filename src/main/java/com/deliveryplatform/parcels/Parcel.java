@@ -4,6 +4,7 @@ import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.images.Image;
+import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,8 +24,8 @@ import static java.util.stream.Collectors.toSet;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @SQLRestriction("deleted = false")
 public class Parcel {
 
@@ -97,6 +98,29 @@ public class Parcel {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
+
+
+    public static Parcel create(
+            User owner, String description, BigDecimal weightKg, ParcelSize size, boolean fragile,
+            Address pickupAddress, Address dropoffAddress,
+            Image thumbnail, List<Image> images
+    ) {
+        Parcel parcel = Parcel.builder()
+                .owner(owner)
+                .description(description)
+                .weightKg(weightKg)
+                .size(size)
+                .fragile(fragile)
+                .pickupAddress(pickupAddress)
+                .dropoffAddress(dropoffAddress)
+                .thumbnail(thumbnail)
+                .images(images)
+                .build();
+
+        parcel.addTrackingEvent(TrackEvent.of(parcel.getState(), parcel.getState().getMessage()));
+
+        return parcel;
+    }
 
     // ── Ownership ────────────────────────────────────────────────────────────
 

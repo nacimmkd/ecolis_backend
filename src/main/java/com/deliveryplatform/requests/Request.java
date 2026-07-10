@@ -51,7 +51,6 @@ public class Request {
     @Column(name = "responded_at")
     private OffsetDateTime respondedAt;
 
-    @CreationTimestamp
     @Column(name = "requested_at", nullable = false, updatable = false)
     private OffsetDateTime requestedAt;
 
@@ -59,14 +58,22 @@ public class Request {
 
     public static Request create(Trip trip, Parcel parcel, Detour detour) {
         if (Objects.isNull(trip) || Objects.isNull(detour) || Objects.isNull(parcel))
-            throw new InvalidDomainStateException("Required trip & parcel & detour to create a request");
+            throw new InvalidDomainStateException("required trip & parcel & detour to create a request");
+
+        assertMaxTripDetourRequirementOrThrow(trip, detour);
 
         return Request.builder()
                 .trip(trip)
                 .parcel(parcel)
                 .pickupDetourKm(BigDecimal.valueOf(detour.pickupDetourKm()))
                 .dropOffDetourKm(BigDecimal.valueOf(detour.pickupDetourKm()))
+                .requestedAt(OffsetDateTime.now())
                 .build();
+    }
+
+    private static void assertMaxTripDetourRequirementOrThrow(Trip trip, Detour detour) {
+        if (!trip.isMaxDetourAccepted(BigDecimal.valueOf(detour.pickupDetourKm()), BigDecimal.valueOf(detour.dropoffDetourKm())))
+            throw new InvalidDomainStateException("cannot create request : max detour not satisfied");
     }
 
     public void accept() {

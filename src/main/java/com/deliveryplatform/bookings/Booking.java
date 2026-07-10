@@ -84,7 +84,6 @@ public class Booking {
         var trip = request.getTrip();
 
         assertValidRequestStatusOrThrow(request);
-        assertMaxTripDetourRequirementOrThrow(trip, request.getPickupDetourKm(), request.getDropOffDetourKm());
 
         var booking = Booking.builder()
                 .parcel(request.getParcel())
@@ -168,13 +167,8 @@ public class Booking {
 
 
     private static void assertValidRequestStatusOrThrow(Request request) {
-        if (RequestStatus.ACCEPTED.equals(request.getStatus()))
+        if (!RequestStatus.ACCEPTED.equals(request.getStatus()))
             throw new InvalidDomainStateException("cannot create booking : request is not accepted");
-    }
-
-    private static void assertMaxTripDetourRequirementOrThrow(Trip trip, BigDecimal pickUpDetour, BigDecimal dropOffDetour) {
-        if (!trip.isMaxDetourAccepted(pickUpDetour, dropOffDetour))
-            throw new InvalidDomainStateException("Max detour not satisfied");
     }
 
 
