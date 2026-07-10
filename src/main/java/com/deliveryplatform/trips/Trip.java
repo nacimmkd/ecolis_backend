@@ -139,8 +139,9 @@ public class Trip {
         return this.owner.getId();
     }
 
-    public boolean isMaxDetourAccepted(BigDecimal detour) {
-        return this.maxDetourKm.compareTo(detour) >= 0;
+    public boolean isMaxDetourAccepted(BigDecimal pickUpDetour, BigDecimal dropOffDetour) {
+        return this.maxDetourKm.compareTo(pickUpDetour) >= 0
+                && this.maxDetourKm.compareTo(dropOffDetour) >= 0;
     }
 
     public void updateAvailableWeightKg(BigDecimal newAvailableWeightKg) {

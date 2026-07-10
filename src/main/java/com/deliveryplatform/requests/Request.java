@@ -1,12 +1,16 @@
 package com.deliveryplatform.requests;
 
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.trips.Trip;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -38,6 +42,12 @@ public class Request {
     @Column(name = "rejection_reason")
     private String rejectionReason;
 
+    @Column(name = "pickup_detour_km")
+    private BigDecimal pickupDetourKm;
+
+    @Column(name = "dropoff_detour_km")
+    private BigDecimal dropOffDetourKm;
+
     @Column(name = "responded_at")
     private OffsetDateTime respondedAt;
 
@@ -47,10 +57,15 @@ public class Request {
 
     // ----------------------------------------------------------------
 
-    public static Request create(Trip trip, Parcel parcel) {
+    public static Request create(Trip trip, Parcel parcel, Detour detour) {
+        if (Objects.isNull(trip) || Objects.isNull(detour) || Objects.isNull(parcel))
+            throw new InvalidDomainStateException("Required trip & parcel & detour to create a request");
+
         return Request.builder()
                 .trip(trip)
                 .parcel(parcel)
+                .pickupDetourKm(BigDecimal.valueOf(detour.pickupDetourKm()))
+                .dropOffDetourKm(BigDecimal.valueOf(detour.pickupDetourKm()))
                 .build();
     }
 

@@ -1,10 +1,10 @@
 package com.deliveryplatform.requests;
 
 import com.deliveryplatform.bookings.BookingService;
-import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.matching.DetourCalculatorService;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.ParcelState;
@@ -27,6 +27,7 @@ public class RequestServiceImp implements RequestService {
     private final BookingService           bookingService;
     private final ParcelRepository         parcelRepository;
     private final TripRepository           tripRepository;
+    private final DetourCalculatorService  detourCalculator;
     private final RequestMapper            requestMapper;
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ public class RequestServiceImp implements RequestService {
     @Override
     @Transactional
     public RequestDto createRequest(CreateRequest dto, UUID senderId) {
-        var parcel = parcelRepository.findById(dto.parcelId())
+        var parcel = parcelRepository.findParcelSummaryById(dto.parcelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
         assertIsParcelOwner(parcel, senderId);
@@ -88,11 +89,13 @@ public class RequestServiceImp implements RequestService {
         var trip = tripRepository.findById(dto.tripId())
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
 
-        var bookingRequest = Request.create(trip, parcel);
+        var detour = detourCalculator.calculate(trip,parcel);
+
+        var bookingRequest = Request.create(trip, parcel, detour);
 
         if (trip.isInstantBooking()) {
             bookingRequest.accept();
-            bookingService.create(bookingRequest); // ccreate and save booking
+            bookingService.create(bookingRequest); // create and save booking
             requestRepository.save(bookingRequest);
         } else {
             requestRepository.save(bookingRequest);

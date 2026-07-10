@@ -24,7 +24,7 @@ public record TripCreateRequest(
         @NotNull @Future
         LocalDate arrivalDate,
 
-        @DecimalMin("0.1")
+        @DecimalMin("1")
         BigDecimal availableWeightKg,
 
         @NotNull @DecimalMin("0.1")

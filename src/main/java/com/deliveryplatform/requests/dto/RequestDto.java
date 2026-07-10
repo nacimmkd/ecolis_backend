@@ -5,6 +5,7 @@ import com.deliveryplatform.parcels.dto.ParcelSummary;
 import com.deliveryplatform.trips.dto.TripSummary;
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -14,6 +15,8 @@ public record RequestDto(
         TripSummary trip,
         ParcelSummary parcel,
         RequestStatus status,
+        BigDecimal pickupDetour,
+        BigDecimal dropOffDetour,
         String rejectionReason,
         OffsetDateTime requestedAt,
         OffsetDateTime respondedAt

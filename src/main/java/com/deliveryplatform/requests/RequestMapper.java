@@ -21,6 +21,8 @@ public class RequestMapper {
                 .requestId(request.getId())
                 .trip(tripMapper.toTripSummaryDto(request.getTrip()))
                 .parcel(parcelMapper.toSummaryDto(request.getParcel()))
+                .pickupDetour(request.getPickupDetourKm())
+                .dropOffDetour(request.getDropOffDetourKm())
                 .status(request.getStatus())
                 .rejectionReason(request.getRejectionReason())
                 .requestedAt(request.getRequestedAt())

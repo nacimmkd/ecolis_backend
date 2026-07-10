@@ -5,6 +5,7 @@ import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.Request;
+import com.deliveryplatform.requests.RequestStatus;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -81,6 +82,10 @@ public class Booking {
     public static Booking createFromRequest(Request request) {
         var parcel = request.getParcel();
         var trip = request.getTrip();
+
+        assertValidRequestStatusOrThrow(request);
+        assertMaxTripDetourRequirementOrThrow(trip, request.getPickupDetourKm(), request.getDropOffDetourKm());
+
         var booking = Booking.builder()
                 .parcel(request.getParcel())
                 .trip(request.getTrip())
@@ -159,6 +164,17 @@ public class Booking {
 
     public BigDecimal getBookingWeight() {
         return this.parcel.getWeightKg();
+    }
+
+
+    private static void assertValidRequestStatusOrThrow(Request request) {
+        if (RequestStatus.ACCEPTED.equals(request.getStatus()))
+            throw new InvalidDomainStateException("cannot create booking : request is not accepted");
+    }
+
+    private static void assertMaxTripDetourRequirementOrThrow(Trip trip, BigDecimal pickUpDetour, BigDecimal dropOffDetour) {
+        if (!trip.isMaxDetourAccepted(pickUpDetour, dropOffDetour))
+            throw new InvalidDomainStateException("Max detour not satisfied");
     }
 
 

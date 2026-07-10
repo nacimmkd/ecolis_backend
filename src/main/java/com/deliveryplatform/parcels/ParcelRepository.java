@@ -1,3 +1,4 @@
+
 package com.deliveryplatform.parcels;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -21,7 +22,9 @@ public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
     Optional<Parcel> findParcelWithTrackingById(UUID id);
 
     @EntityGraph(attributePaths = {"owner", "owner.profile", "thumbnail", "images"})
-    Optional<Parcel> findParcelWithDetailsById(UUID id);
+    Optional<Parcel> findParcelDetailsById(UUID id);
 
+    @EntityGraph(attributePaths = {"owner", "thumbnail"})
+    Optional<Parcel> findParcelSummaryById(UUID id);
 
 }

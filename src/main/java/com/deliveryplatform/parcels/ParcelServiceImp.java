@@ -11,7 +11,6 @@ import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.*;
-import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -128,7 +127,7 @@ public class ParcelServiceImp implements ParcelService {
     // ----------------------------------------------------------------
 
     private Parcel getParcelByIdOrThrow(UUID id) {
-        return parcelRepository.findParcelWithDetailsById(id)
+        return parcelRepository.findParcelDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
     }
 

@@ -32,6 +32,8 @@ CREATE TABLE booking_requests (
                                   parcel_id        UUID NOT NULL,
                                   status           VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
                                       CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED')),
+                                  pickup_detour_km    NUMERIC(10,2) NOT NULL,
+                                  dropoff_detour_km   NUMERIC(10,2) NOT NULL,
                                   rejection_reason TEXT,
                                   responded_at     TIMESTAMPTZ,
                                   requested_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
