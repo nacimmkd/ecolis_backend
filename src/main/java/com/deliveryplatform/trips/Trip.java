@@ -139,6 +139,10 @@ public class Trip {
         return this.owner.getId();
     }
 
+    public boolean isMaxDetourAccepted(BigDecimal detour) {
+        return this.maxDetourKm.compareTo(detour) >= 0;
+    }
+
     public void updateAvailableWeightKg(BigDecimal newAvailableWeightKg) {
         if (availableWeightKg.compareTo(MIN_WEIGHT_KG) < 0)
             throw new InvalidDomainStateException("available weight must not be under %s kg".formatted(MIN_WEIGHT_KG));

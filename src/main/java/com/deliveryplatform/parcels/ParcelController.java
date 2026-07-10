@@ -1,5 +1,6 @@
 package com.deliveryplatform.parcels;
 
+import com.deliveryplatform.bookings.dto.ParcelBookingDto;
 import com.deliveryplatform.parcels.dto.*;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
@@ -21,19 +22,26 @@ public class ParcelController {
     private final ParcelService parcelService;
 
     @GetMapping("/{id}") // public
-    public ResponseEntity<ParcelOwnerDto> getParcel(@PathVariable UUID id) {
+    public ResponseEntity<ParcelDetails> getParcel(@PathVariable UUID id) {
         return ResponseEntity.ok(parcelService.getParcel(id));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<ParcelSummaryDto>> getMyParcels(
+    public ResponseEntity<List<ParcelSummary>> getMyParcels(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId()));
     }
 
+    @GetMapping("/{parcelId}/bookings")
+    public ResponseEntity<List<ParcelBookingDto>> getParcelBookings(
+            @PathVariable UUID parcelId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal)
+    {
+        return ResponseEntity.ok(parcelService.getParcelBookings(parcelId,userPrincipal.getId()));
+    }
 
     @PostMapping
-    public ResponseEntity<ParcelOwnerDto> createParcel(
+    public ResponseEntity<ParcelDetails> createParcel(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelCreateRequest request,
             UriComponentsBuilder uriBuilder) {
@@ -48,7 +56,7 @@ public class ParcelController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<ParcelOwnerDto> updateParcel(
+    public ResponseEntity<ParcelDetails> updateParcel(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ParcelUpdateRequest request) {
@@ -75,7 +83,7 @@ public class ParcelController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<ParcelSummaryDto>> getParcels() {
+    public ResponseEntity<List<ParcelSummary>> getParcels() {
         return ResponseEntity.ok(parcelService.getParcels());
     }
 

@@ -5,6 +5,7 @@ import com.deliveryplatform.bookings.dto.ParcelBookingDto;
 import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.parcels.ParcelMapper;
 import com.deliveryplatform.trips.TripMapper;
+import com.deliveryplatform.users.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,12 +17,15 @@ public class BookingMapper {
 
     private final TripMapper   tripMapper;
     private final ParcelMapper parcelMapper;
+    private final UserMapper userMapper;
 
     public BookingDto toDto(Booking booking) {
         return BookingDto.builder()
                 .bookingId(booking.getId())
-                .trip(tripMapper.toPublicDto(booking.getTrip()))
-                .parcel(parcelMapper.toPublicDto(booking.getParcel()))
+                .trip(tripMapper.toTripSummaryDto(booking.getTrip()))
+                .parcel(parcelMapper.toSummaryDto(booking.getParcel()))
+                .carrier(userMapper.toRefDto(booking.getTrip().getOwner()))
+                .sender(userMapper.toRefDto(booking.getParcel().getOwner()))
                 .price(booking.getPrice())
                 .status(booking.getStatus())
                 .createdAt(booking.getCreatedAt())
@@ -34,7 +38,8 @@ public class BookingMapper {
     public ParcelBookingDto toParcelBookingDto(Booking booking) {
         return ParcelBookingDto.builder()
                 .bookingId(booking.getId())
-                .trip(tripMapper.toPublicDto(booking.getTrip()))
+                .trip(tripMapper.toTripSummaryDto(booking.getTrip()))
+                .carrier(userMapper.toRefDto(booking.getTrip().getOwner()))
                 .price(booking.getPrice())
                 .status(booking.getStatus())
                 .createdAt(booking.getCreatedAt())
@@ -47,7 +52,8 @@ public class BookingMapper {
     public TripBookingDto toTripBookingDto(Booking booking) {
         return TripBookingDto.builder()
                 .bookingId(booking.getId())
-                .parcel(parcelMapper.toPublicDto(booking.getParcel()))
+                .parcel(parcelMapper.toSummaryDto(booking.getParcel()))
+                .sender(userMapper.toRefDto(booking.getParcel().getOwner()))
                 .price(booking.getPrice())
                 .status(booking.getStatus())
                 .createdAt(booking.getCreatedAt())

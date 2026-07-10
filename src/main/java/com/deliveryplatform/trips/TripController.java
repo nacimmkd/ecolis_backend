@@ -1,6 +1,7 @@
 package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.AddressRequest;
+import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.trips.dto.*;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
@@ -32,6 +33,14 @@ public class TripController {
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         return ResponseEntity.ok(tripService.getMyTrips(principal.getId()));
+    }
+
+    @GetMapping("/{tripId}/bookings")
+    public ResponseEntity<List<TripBookingDto>> getMyTrips(
+            @PathVariable UUID tripId,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return ResponseEntity.ok(tripService.getTripBookings(tripId,principal.getId()));
     }
 
     @PostMapping

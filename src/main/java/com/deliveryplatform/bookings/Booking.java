@@ -31,7 +31,7 @@ public class Booking {
     @Setter
     private Trip trip;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parcel_id", nullable = false)
     @Setter
     private Parcel parcel;
@@ -133,13 +133,10 @@ public class Booking {
         return BookingStatus.COMPLETED.equals(this.status);
     }
 
-//    public User getSender() {
-//        return this.parcel.getOwner();
-//    }
 
     public boolean involves(UUID userId) {
-        return this.trip.getOwner().getId().equals(userId)
-                || this.parcel.getOwner().getId().equals(userId);
+        return !this.trip.getOwner().getId().equals(userId)
+                && !this.parcel.getOwner().getId().equals(userId);
     }
 
     public User resolveParticipant(UUID userId) {

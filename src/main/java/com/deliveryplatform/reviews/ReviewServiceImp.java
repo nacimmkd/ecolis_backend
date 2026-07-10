@@ -68,7 +68,7 @@ public class ReviewServiceImp implements ReviewService {
     }
 
     private void assertReviewerInvolvedInBooking(Booking booking, UUID reviewerId) {
-        if (!booking.involves(reviewerId))
+        if (booking.involves(reviewerId))
             throw new UnauthorizedActionException("You are not part of this booking");
     }
 

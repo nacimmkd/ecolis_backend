@@ -4,12 +4,10 @@ import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -24,25 +22,6 @@ public class BookingController {
             @PathVariable UUID bookingId,
             @AuthenticationPrincipal UserPrincipal user) {
         return bookingService.getBooking(bookingId, user.getId());
-    }
-
-    @GetMapping
-    public ResponseEntity<?> getBookings(
-            @RequestParam(required = false) UUID tripId,
-            @RequestParam(required = false) UUID parcelId,
-            @AuthenticationPrincipal UserPrincipal user
-    ) throws BadRequestException {
-
-        if (tripId != null && parcelId != null)
-            throw new BadRequestException("tripId and parcelId cannot be presented at same time");
-
-        if (tripId != null) {
-            return ResponseEntity.ok(bookingService.getTripBookings(tripId, user.getId()));
-        } else if (parcelId != null) {
-            return ResponseEntity.ok(bookingService.getParcelBooking(parcelId, user.getId()));
-        } else {
-            return ResponseEntity.ok(bookingService.getMyBookings(user.getId()));
-        }
     }
 
     @PatchMapping("/{bookingId}/pay")

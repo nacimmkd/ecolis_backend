@@ -12,12 +12,6 @@ public interface BookingService {
 
     BookingDto getBooking(UUID bookingId, UUID currentUserId);
 
-    List<BookingDto> getMyBookings(UUID currentUserId);
-
-    List<TripBookingDto> getTripBookings(UUID tripId, UUID currentUserId);
-
-    List<ParcelBookingDto> getParcelBooking(UUID parcelId, UUID currentUserId);
-
     BookingDto create(Request request);
 
     void cancel(UUID bookingId, String reason, UUID userId);

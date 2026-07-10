@@ -1,7 +1,6 @@
 package com.deliveryplatform.trips;
 
 import com.deliveryplatform.trips.dto.*;
-import com.deliveryplatform.users.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,8 +10,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class TripMapper {
-
-    private final UserMapper userMapper;
 
     public TripSummary toTripSummaryDto(Trip trip) {
         if (trip == null) {
@@ -53,27 +50,6 @@ public class TripMapper {
                 .notes(trip.getNotes())
                 .stops(trip.getStops().stream().map(this::toTripStopDto).toList())
                 .publishedAt(trip.getCreatedAt())
-                .build();
-    }
-
-    public TripPublicDto toPublicDto(Trip trip) {
-        if (trip == null) {
-            return null;
-        }
-        return TripPublicDto.builder()
-                .tripId(trip.getId())
-                .owner(userMapper.toRefDto(trip.getOwner()))
-                .departureAddress(trip.getDepartureAddress())
-                .arrivalAddress(trip.getArrivalAddress())
-                .departureDate(trip.getDepartureDate())
-                .arrivalDate(trip.getArrivalDate())
-                .availableWeightKg(trip.getAvailableWeightKg())
-                .remainingWeightKg(trip.getRemainingWeightKg())
-                .pricePerKg(trip.getPricePerKg())
-                .instantBooking(trip.isInstantBooking())
-                .status(trip.getState())
-                .notes(trip.getNotes())
-                .stops(trip.getStops().stream().map(this::toTripStopDto).toList())
                 .build();
     }
 

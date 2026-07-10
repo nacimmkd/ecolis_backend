@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 public record TripUpdateRequest(
 
@@ -24,9 +23,6 @@ public record TripUpdateRequest(
 
         @NotNull @Future
         LocalDate arrivalDate,
-
-        @NotNull @DecimalMin("10.0")
-        BigDecimal availableVolumeCm3,
 
         @NotNull @DecimalMin("0.1")
         BigDecimal availableWeightKg,

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Builder
-public record ParcelOwnerDto(
+public record ParcelDetails(
         UUID parcelId,
         String description,
         BigDecimal weightKg,

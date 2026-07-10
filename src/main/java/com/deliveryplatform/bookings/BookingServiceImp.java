@@ -1,8 +1,6 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
-import com.deliveryplatform.bookings.dto.ParcelBookingDto;
-import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
@@ -15,7 +13,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -33,28 +30,6 @@ public class BookingServiceImp implements BookingService {
         var booking = getBookingByIdOrThrow(bookingId);
         assertInvolves(booking, currentUserId);
         return bookingMapper.toDto(booking);
-    }
-
-    @Override
-    public List<BookingDto> getMyBookings(UUID currentUserId) {
-        return bookingMapper.toDto(bookingRepository.findAllByInvolvedUser(currentUserId));
-    }
-
-    @Override
-    public List<TripBookingDto> getTripBookings(UUID tripId, UUID currentUserId) {
-        var trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
-        assertIsTripOwner(trip, currentUserId);
-        return bookingMapper.toTripBookingDto(bookingRepository.findByTripId(tripId));
-    }
-
-    @Override
-    public List<ParcelBookingDto> getParcelBooking(UUID parcelId, UUID currentUserId) {
-        var parcel = parcelRepository.findById(parcelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
-
-        assertIsParcelOwner(parcel, currentUserId);
-        return bookingMapper.toParcelBookingDto(bookingRepository.findByParcelId(parcelId));
     }
 
     @Override
@@ -125,7 +100,7 @@ public class BookingServiceImp implements BookingService {
     }
 
     private void assertInvolves(Booking booking, UUID currentUserId) {
-        if (!booking.involves(currentUserId))
+        if (booking.involves(currentUserId))
             throw new UnauthorizedActionException("You are not involved in this booking");
     }
 

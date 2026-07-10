@@ -1,7 +1,8 @@
 package com.deliveryplatform.bookings.dto;
 
 import com.deliveryplatform.bookings.BookingStatus;
-import com.deliveryplatform.trips.dto.TripPublicDto;
+import com.deliveryplatform.trips.dto.TripSummary;
+import com.deliveryplatform.users.dto.UserBrief;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -11,7 +12,8 @@ import java.util.UUID;
 @Builder
 public record ParcelBookingDto(
         UUID bookingId,
-        TripPublicDto trip,
+        TripSummary trip,
+        UserBrief carrier,
         BigDecimal price,
         BookingStatus status,
         OffsetDateTime createdAt,

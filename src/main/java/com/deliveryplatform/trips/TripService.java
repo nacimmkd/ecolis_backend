@@ -1,6 +1,7 @@
 package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.AddressRequest;
+import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.trips.dto.*;
 
 import java.util.List;
@@ -13,6 +14,8 @@ public interface TripService {
     List<TripSummary> getAllTrips();
 
     List<TripSummary> getMyTrips(UUID currentUserId);
+
+    List<TripBookingDto> getTripBookings(UUID tripId, UUID currentUserId);
 
     TripDetails createTrip(UUID userId, TripCreateRequest request);
 

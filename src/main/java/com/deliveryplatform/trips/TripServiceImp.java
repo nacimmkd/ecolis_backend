@@ -2,6 +2,10 @@ package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.AddressRequest;
 import com.deliveryplatform.addresses.AddressService;
+import com.deliveryplatform.bookings.Booking;
+import com.deliveryplatform.bookings.BookingMapper;
+import com.deliveryplatform.bookings.BookingRepository;
+import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
@@ -21,7 +25,9 @@ public class TripServiceImp implements TripService {
     private final TripRepository     tripRepository;
     private final UserRepository     userRepository;
     private final AddressService     addressService;
+    private final BookingRepository  bookingRepository;
     private final TripMapper         tripMapper;
+    private final BookingMapper      bookingMapper;
 
     @Override
     public TripDetails getTrip(UUID tripId) {
@@ -40,6 +46,20 @@ public class TripServiceImp implements TripService {
     public List<TripSummary> getMyTrips(UUID currentUserId) {
         return tripRepository.findByOwnerId(currentUserId).stream()
                 .map(tripMapper::toTripSummaryDto)
+                .toList();
+    }
+
+    @Override
+    public List<TripBookingDto> getTripBookings(UUID tripId, UUID userId) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
+
+        assertOwnership(trip, userId);
+
+        List<Booking> bookings = bookingRepository.findByTripId(tripId);
+
+        return bookings.stream()
+                .map(bookingMapper::toTripBookingDto)
                 .toList();
     }
 

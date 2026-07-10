@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Builder
-public record ParcelSummaryDto(
+public record ParcelSummary(
         UUID parcelId,
         BigDecimal weightKg,
         ParcelSize size,
