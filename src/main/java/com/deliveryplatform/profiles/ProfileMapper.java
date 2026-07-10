@@ -3,44 +3,21 @@ package com.deliveryplatform.profiles;
 import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.profiles.dto.ProfileDetails;
 import com.deliveryplatform.profiles.dto.ProfileSummary;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 
-@Component
-@RequiredArgsConstructor
-public class ProfileMapper {
+@Mapper(
+        componentModel = "spring",
+        uses = {ImageMapper.class},
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public interface ProfileMapper {
 
-    private final ImageMapper imageMapper;
+    @Mapping(target = "profileId", source = "id")
+    ProfileDetails toDetailedDto(Profile profile);
 
-    public ProfileDetails toDetailedDto(Profile profile) {
-        if (profile == null) {
-            return null;
-        }
-        return ProfileDetails.builder()
-                .profileId(profile.getId())
-                .firstName(profile.getFirstName())
-                .lastName(profile.getLastName())
-                .phone(profile.getPhone())
-                .avgRating(profile.getAvgRating())
-                .reviewCount(profile.getReviewCount())
-                .completedTrips(profile.getCompletedTrips())
-                .deliveredParcels(profile.getDeliveredParcels())
-                .avatar(imageMapper.toDto(profile.getAvatar()))
-                .build();
-    }
-
-
-    public ProfileSummary toSummaryDto(Profile profile) {
-        if (profile == null) {
-            return null;
-        }
-        return ProfileSummary.builder()
-                .profileId(profile.getId())
-                .firstName(profile.getFirstName())
-                .lastName(profile.getLastName())
-                .phone(profile.getPhone())
-                .avatar(imageMapper.toDto(profile.getAvatar()))
-                .build();
-    }
+    @Mapping(target = "profileId", source = "id")
+    ProfileSummary toSummaryDto(Profile profile);
 }

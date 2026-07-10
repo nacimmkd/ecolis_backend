@@ -1,36 +1,23 @@
 package com.deliveryplatform.images;
 
 import com.deliveryplatform.images.dto.ImageDto;
-import com.deliveryplatform.storage.StorageService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
-public class ImageMapper {
+@Mapper(
+        componentModel = "spring",
+        uses = {ImageUrlResolver.class},
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public interface ImageMapper {
 
-    private final StorageService storageService;
+    @Mapping(target = "url", source = "image", qualifiedByName = "resolveUrl")
+    @Mapping(target = "content", source = "mediaType.content")
+    @Mapping(target = "uploadedAt", source = "image.createdAt")
+    ImageDto toDto(Image image);
 
-    public ImageDto toDto(Image image) {
-        if (image == null) {
-            return null;
-        }
-        return ImageDto.builder()
-                .id(image.getId())
-                .url(storageService.generateReadUrl(image.getKey()))
-                .content(image.getMediaType().getContent())
-                .uploadedAt(image.getCreatedAt())
-                .build();
-    }
-
-    public List<ImageDto> toDto(List<Image> images) {
-        if (images == null) {
-            return List.of();
-        }
-        return images.stream()
-                .map(this::toDto)
-                .toList();
-    }
+    List<ImageDto> toDto(List<Image> images);
 }
