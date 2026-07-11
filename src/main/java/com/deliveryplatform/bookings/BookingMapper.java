@@ -5,7 +5,7 @@ import com.deliveryplatform.bookings.dto.ParcelBookingDto;
 import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.parcels.ParcelMapper;
 import com.deliveryplatform.trips.TripMapper;
-import com.deliveryplatform.users.UserMapper;
+import com.deliveryplatform.users.UserBriefMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -14,7 +14,7 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = {TripMapper.class, ParcelMapper.class, UserMapper.class},
+        uses = {TripMapper.class, ParcelMapper.class, UserBriefMapper.class},
         unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface BookingMapper {

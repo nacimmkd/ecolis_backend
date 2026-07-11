@@ -19,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserServiceImp userService;
+    private final UserService userService;
 
     @GetMapping("/me")
     public ResponseEntity<UserDetails> getMe(
@@ -44,9 +44,9 @@ public class UserController {
     }
 
 
-    @PostMapping("/{id}/verification/send")
-    public ResponseEntity<Void> sendVerificationCode(@PathVariable UUID id) {
-        userService.sendVerificationCode(id);
+    @PostMapping("/me/verification/send")
+    public ResponseEntity<Void> sendVerificationCode(@AuthenticationPrincipal UserPrincipal user) {
+        userService.sendVerificationCode(user.getId());
         return ResponseEntity.noContent().build();
     }
 

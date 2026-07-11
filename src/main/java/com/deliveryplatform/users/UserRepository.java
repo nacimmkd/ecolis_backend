@@ -1,5 +1,6 @@
 package com.deliveryplatform.users;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,11 +16,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByEmail(String email);
 
-    @Query("""
-    SELECT u FROM User u
-    LEFT JOIN FETCH u.profile p
-    WHERE u.id = :id
-    AND u.deleted = false
-""")
+    @EntityGraph(attributePaths = {"profile"})
+    @Query("SELECT u FROM User u WHERE u.id = :id")
     Optional<User> findUserWithProfileById(@Param("id") UUID id);
 }

@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 public record MessageSummary(
         UUID           messageId,
-        UserBrief sender,
+        UserBrief      sender,
         String         content,
         List<ImageDto>   images,
         OffsetDateTime sentAt

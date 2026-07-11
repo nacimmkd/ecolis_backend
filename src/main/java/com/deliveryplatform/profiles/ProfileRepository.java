@@ -1,9 +1,14 @@
 package com.deliveryplatform.profiles;
 
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ProfileRepository extends JpaRepository<Profile, UUID> {
+
+    @EntityGraph(attributePaths = {"avatar"})
+    Optional<Profile> findProfileById(UUID id);
 }

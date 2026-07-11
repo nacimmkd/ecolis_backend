@@ -2,57 +2,36 @@ package com.deliveryplatform.messages;
 
 import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.messages.dto.*;
-import com.deliveryplatform.users.UserMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import com.deliveryplatform.users.UserBriefMapper;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
-public class MessageMapper {
+@Mapper(
+        componentModel = "spring",
+        uses = {UserBriefMapper.class, ImageMapper.class},
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public interface MessageMapper {
 
-    private final UserMapper userMapper;
-    private final ImageMapper imageMapper;
+    @Mapping(target = "conversationId", source = "id")
+    @Mapping(target = "lastMessage", source = "messages", qualifiedByName = "resolveLastMessage")
+    ConversationSummary toSummaryDto(Conversation conversation);
 
-    public ConversationSummary toSummaryDto(Conversation conversation) {
-        return ConversationSummary.builder()
-                .conversationId(conversation.getId())
-                .participants(conversation.getParticipants().stream()
-                        .map(userMapper::toSummaryDto)
-                        .toList())
-                .lastMessage(resolveLastMessage(conversation.getMessages()))
-                .createdAt(conversation.getCreatedAt())
-                .build();
-    }
+    @Mapping(target = "conversationId", source = "id")
+    ConversationDetails toDetailsDto(Conversation conversation);
 
-    public ConversationDetails toDetailsDto(Conversation conversation) {
-        return ConversationDetails.builder()
-                .conversationId(conversation.getId())
-                .participants(conversation.getParticipants().stream()
-                        .map(userMapper::toSummaryDto)
-                        .toList())
-                .messages(conversation.getMessages().stream()
-                        .map(this::toSummaryDto)
-                        .toList())
-                .createdAt(conversation.getCreatedAt())
-                .build();
-    }
+    @Mapping(target = "messageId", source = "id")
+    MessageSummary toSummaryDto(Message message);
 
-    public MessageSummary toSummaryDto(Message message) {
-        return MessageSummary.builder()
-                .messageId(message.getId())
-                .sender(userMapper.toRefDto(message.getSender()))
-                .content(message.getContent())
-                .images(imageMapper.toDto(message.getImages()))
-                .sentAt(message.getSentAt())
-                .build();
-    }
-
-    // Helpers ─────────────────────────────────────────────
-
-    private MessageSummary resolveLastMessage(List<Message> messages) {
-        if (messages == null || messages.isEmpty()) return null;
+    @Named("resolveLastMessage")
+    default MessageSummary resolveLastMessage(List<Message> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
         return toSummaryDto(messages.get(messages.size() - 1));
     }
 }
