@@ -1,4 +1,4 @@
-package com.deliveryplatform.caching;
+package com.deliveryplatform.common.caching;
 
 import java.time.Duration;
 

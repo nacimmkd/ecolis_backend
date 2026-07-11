@@ -24,7 +24,7 @@ public record TripUpdateRequest(
         @NotNull @Future
         LocalDate arrivalDate,
 
-        @NotNull @DecimalMin("0.1")
+        @NotNull @DecimalMin("1")
         BigDecimal availableWeightKg,
 
         @NotNull @DecimalMin("0.1")
@@ -32,7 +32,7 @@ public record TripUpdateRequest(
 
         @NotNull boolean instantBooking,
 
-        @NotNull @DecimalMin("0.5")
+        @NotNull @DecimalMin("1")
         BigDecimal maxDetourKm,
 
         @NotNull String notes

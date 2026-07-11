@@ -1,7 +1,6 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
@@ -10,7 +9,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
-import java.awt.print.Book;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -100,21 +98,20 @@ public class Parcel {
     private OffsetDateTime deletedAt;
 
 
-    public static Parcel create(
-            User owner, String description, BigDecimal weightKg, ParcelSize size, boolean fragile,
-            Address pickupAddress, Address dropoffAddress,
+    public static Parcel createFromRequest(
+            ParcelCreateRequest request,User owner, Address pickupAddress, Address dropoffAddress,
             Image thumbnail, List<Image> images
     ) {
         Parcel parcel = Parcel.builder()
                 .owner(owner)
-                .description(description)
-                .weightKg(weightKg)
-                .size(size)
-                .fragile(fragile)
+                .description(request.description())
+                .weightKg(request.weightKg())
+                .size(request.size())
+                .fragile(request.fragile())
                 .pickupAddress(pickupAddress)
                 .dropoffAddress(dropoffAddress)
                 .thumbnail(thumbnail)
-                .images(images)
+                .images(images != null ? images : new ArrayList<>())
                 .build();
 
         parcel.addTrackingEvent(TrackEvent.of(parcel.getState(), parcel.getState().getMessage()));

@@ -9,7 +9,6 @@ public class AddressServiceImp implements AddressService {
 
     private final GeocodingPort geocoding;
 
-
     @Override
     public Address geocode(AddressRequest request) {
         var coordinates = geocoding.geocode(request.toString());

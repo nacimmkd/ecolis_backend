@@ -39,9 +39,9 @@ public class ParcelServiceImp implements ParcelService {
 
     @Override
     public List<ParcelSummary> getUserParcels(UUID userId) {
-        return parcelRepository.findByOwnerId(userId).stream()
-                .map(parcelMapper::toSummaryDto)
-                .toList();
+        return parcelMapper.toSummaryDto(
+                parcelRepository.findByOwnerId(userId)
+        );
     }
 
     @Override
@@ -51,29 +51,23 @@ public class ParcelServiceImp implements ParcelService {
         assertOwnership(parcel, currentUserId);
 
         List<Booking> bookings = bookingRepository.findByParcelId(parcelId);
-
-        return bookings.stream()
-                .map(bookingMapper::toParcelBookingDto)
-                .toList();
+        return bookingMapper.toParcelBookingDto(bookings);
     }
 
     @Override
     public List<ParcelSummary> getParcels() {
-        return parcelRepository.findAll().stream()
-                .map(parcelMapper::toSummaryDto)
-                .toList();
+        return parcelMapper.toSummaryDto(
+                parcelRepository.findAll()
+        );
     }
 
     @Override
     @Transactional
     public ParcelDetails createParcel(UUID userId, ParcelCreateRequest request) {
         var owner  = getUserByIdOrThrow(userId);
-        var parcel = Parcel.create(
-               owner,
-               request.description(),
-                request.weightKg(),
-                request.size(),
-                request.fragile(),
+        var parcel = Parcel.createFromRequest(
+                request,
+                owner,
                 addressService.geocode(request.pickupAddress()),
                 addressService.geocode(request.dropoffAddress()),
                 imageService.getImage(request.thumbnailId(),owner),

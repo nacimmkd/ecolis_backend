@@ -2,7 +2,6 @@ package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.jwt.JwtAuthenticationFilter;
 import com.deliveryplatform.common.ApiError;
-import com.deliveryplatform.common.config.CorsProperties;
 import com.deliveryplatform.users.UserPrincipal;
 import com.deliveryplatform.users.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -3,34 +3,25 @@ package com.deliveryplatform.requests;
 import com.deliveryplatform.parcels.ParcelMapper;
 import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.trips.TripMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
-public class RequestMapper {
+@Mapper(
+        componentModel = "spring",
+        uses = {TripMapper.class, ParcelMapper.class},
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public interface RequestMapper {
 
-    private final TripMapper tripMapper;
-    private final ParcelMapper parcelMapper;
+    @Mapping(target = "requestId", source = "id")
+    @Mapping(target = "trip", source = "trip")
+    @Mapping(target = "parcel", source = "parcel")
+    @Mapping(target = "pickupDetour", source = "pickupDetourKm")
+    @Mapping(target = "dropOffDetour", source = "dropOffDetourKm")
+    RequestDto toRequestDto(Request request);
 
-
-    public RequestDto toRequestDto(Request request) {
-        return RequestDto.builder()
-                .requestId(request.getId())
-                .trip(tripMapper.toTripSummaryDto(request.getTrip()))
-                .parcel(parcelMapper.toSummaryDto(request.getParcel()))
-                .pickupDetour(request.getPickupDetourKm())
-                .dropOffDetour(request.getDropOffDetourKm())
-                .status(request.getStatus())
-                .rejectionReason(request.getRejectionReason())
-                .requestedAt(request.getRequestedAt())
-                .respondedAt(request.getRespondedAt())
-                .build();
-    }
-
-    public List<RequestDto> toRequestDto(List<Request> requests) {
-        return requests.stream().map(this::toRequestDto).toList();
-    }
+    List<RequestDto> toRequestDto(List<Request> requests);
 }

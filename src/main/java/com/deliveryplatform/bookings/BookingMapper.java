@@ -6,77 +6,39 @@ import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.parcels.ParcelMapper;
 import com.deliveryplatform.trips.TripMapper;
 import com.deliveryplatform.users.UserMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
-public class BookingMapper {
+@Mapper(
+        componentModel = "spring",
+        uses = {TripMapper.class, ParcelMapper.class, UserMapper.class},
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public interface BookingMapper {
 
-    private final TripMapper   tripMapper;
-    private final ParcelMapper parcelMapper;
-    private final UserMapper userMapper;
+    @Mapping(target = "bookingId", source = "id")
+    @Mapping(target = "trip", source = "trip")
+    @Mapping(target = "parcel", source = "parcel")
+    @Mapping(target = "carrier", source = "trip.owner")
+    @Mapping(target = "sender", source = "parcel.owner")
+    BookingDto toDto(Booking booking);
 
-    public BookingDto toDto(Booking booking) {
-        return BookingDto.builder()
-                .bookingId(booking.getId())
-                .trip(tripMapper.toTripSummaryDto(booking.getTrip()))
-                .parcel(parcelMapper.toSummaryDto(booking.getParcel()))
-                .carrier(userMapper.toRefDto(booking.getTrip().getOwner()))
-                .sender(userMapper.toRefDto(booking.getParcel().getOwner()))
-                .price(booking.getPrice())
-                .status(booking.getStatus())
-                .createdAt(booking.getCreatedAt())
-                .paidAt(booking.getPaidAt())
-                .completedAt(booking.getCompletedAt())
-                .cancelledAt(booking.getCancelledAt())
-                .build();
-    }
+    List<BookingDto> toDto(List<Booking> bookings);
 
-    public ParcelBookingDto toParcelBookingDto(Booking booking) {
-        return ParcelBookingDto.builder()
-                .bookingId(booking.getId())
-                .trip(tripMapper.toTripSummaryDto(booking.getTrip()))
-                .carrier(userMapper.toRefDto(booking.getTrip().getOwner()))
-                .price(booking.getPrice())
-                .status(booking.getStatus())
-                .createdAt(booking.getCreatedAt())
-                .paidAt(booking.getPaidAt())
-                .completedAt(booking.getCompletedAt())
-                .cancelledAt(booking.getCancelledAt())
-                .build();
-    }
+    @Mapping(target = "bookingId", source = "id")
+    @Mapping(target = "trip", source = "trip")
+    @Mapping(target = "carrier", source = "trip.owner")
+    ParcelBookingDto toParcelBookingDto(Booking booking);
 
-    public TripBookingDto toTripBookingDto(Booking booking) {
-        return TripBookingDto.builder()
-                .bookingId(booking.getId())
-                .parcel(parcelMapper.toSummaryDto(booking.getParcel()))
-                .sender(userMapper.toRefDto(booking.getParcel().getOwner()))
-                .price(booking.getPrice())
-                .status(booking.getStatus())
-                .createdAt(booking.getCreatedAt())
-                .paidAt(booking.getPaidAt())
-                .completedAt(booking.getCompletedAt())
-                .cancelledAt(booking.getCancelledAt())
-                .build();
-    }
+    @Mapping(target = "bookingId", source = "id")
+    @Mapping(target = "parcel", source = "parcel")
+    @Mapping(target = "sender", source = "parcel.owner")
+    TripBookingDto toTripBookingDto(Booking booking);
 
-    public List<TripBookingDto> toTripBookingDto(List<Booking> bookings) {
-        return bookings.stream()
-                .map(this::toTripBookingDto)
-                .toList();
-    }
+    List<ParcelBookingDto> toParcelBookingDto(List<Booking> bookings);
 
-    public List<ParcelBookingDto> toParcelBookingDto(List<Booking> bookings) {
-        return bookings.stream()
-                .map(this::toParcelBookingDto)
-                .toList();
-    }
-
-    public List<BookingDto> toDto(List<Booking> bookings) {
-        return bookings.stream().map(this::toDto).toList();
-    }
-
+    List<TripBookingDto> toTripBookingDto(List<Booking> bookings);
 }

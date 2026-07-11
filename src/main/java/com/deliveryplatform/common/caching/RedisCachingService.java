@@ -1,4 +1,4 @@
-package com.deliveryplatform.caching;
+package com.deliveryplatform.common.caching;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

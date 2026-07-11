@@ -1,4 +1,4 @@
-package com.deliveryplatform.common.config;
+package com.deliveryplatform.auth;
 
 import lombok.Getter;
 import lombok.Setter;

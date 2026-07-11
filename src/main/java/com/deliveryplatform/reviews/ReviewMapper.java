@@ -2,29 +2,22 @@ package com.deliveryplatform.reviews;
 
 import com.deliveryplatform.reviews.dto.ReviewDto;
 import com.deliveryplatform.users.UserMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
-public class ReviewMapper {
+@Mapper(
+        componentModel = "spring",
+        uses = {UserMapper.class},
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public interface ReviewMapper {
 
-    private final UserMapper userMapper;
+    @Mapping(target = "reviewer", source = "reviewer")
+    @Mapping(target = "reviewed", source = "reviewee")
+    ReviewDto toDto(Review review);
 
-    public ReviewDto toDto(Review review) {
-        return ReviewDto.builder()
-                .id(review.getId())
-                .reviewer(userMapper.toRefDto(review.getReviewer()))
-                .reviewed(userMapper.toRefDto(review.getReviewee()))
-                .rating(review.getRating())
-                .comment(review.getComment())
-                .createdAt(review.getCreatedAt())
-                .build();
-    }
-
-    public List<ReviewDto> toDto(List<Review> reviews) {
-        return reviews.stream().map(this::toDto).toList();
-    }
+    List<ReviewDto> toDto(List<Review> reviews);
 }

@@ -3,6 +3,7 @@ package com.deliveryplatform.trips;
 import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.trips.dto.TripCreateRequest;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,13 +17,15 @@ import java.util.*;
 @Entity
 @Table(name = "trips")
 @Getter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @SQLRestriction("deleted = false")
 public class Trip {
 
     public static BigDecimal MIN_WEIGHT_KG = BigDecimal.ONE;
+    public static BigDecimal MIN_PRICE_KG = BigDecimal.valueOf(0.1);
+    public static BigDecimal MIN_DETOUR_KG = BigDecimal.ONE;
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -117,6 +120,24 @@ public class Trip {
         if (this.remainingWeightKg == null) {
             this.remainingWeightKg = this.availableWeightKg;
         }
+    }
+
+
+    public static Trip createFromRequest(TripCreateRequest request, Address departureAddress, Address arrivalAddress, User owner) {
+        BigDecimal weight = request.availableWeightKg();
+        return Trip.builder()
+                .owner(owner)
+                .departureAddress(departureAddress)
+                .arrivalAddress(arrivalAddress)
+                .departureDate(request.departureDate())
+                .arrivalDate(request.arrivalDate())
+                .availableWeightKg(weight)
+                .remainingWeightKg(weight)
+                .pricePerKg(request.pricePerKg())
+                .maxDetourKm(request.maxDetourKm())
+                .instantBooking(request.instantBooking())
+                .notes(request.notes())
+                .build();
     }
 
     // trips ---------------------------------------------------------------------------------

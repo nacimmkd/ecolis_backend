@@ -20,8 +20,6 @@ import java.util.UUID;
 public class BookingServiceImp implements BookingService {
 
     private final BookingRepository        bookingRepository;
-    private final ParcelRepository         parcelRepository;
-    private final TripRepository           tripRepository;
     private final BookingMapper            bookingMapper;
 
 

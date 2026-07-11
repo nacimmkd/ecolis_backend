@@ -1,5 +1,6 @@
 package com.deliveryplatform.common.config;
 
+import com.deliveryplatform.auth.CorsProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;

@@ -57,10 +57,7 @@ public class TripServiceImp implements TripService {
         assertOwnership(trip, userId);
 
         List<Booking> bookings = bookingRepository.findByTripId(tripId);
-
-        return bookings.stream()
-                .map(bookingMapper::toTripBookingDto)
-                .toList();
+        return bookingMapper.toTripBookingDto(bookings);
     }
 
     @Override
@@ -69,12 +66,12 @@ public class TripServiceImp implements TripService {
         var owner = userRepository.findUserWithProfileById(currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        var trip = tripMapper.toTripEntity(request);
-        trip.setOwner(owner);
-        trip.updateState(TripState.PUBLISHED);
-        trip.setDepartureAddress(addressService.geocode(request.departureAddress()));
-        trip.setArrivalAddress(addressService.geocode(request.arrivalAddress()));
-
+        var trip = Trip.createFromRequest(
+                request,
+                addressService.geocode(request.departureAddress()),
+                addressService.geocode(request.arrivalAddress()),
+                owner
+        );
         return tripMapper.toTripDetailsDto(tripRepository.save(trip));
     }
 

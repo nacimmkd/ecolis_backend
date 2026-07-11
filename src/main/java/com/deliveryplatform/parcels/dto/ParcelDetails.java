@@ -23,5 +23,5 @@ public record ParcelDetails(
         ParcelState state,
         ImageDto thumbnail,
         List<ImageDto> images,
-        OffsetDateTime createdAt
+        OffsetDateTime publishedAt
 ){}

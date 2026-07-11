@@ -2,7 +2,7 @@ package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.jwt.JwtConfig;
 import com.deliveryplatform.auth.jwt.JwtService;
-import com.deliveryplatform.caching.CachingService;
+import com.deliveryplatform.common.caching.CachingService;
 import com.deliveryplatform.common.exceptions.AuthenticationException;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.AllArgsConstructor;

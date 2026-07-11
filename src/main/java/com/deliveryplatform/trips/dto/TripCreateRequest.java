@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 public record TripCreateRequest(
 
@@ -32,7 +31,7 @@ public record TripCreateRequest(
 
         @NotNull boolean instantBooking,
 
-        @DecimalMin("0.5") BigDecimal maxDetourKm,
+        @NotNull @DecimalMin("1") BigDecimal maxDetourKm,
 
         String notes
 ) {}

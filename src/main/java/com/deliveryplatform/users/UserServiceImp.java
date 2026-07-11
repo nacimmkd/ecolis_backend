@@ -1,7 +1,7 @@
 package com.deliveryplatform.users;
 
 import com.deliveryplatform.auth.AuthService;
-import com.deliveryplatform.caching.CachingService;
+import com.deliveryplatform.common.caching.CachingService;
 import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidCredentialsException;

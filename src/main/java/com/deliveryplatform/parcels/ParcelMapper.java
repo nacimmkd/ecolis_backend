@@ -1,60 +1,44 @@
 package com.deliveryplatform.parcels;
 
-
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.parcels.dto.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
+@Mapper(
+        componentModel = "spring",
+        uses = {ImageMapper.class},
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public interface ParcelMapper {
 
-@Component
-@RequiredArgsConstructor
-public class ParcelMapper {
+    @Mapping(target = "parcelId", source = "id")
+    @Mapping(target = "fragile", source = "fragile")
+    @Mapping(target = "pickupCity", source = "pickupAddress", qualifiedByName = "toBriefAddress")
+    @Mapping(target = "dropoffCity", source = "dropoffAddress", qualifiedByName = "toBriefAddress")
+    @Mapping(target = "publishedAt", source = "createdAt")
+    ParcelSummary toSummaryDto(Parcel parcel);
 
-    private final ImageMapper imageMapper;
+    List<ParcelSummary> toSummaryDto(List<Parcel> parcels);
 
-    public ParcelSummary toSummaryDto(Parcel parcel) {
-        return ParcelSummary.builder()
-                .parcelId(parcel.getId())
-                .weightKg(parcel.getWeightKg())
-                .size(parcel.getSize())
-                .fragile(parcel.isFragile())
-                .pickupCity(parcel.getPickupAddress().toBriefAddress())
-                .dropoffCity(parcel.getDropoffAddress().toBriefAddress())
-                .state(parcel.getState())
-                .thumbnail(imageMapper.toDto(parcel.getThumbnail()))
-                .publishedAt(parcel.getCreatedAt())
-                .build();
-    }
+    @Mapping(target = "parcelId", source = "id")
+    @Mapping(target = "fragile", source = "fragile")
+    @Mapping(target = "publishedAt", source = "createdAt")
+    ParcelDetails toDetailedDto(Parcel parcel);
 
-    public ParcelDetails toDetailedDto(Parcel parcel) {
-        return ParcelDetails.builder()
-                .parcelId(parcel.getId())
-                .description(parcel.getDescription())
-                .weightKg(parcel.getWeightKg())
-                .size(parcel.getSize())
-                .fragile(parcel.isFragile())
-                .pickupAddress(parcel.getPickupAddress())
-                .dropoffAddress(parcel.getDropoffAddress())
-                .state(parcel.getState())
-                .thumbnail(imageMapper.toDto(parcel.getThumbnail()))
-                .images(imageMapper.toDto(parcel.getImages()))
-                .createdAt(parcel.getCreatedAt())
-                .build();
-    }
+    @Mapping(target = "status", source = "state")
+    @Mapping(target = "note", source = "message")
+    TrackEventDto toTrackingEventDto(TrackEvent trackEvent);
 
-    public TrackEventDto toTrackingEventDto(TrackEvent trackEvent) {
-        return TrackEventDto.builder()
-                .id(trackEvent.getId())
-                .status(trackEvent.getState())
-                .note(trackEvent.getMessage())
-                .occurredAt(trackEvent.getOccurredAt())
-                .build();
-    }
+    List<TrackEventDto> toListTrackingEventDto(List<TrackEvent> trackEvents);
 
-    public List<TrackEventDto> toListTrackingEventDto(List<TrackEvent> trackEvents) {
-        return trackEvents.stream().map(this::toTrackingEventDto).toList();
+    @Named("toBriefAddress")
+    default String toBriefAddress(Address address) {
+        return address == null ? null : address.toBriefAddress();
     }
 }
