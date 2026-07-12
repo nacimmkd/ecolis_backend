@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public class RequestController {
     private final RequestService requestService;
 
     @GetMapping("/{requestId}")
-    public ResponseEntity<RequestDto> getRequest(
+    public ResponseEntity<RequestDto> getRequestById(
             @PathVariable UUID requestId,
             @AuthenticationPrincipal UserPrincipal user
     ) {
@@ -39,15 +40,10 @@ public class RequestController {
         if (tripId != null && parcelId != null)
             throw new BadRequestException("tripId and parcelId cannot be presented at same time");
 
-        List<RequestDto> requests;
+        List<RequestDto> requests = null;
 
-        if (tripId != null) {
-            requests = requestService.getMyTripRequests(tripId, user.getId());
-        } else if (parcelId != null) {
-            requests = requestService.getMyParcelRequests(parcelId, user.getId());
-        } else {
-            requests = requestService.getUserInvolvedRequests(user.getId());
-        }
+        if (tripId != null) { requests = requestService.getMyTripRequests(tripId, user.getId());}
+        if (parcelId != null) { requests = requestService.getMyParcelRequests(parcelId, user.getId());}
 
         return ResponseEntity.ok(requests);
     }
@@ -98,12 +94,12 @@ public class RequestController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{requestId}/cancel")
+    @PatchMapping("/{requestId}/delete")
     public ResponseEntity<Void> cancelRequest(
             @PathVariable UUID requestId,
             @AuthenticationPrincipal UserPrincipal user
     ) {
-        requestService.cancelRequest(requestId, user.getId());
+        requestService.deleteRequest(requestId, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

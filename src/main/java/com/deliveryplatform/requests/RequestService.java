@@ -18,13 +18,11 @@ public interface RequestService {
 
     List<RequestDto> getMyParcelRequests(UUID parcelId, UUID currentUserId);
 
-    List<RequestDto> getUserInvolvedRequests(UUID currentUserId);
-
     RequestDto createRequest(CreateRequest dto, UUID senderId);
-
-    void cancelRequest(UUID requestId, UUID userId);
 
     void acceptRequest(UUID requestId, UUID carrierId);
 
     void rejectRequest(UUID requestId, UUID carrierId, String reason);
+
+    void deleteRequest(UUID requestId, UUID currentUserId);
 }

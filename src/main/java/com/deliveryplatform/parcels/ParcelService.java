@@ -20,6 +20,8 @@ public interface ParcelService {
 
     ParcelDetails updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request);
 
+    void updateState(UUID parcelId, ParcelState state);
+
     void deleteParcel(UUID parcelId, UUID userId);
 
     List<TrackEventDto> getTrackingEvents(UUID parcelId);

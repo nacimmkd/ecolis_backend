@@ -5,7 +5,7 @@ import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.Request;
-import com.deliveryplatform.requests.RequestStatus;
+import com.deliveryplatform.requests.RequestState;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -167,7 +167,7 @@ public class Booking {
 
 
     private static void assertValidRequestStatusOrThrow(Request request) {
-        if (!RequestStatus.ACCEPTED.equals(request.getStatus()))
+        if (!RequestState.ACCEPTED.equals(request.getStatus()))
             throw new InvalidDomainStateException("cannot create booking : request is not accepted");
     }
 

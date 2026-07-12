@@ -5,10 +5,8 @@ import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.Parcel;
-import com.deliveryplatform.parcels.ParcelRepository;
-import com.deliveryplatform.requests.Request;
+import com.deliveryplatform.requests.RequestRepository;
 import com.deliveryplatform.trips.Trip;
-import com.deliveryplatform.trips.TripRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +18,7 @@ import java.util.UUID;
 public class BookingServiceImp implements BookingService {
 
     private final BookingRepository        bookingRepository;
+    private final RequestRepository        requestRepository;
     private final BookingMapper            bookingMapper;
 
 
@@ -32,8 +31,13 @@ public class BookingServiceImp implements BookingService {
 
     @Override
     @Transactional
-    public BookingDto create(Request request) {
+    public BookingDto create(UUID requestId) {
+        var request = requestRepository.findRequestById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("request not found"));
         var booking = Booking.createFromRequest(request);
+        request.softDelete();
+        bookingRepository.save(booking);
+        requestRepository.save(request);
         return bookingMapper.toDto(bookingRepository.save(booking));
     }
 

@@ -1,8 +1,7 @@
 package com.deliveryplatform.requests;
 
-public enum RequestStatus {
+public enum RequestState {
     PENDING,
     ACCEPTED,
-    REJECTED,
-    CANCELLED
+    REJECTED
 }

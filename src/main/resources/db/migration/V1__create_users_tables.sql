@@ -5,7 +5,7 @@ CREATE TABLE users (
                        role                VARCHAR(20)     NOT NULL CHECK (role IN ('USER','ADMIN')),
                        is_verified         BOOLEAN         NOT NULL DEFAULT FALSE,
                        registered_at       TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-                       deleted             BOOLEAN         NOT NULL DEFAULT TRUE,
+                       deleted             BOOLEAN         NOT NULL DEFAULT FALSE,
                        deleted_At          TIMESTAMPTZ
 );
 

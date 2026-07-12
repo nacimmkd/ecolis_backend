@@ -6,7 +6,7 @@ import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.trips.Trip;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -20,6 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@SQLRestriction("deleted = false")
 public class Request {
 
     @Id
@@ -37,7 +38,7 @@ public class Request {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private RequestStatus status = RequestStatus.PENDING;
+    private RequestState status = RequestState.PENDING;
 
     @Column(name = "rejection_reason")
     private String rejectionReason;
@@ -51,8 +52,16 @@ public class Request {
     @Column(name = "responded_at")
     private OffsetDateTime respondedAt;
 
-    @Column(name = "requested_at", nullable = false, updatable = false)
+    @Column(name = "requested_at")
     private OffsetDateTime requestedAt;
+
+    @Column(name = "deleted")
+    @Builder.Default
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    @Builder.Default
+    private OffsetDateTime deletedAt = null;
 
     // ----------------------------------------------------------------
 
@@ -77,23 +86,19 @@ public class Request {
     }
 
     public void accept() {
-        this.status = RequestStatus.ACCEPTED;
+        this.status = RequestState.ACCEPTED;
         this.respondedAt = OffsetDateTime.now();
     }
 
     public void reject(String reason) {
-        this.status = RequestStatus.REJECTED;
+        this.status = RequestState.REJECTED;
         this.rejectionReason = reason;
         this.respondedAt = OffsetDateTime.now();
-    }
-
-    public void cancel() {
-        this.status = RequestStatus.CANCELLED;
-        this.respondedAt = OffsetDateTime.now();
+        softDelete();
     }
 
     public boolean isPending() {
-        return RequestStatus.PENDING.equals(this.status);
+        return RequestState.PENDING.equals(this.status);
     }
 
     public UUID getSenderId()  { return this.parcel.getOwner().getId(); }
@@ -102,5 +107,10 @@ public class Request {
 
     public boolean involves(UUID userId) {
         return getSenderId().equals(userId) || getCarrierId().equals(userId);
+    }
+
+    public void softDelete() {
+        this.deleted = true;
+        this.deletedAt = OffsetDateTime.now();
     }
 }

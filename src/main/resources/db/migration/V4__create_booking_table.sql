@@ -31,12 +31,14 @@ CREATE TABLE booking_requests (
                                   trip_id          UUID NOT NULL,
                                   parcel_id        UUID NOT NULL,
                                   status           VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
-                                      CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED')),
+                                      CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED')),
                                   pickup_detour_km    NUMERIC(10,2) NOT NULL,
                                   dropoff_detour_km   NUMERIC(10,2) NOT NULL,
                                   rejection_reason TEXT,
                                   responded_at     TIMESTAMPTZ,
                                   requested_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+                                  deleted             BOOLEAN         NOT NULL DEFAULT FALSE,
+                                  deleted_At          TIMESTAMPTZ,
 
                                   CONSTRAINT fk_booking_request_trip   FOREIGN KEY (trip_id)   REFERENCES trips(id)   ON DELETE RESTRICT,
                                   CONSTRAINT fk_booking_request_parcel FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE RESTRICT

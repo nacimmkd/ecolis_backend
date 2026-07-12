@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -66,6 +67,7 @@ public class ImageServiceImp implements ImageService {
 
     @Override
     public Image getImage(UUID imageId, User user) {
+        if (Objects.isNull(imageId)) return null;
         var image = getByIdOrThrow(imageId);
         if (!image.isOwnedBy(user)) throw new UnauthorizedActionException("User is not the owner of image");
         if (!image.isConfirmed()) return null;

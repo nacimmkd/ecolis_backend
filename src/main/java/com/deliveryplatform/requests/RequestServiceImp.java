@@ -1,6 +1,5 @@
 package com.deliveryplatform.requests;
 
-import com.deliveryplatform.bookings.BookingService;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
@@ -11,10 +10,12 @@ import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.dto.CreateRequest;
 import com.deliveryplatform.requests.dto.RequestDto;
+import com.deliveryplatform.requests.events.RequestAcceptedEvent;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.trips.TripRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,10 +26,10 @@ import java.util.UUID;
 public class RequestServiceImp implements RequestService {
 
     private final RequestRepository        requestRepository;
-    private final BookingService           bookingService;
     private final ParcelRepository         parcelRepository;
     private final TripRepository           tripRepository;
     private final DetourCalculatorService  detourCalculator;
+    private final ApplicationEventPublisher eventPublisher;
     private final RequestMapper            requestMapper;
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -72,11 +73,6 @@ public class RequestServiceImp implements RequestService {
         return requestMapper.toRequestDto(requests);
     }
 
-    @Override
-    public List<RequestDto> getUserInvolvedRequests(UUID currentUserId) {
-        return requestMapper.toRequestDto(requestRepository.findAllByInvolvedUser(currentUserId));
-    }
-
 
     @Override
     @Transactional
@@ -94,11 +90,10 @@ public class RequestServiceImp implements RequestService {
         var detour = detourCalculator.calculate(trip,parcel);
 
         var bookingRequest = Request.create(trip, parcel, detour);
-
         if (trip.isInstantBooking()) {
             bookingRequest.accept();
-            bookingService.create(bookingRequest); // create and save booking
-            requestRepository.save(bookingRequest);
+            var request = requestRepository.save(bookingRequest);
+            eventPublisher.publishEvent(new RequestAcceptedEvent(request.getId()));
         } else {
             requestRepository.save(bookingRequest);
         }
@@ -113,25 +108,15 @@ public class RequestServiceImp implements RequestService {
 
     @Override
     @Transactional
-    public void cancelRequest(UUID requestId, UUID currentUserId) {
-        var request = getRequestByIdOrThrow(requestId);
-        assertIsSender(request, currentUserId);
-        assertRequestIsPending(request);
-        request.cancel();
-        requestRepository.save(request);
-    }
-
-    @Override
-    @Transactional
     public void acceptRequest(UUID requestId, UUID carrierId) {
         var request = getRequestByIdOrThrow(requestId);
+
         assertIsCarrier(request, carrierId);
         assertRequestIsPending(request);
 
         request.accept();
-        request.getParcel().updateState(ParcelState.BOOKED);
-        bookingService.create(request);
         requestRepository.save(request);
+        eventPublisher.publishEvent(new RequestAcceptedEvent(request.getId()));
     }
 
     @Override
@@ -144,10 +129,20 @@ public class RequestServiceImp implements RequestService {
         requestRepository.save(request);
     }
 
+    @Override
+    @Transactional
+    public void deleteRequest(UUID requestId, UUID currentUserId) {
+        var request = getRequestByIdOrThrow(requestId);
+        assertIsCarrier(request, currentUserId);
+        assertRequestIsPending(request);
+        request.softDelete();
+        requestRepository.save(request);
+    }
+
     // PRIVATE ─────────────────────────────────────────────────────────────────
 
     private Request getRequestByIdOrThrow(UUID id) {
-        return requestRepository.findById(id)
+        return requestRepository.findRequestById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking request not found"));
     }
 

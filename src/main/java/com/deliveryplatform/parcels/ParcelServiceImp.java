@@ -98,6 +98,15 @@ public class ParcelServiceImp implements ParcelService {
 
     @Override
     @Transactional
+    public void updateState(UUID parcelId, ParcelState state) {
+        var parcel = parcelRepository.findById(parcelId)
+                .orElseThrow(() -> new ResourceNotFoundException("parcel not found"));
+        parcel.updateState(state);
+        parcelRepository.save(parcel);
+    }
+
+    @Override
+    @Transactional
     public void deleteParcel(UUID parcelId, UUID userId) {
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, userId);

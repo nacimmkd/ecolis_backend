@@ -16,6 +16,8 @@ public interface TripMapper {
     @Mapping(target = "publishedAt", source = "createdAt")
     TripSummary toTripSummaryDto(Trip trip);
 
+    List<TripSummary> toTripSummaryDto(List<Trip> trips);
+
     @Mapping(target = "tripId", source = "id")
     @Mapping(target = "stops", source = "stops")
     @Mapping(target = "publishedAt", source = "createdAt")

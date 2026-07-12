@@ -1,6 +1,6 @@
 package com.deliveryplatform.requests.dto;
 
-import com.deliveryplatform.requests.RequestStatus;
+import com.deliveryplatform.requests.RequestState;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
 import com.deliveryplatform.trips.dto.TripSummary;
 import lombok.Builder;
@@ -14,7 +14,7 @@ public record RequestDto(
         UUID requestId,
         TripSummary trip,
         ParcelSummary parcel,
-        RequestStatus status,
+        RequestState status,
         BigDecimal pickupDetour,
         BigDecimal dropOffDetour,
         String rejectionReason,

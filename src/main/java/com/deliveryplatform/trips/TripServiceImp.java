@@ -37,16 +37,12 @@ public class TripServiceImp implements TripService {
 
     @Override
     public List<TripSummary> getAllTrips() {
-        return tripRepository.findAll().stream()
-                .map(tripMapper::toTripSummaryDto)
-                .toList();
+        return tripMapper.toTripSummaryDto(tripRepository.findAll());
     }
 
     @Override
     public List<TripSummary> getMyTrips(UUID currentUserId) {
-        return tripRepository.findByOwnerId(currentUserId).stream()
-                .map(tripMapper::toTripSummaryDto)
-                .toList();
+        return tripMapper.toTripSummaryDto(tripRepository.findByOwnerId(currentUserId));
     }
 
     @Override
