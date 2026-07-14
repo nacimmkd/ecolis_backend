@@ -2,124 +2,197 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>EcoDel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ecolis</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
     <style>
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
         body {
             margin: 0;
             padding: 0;
-            background-color: #f4f6f8;
-            font-family: Arial, sans-serif;
+            width: 100% !important;
+            background-color: #F8F9FA;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
         }
-
-        table.wrapper-table {
-            width: 100%;
-        }
-
-        table.container {
+        .wrapper { width: 100%; background-color: #F8F9FA; }
+        .container {
             width: 600px;
+            max-width: 600px;
             background-color: #ffffff;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(13, 27, 42, 0.08);
         }
-
-        .header-bar {
-            width: 100%;
-            height: 8px;
-            background-color: #3498db;
-        }
-
-        .header-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-            padding: 20px;
+        .header {
+            background-color: #0D1B2A;
+            padding: 32px 40px;
             text-align: center;
         }
-
-        .content pre {
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            color: #333;
-            white-space: pre-wrap;
-            padding: 0 20px 20px 20px;
-            line-height: 1.5;
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
             margin: 0;
         }
-
-        .btn-wrapper {
+        .logo span { color: #FFD6BA; }
+        .hero {
+            background-color: #0D1B2A;
+            padding: 0 40px 40px 40px;
             text-align: center;
-            padding: 20px;
         }
-
+        .hero-emoji {
+            font-size: 56px;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .hero-subtitle {
+            font-size: 15px;
+            color: #FFD6BA;
+            margin: 0;
+        }
+        .body-content {
+            padding: 40px;
+        }
+        .greeting {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0D1B2A;
+            margin: 0 0 16px 0;
+        }
+        .text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #495057;
+            margin: 0 0 28px 0;
+            white-space: pre-line;
+        }
+        .eco-banner {
+            background-color: #F8F9FA;
+            border-left: 4px solid #FFD6BA;
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 8px;
+        }
+        .eco-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0D1B2A;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .cta-wrapper {
+            text-align: center;
+            padding: 32px 0 32px 0;
+        }
         .btn {
             display: inline-block;
-            padding: 12px 25px;
-            background-color: #3498db;
-            color: #ffffff !important;
+            padding: 14px 36px;
+            background-color: #FFD6BA;
+            color: #0D1B2A !important;
             text-decoration: none;
-            font-weight: bold;
-            border-radius: 5px;
-            font-size: 16px;
+            font-weight: 700;
+            font-size: 15px;
+            border-radius: 8px;
         }
-
+        .divider {
+            border: none;
+            border-top: 1px solid #eaeaea;
+            margin: 0 40px;
+        }
         .footer {
-            font-size: 12px;
-            color: #999;
-            padding: 15px 20px;
+            padding: 28px 40px;
             text-align: center;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #adb5bd;
+            line-height: 1.6;
+            margin: 0 0 8px 0;
+        }
+        .footer-links a {
+            color: #0D1B2A;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 0 8px;
         }
 
         @media screen and (max-width: 620px) {
-            table.container {
-                width: 100% !important;
-            }
-            td {
-                padding-left: 10px !important;
-                padding-right: 10px !important;
-            }
-
+            .container { width: 100% !important; }
+            .header, .hero, .body-content, .footer { padding-left: 24px !important; padding-right: 24px !important; }
         }
     </style>
 </head>
 <body>
-
-<table class="wrapper-table">
+<table class="wrapper" role="presentation" cellpadding="0" cellspacing="0" width="100%">
     <tr>
-        <td align="center" style="padding:30px">
+        <td align="center" style="padding: 30px 16px;">
+            <table class="container" role="presentation" cellpadding="0" cellspacing="0">
 
-            <table class="container">
-
+                <!-- Header / Logo -->
                 <tr>
-                    <td class="header-bar"></td>
-                </tr>
-
-                <!-- Titre -->
-                <tr>
-                    <td class="header-title">
-                        ColiPart
+                    <td class="header">
+                        <p class="logo">eco<span>lis</span></p>
                     </td>
                 </tr>
 
-                <!-- Content -->
+                <!-- Hero -->
                 <tr>
-                    <td class="content">
-                        <pre th:utext="${content}"></pre>
+                    <td class="hero">
+                        <div class="hero-emoji">📦</div>
+                        <p class="hero-subtitle">Le covoiturage de colis, simple et écoresponsable</p>
                     </td>
+                </tr>
+
+                <!-- Corps du message -->
+                <tr>
+                    <td class="body-content">
+                        <p class="greeting" th:text="'Salut ' + ${firstName} + ' 👋'">Salut 👋</p>
+                        <p class="text" th:utext="${content}"></p>
+
+                        <!-- Message écologique -->
+                        <div class="eco-banner">
+                            <p class="eco-text">🌍 Partageons la route pour réduire notre empreinte carbone, un colis à la fois.</p>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- CTA -->
+                <tr>
+                    <td class="cta-wrapper">
+                        <a th:href="${btnUrl}" class="btn" href="#">Se Connecter</a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><hr class="divider"></td>
                 </tr>
 
                 <!-- Footer -->
                 <tr>
                     <td class="footer">
-                        © 2026 ColiPart - Tous droits réservés
+                        <p class="footer-text">© 2026 ecolis — Tous droits réservés</p>
+                        <p class="footer-text">Vous recevez cet email car vous avez un compte sur ecolis.</p>
+                        <div class="footer-links">
+                            <a href="#">Aide</a> · <a href="#">Confidentialité</a>
+                        </div>
                     </td>
                 </tr>
 
             </table>
-
         </td>
     </tr>
 </table>
-
 </body>
 </html>

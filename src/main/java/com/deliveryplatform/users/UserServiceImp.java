@@ -7,14 +7,16 @@ import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.notifications.emails.EmailService;
-import com.deliveryplatform.notifications.emails.Templates;
 import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserCreateRequest;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserSummary;
+import com.deliveryplatform.users.events.EmailVerificationEvent;
+import com.deliveryplatform.users.events.UserCreatedEvent;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,7 @@ public class UserServiceImp implements UserService {
     private final EmailService emailService;
     private final CachingService cachingService;
     private final AuthService authService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final String VERIFICATION_CODE_PREFIX = "email:verify:";
     private static final Duration VERIFICATION_CODE_TTL = Duration.ofMinutes(5);
@@ -60,42 +63,30 @@ public class UserServiceImp implements UserService {
         var user = buildUser(request);
         var profile = Profile.createFromRequest(request.profile());
         user.setProfile(profile);
-        return userMapper.toDetailsDto(userRepository.save(user));
+        userRepository.save(user);
+        saveAndSendVerificationCode(user);
+        return userMapper.toDetailsDto(user);
     }
-
 
     @Override
     public void sendVerificationCode(UUID id) {
         var user = getUserByIdOrThrow(id);
         if (user.isVerified()) throw new ConflictException("User is already verified");
-
-        var key = VERIFICATION_CODE_PREFIX + user.getEmail();
-        if (cachingService.exists(key))
-            throw new ConflictException("Verification code already sent");
-
-
-        var code = CodeGeneratorUtil.generateVerificationCode();
-        cachingService.save(key, code , VERIFICATION_CODE_TTL);
-
-        var template = Templates.confirmEmailTemplate(code);
-        emailService.send(
-                user.getEmail(),
-                template.subject(),
-                template.body()
-        );
+        saveAndSendVerificationCode(user);
     }
 
 
     @Override
     @Transactional
-    public void verify(String email, String code) {
-        var key = VERIFICATION_CODE_PREFIX + email;
+    public void verify(UUID userId, String code) {
+        var user = getUserByIdOrThrow(userId);
+        var key = VERIFICATION_CODE_PREFIX + user.getEmail();
         if (!cachingService.isValid(key, code)) {
             throw new InvalidCredentialsException("Code invalid or expired");
         }
-        var user = getUserByEmailOrThrow(email);
         user.setVerified(true);
         userRepository.save(user);
+        eventPublisher.publishEvent(new UserCreatedEvent(user.getEmail(), user.getProfile().getFirstName()));
     }
 
 
@@ -152,6 +143,16 @@ public class UserServiceImp implements UserService {
                 .deleted(false)
                 .deletedAt(null)
                 .build();
+    }
+
+    private void saveAndSendVerificationCode(User user) {
+        var key = VERIFICATION_CODE_PREFIX + user.getEmail();
+        var code = CodeGeneratorUtil.generateVerificationCode();
+        if (cachingService.exists(key))
+            cachingService.remove(key);
+        cachingService.save(key, code , VERIFICATION_CODE_TTL);
+
+        eventPublisher.publishEvent(new EmailVerificationEvent(user.getEmail(), user.getProfile().getFirstName(), code));
     }
 
 

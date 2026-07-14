@@ -1,11 +1,17 @@
 package com.deliveryplatform.notifications;
 
 
-import com.deliveryplatform.requests.events.RequestAcceptedEvent;
+import com.deliveryplatform.notifications.channels.ChannelType;
+import com.deliveryplatform.users.events.EmailVerificationEvent;
+import com.deliveryplatform.users.events.UserCreatedEvent;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+import java.util.Map;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -13,17 +19,37 @@ public class NotificationEventListener {
 
     private final NotificationService notificationService;
 
-//    @EventListener
-//    @Async
-//    public void onBookingAccepted(RequestAcceptedEvent event) {
-//        notificationService.notify(
-//                NotificationPayload.builder()
-//                        .receiverId(event.senderId())
-//                        .receiverEmail(event.senderEmail())
-//                        .notificationType(NotificationType.BOOKING_CREATED)
-//                        .referenceId(event.bookingId())
-//                        .build()
-//        );
-//    }
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async
+    public void onUserVerification(EmailVerificationEvent event) {
+        notificationService.notify(
+                NotificationPayload.builder()
+                        .receiverId(null)
+                        .receiverEmail(event.userEmail())
+                        .notificationType(NotificationType.VERIFY_USER)
+                        .channels(Set.of(ChannelType.EMAIL))
+                        .referenceId(null)
+                        .metadata(Map.of(
+                                "code", event.code(),
+                                "firstName" , event.firstName()
+                        ))
+                        .build()
+        );
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async
+    public void onUserCreated(UserCreatedEvent event) {
+        notificationService.notify(
+                NotificationPayload.builder()
+                        .receiverId(null)
+                        .receiverEmail(event.userEmail())
+                        .notificationType(NotificationType.USER_CREATED)
+                        .channels(Set.of(ChannelType.EMAIL))
+                        .referenceId(null)
+                        .metadata(Map.of("firstName", event.firstName()))
+                        .build()
+        );
+    }
 
 }

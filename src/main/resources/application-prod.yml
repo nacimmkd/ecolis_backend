@@ -31,12 +31,11 @@ aws:
 
 resend:
   api-key: ${RESEND_API_KEY}
-  from-email: "noreply@tondomaine.com"
+  from-email: onboarding@resend.dev
 
 cors:
   allowed-origins:
     - http://localhost:3000
 
 app:
-  mail:
-    from: ""
+  frontend-url: http://localhost:3000

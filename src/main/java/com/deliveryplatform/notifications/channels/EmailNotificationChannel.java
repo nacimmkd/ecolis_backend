@@ -13,15 +13,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EmailNotificationChannel implements NotificationChannel {
 
-    private EmailService emailService;
+    private final EmailService emailService;
 
     @Override
     public void send(NotificationPayload payload) {
-        var template = Templates.notificationReminderTemplate();
+        var template = Templates.resolve(payload);
+        String firstName = (String) payload.metadata().getOrDefault("firstName", "");
         emailService.send(
                 payload.receiverEmail(),
                 template.subject(),
-                template.body()
+                template.body(),
+                firstName
         );
     }
 

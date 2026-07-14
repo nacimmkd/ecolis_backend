@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum NotificationType {
 
+    VERIFY_USER,
     USER_CREATED,
 
     MESSAGE_RECEIVED,

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -22,7 +23,10 @@ public class NotificationServiceImp implements NotificationService {
     @Override
     @Transactional
     public void notify(NotificationPayload payload) {
-        notificationRepository.save(Notification.createFromNotificationPayload(payload));
+        var notification = Notification.createFromNotificationPayload(payload);
+        if (!Objects.isNull(notification.getId())) {
+            notificationRepository.save(Notification.createFromNotificationPayload(payload));
+        }
         notificationManager.send(payload);
     }
 

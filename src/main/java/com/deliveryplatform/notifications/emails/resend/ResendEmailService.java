@@ -20,18 +20,21 @@ public class ResendEmailService  implements EmailService {
     @Value("${resend.from-email}")
     private String from;
 
+    @Value("${app.frontend-url}")
+    private String frontUrl;
+
     private final Resend resendClient;
     private final TemplateEngine templateEngine;
 
     @Async
     @Override
-    public void send(String to, String subject, String content) {
+    public void send(String to, String subject, String content, String firstName) {
         try {
             var params = CreateEmailOptions.builder()
                     .from(from)
                     .to(to)
                     .subject(subject)
-                    .html(resolveTemplate(content))
+                    .html(resolveTemplate(content, firstName))
                     .build();
 
             var response = resendClient.emails().send(params);
@@ -42,9 +45,11 @@ public class ResendEmailService  implements EmailService {
     }
 
 
-    private String resolveTemplate(String content) {
+    private String resolveTemplate(String content, String firstName) {
         var context = new Context();
         context.setVariable("content", content);
+        context.setVariable("firstName", firstName);
+        context.setVariable("btnUrl", frontUrl);
         return templateEngine.process("email", context);
     }
 }

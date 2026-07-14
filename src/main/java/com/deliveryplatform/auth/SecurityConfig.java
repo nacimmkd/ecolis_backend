@@ -60,6 +60,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification/verify").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification/send").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated() // to be changed later
                 )

@@ -17,7 +17,7 @@ public interface UserService {
 
     void sendVerificationCode(UUID id);
 
-    void verify(String email, String code);
+    void verify(UUID userId, String code);
 
     void changePassword(UUID id, UpdatePasswordRequest request);
 
