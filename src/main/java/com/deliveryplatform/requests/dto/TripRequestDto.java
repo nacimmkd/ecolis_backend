@@ -1,23 +1,24 @@
 package com.deliveryplatform.requests.dto;
 
-import com.deliveryplatform.requests.RequestState;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
-import com.deliveryplatform.trips.dto.TripSummary;
+import com.deliveryplatform.requests.RequestState;
+import com.deliveryplatform.users.dto.UserBrief;
 import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Builder(toBuilder = true)
-public record RequestDto(
+@Builder
+public record TripRequestDto(
         UUID requestId,
-        TripSummary trip,
         ParcelSummary parcel,
+        UserBrief sender,
         RequestState state,
         BigDecimal pickupDetourKm,
         BigDecimal dropOffDetourKm,
         String rejectionReason,
         OffsetDateTime requestedAt,
         OffsetDateTime respondedAt
-) {}
+) {
+}

@@ -26,5 +26,7 @@ public record TripDetails(
         TripState state,
         String notes,
         List<TripStopDto> stops,
+        long bookingsCount,
+        long requestsCount,
         OffsetDateTime publishedAt
 ) {}

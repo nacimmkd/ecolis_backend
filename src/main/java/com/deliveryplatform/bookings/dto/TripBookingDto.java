@@ -15,7 +15,7 @@ public record TripBookingDto(
         ParcelSummary parcel,
         UserBrief sender,
         BigDecimal price,
-        BookingStatus status,
+        BookingStatus state,
         OffsetDateTime createdAt,
         OffsetDateTime paidAt,
         OffsetDateTime completedAt,

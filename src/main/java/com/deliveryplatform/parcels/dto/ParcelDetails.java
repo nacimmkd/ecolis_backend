@@ -23,5 +23,6 @@ public record ParcelDetails(
         ParcelState state,
         ImageDto thumbnail,
         List<ImageDto> images,
+        long bookingsCount,
         OffsetDateTime publishedAt
 ){}

@@ -2,6 +2,7 @@ package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.bookings.dto.ParcelBookingDto;
 import com.deliveryplatform.parcels.dto.*;
+import com.deliveryplatform.requests.dto.ParcelRequestDto;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,14 @@ public class ParcelController {
             @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
         return ResponseEntity.ok(parcelService.getParcelBookings(parcelId,userPrincipal.getId()));
+    }
+
+    @GetMapping("/{parcelId}/requests")
+    public ResponseEntity<List<ParcelRequestDto>> getParcelRequests(
+            @PathVariable UUID parcelId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal)
+    {
+        return ResponseEntity.ok(parcelService.getParcelRequests(parcelId,userPrincipal.getId()));
     }
 
     @PostMapping

@@ -51,5 +51,7 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
 
     boolean existsByParcelIdAndTripId(UUID parcelId, UUID tripId);
 
-    List<Request> findByStatusAndRequestedAtBefore(RequestState status, OffsetDateTime cutoff);
+    List<Request> findByStateAndRequestedAtBefore(RequestState status, OffsetDateTime cutoff);
+
+    long countByTripId(UUID tripId);
 }

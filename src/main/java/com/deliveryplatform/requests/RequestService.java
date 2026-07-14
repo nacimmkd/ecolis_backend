@@ -14,10 +14,6 @@ public interface RequestService {
 
     List<RequestDto> getMyReceivedRequests(UUID carrierId);
 
-    List<RequestDto> getMyTripRequests(UUID tripId, UUID currentUserId);
-
-    List<RequestDto> getMyParcelRequests(UUID parcelId, UUID currentUserId);
-
     RequestDto createRequest(CreateRequest dto, UUID senderId);
 
     void acceptRequest(UUID requestId, UUID carrierId);

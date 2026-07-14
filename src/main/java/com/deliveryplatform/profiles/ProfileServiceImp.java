@@ -23,7 +23,6 @@ public class ProfileServiceImp implements ProfileService {
 
     @Override
     public ProfileDetails getUserProfile(UUID userId) {
-
         var reviews = reviewRepository.findByRevieweeId(userId);
         var profile = getByIdOrThrow(userId);
         return profileMapper.toDetailedDto(profile, reviews);

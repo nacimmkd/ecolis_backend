@@ -30,24 +30,6 @@ public class RequestController {
         return ResponseEntity.ok(requestService.getRequest(requestId, user.getId()));
     }
 
-    @GetMapping
-    public ResponseEntity<List<RequestDto>> getRequests(
-            @RequestParam(name = "tripId", required = false)  UUID tripId,
-            @RequestParam(name = "parcelId", required = false)  UUID parcelId,
-            @AuthenticationPrincipal UserPrincipal user
-    ) throws BadRequestException
-    {
-        if (tripId != null && parcelId != null)
-            throw new BadRequestException("tripId and parcelId cannot be presented at same time");
-
-        List<RequestDto> requests = null;
-
-        if (tripId != null) { requests = requestService.getMyTripRequests(tripId, user.getId());}
-        if (parcelId != null) { requests = requestService.getMyParcelRequests(parcelId, user.getId());}
-
-        return ResponseEntity.ok(requests);
-    }
-
     @GetMapping("/received")
     public ResponseEntity<List<RequestDto>> getReceivedRequests(
             @AuthenticationPrincipal UserPrincipal user

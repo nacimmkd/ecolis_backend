@@ -38,7 +38,7 @@ public class Request {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private RequestState status = RequestState.PENDING;
+    private RequestState state = RequestState.PENDING;
 
     @Column(name = "rejection_reason")
     private String rejectionReason;
@@ -86,19 +86,19 @@ public class Request {
     }
 
     public void accept() {
-        this.status = RequestState.ACCEPTED;
+        this.state = RequestState.ACCEPTED;
         this.respondedAt = OffsetDateTime.now();
     }
 
     public void reject(String reason) {
-        this.status = RequestState.REJECTED;
+        this.state = RequestState.REJECTED;
         this.rejectionReason = reason;
         this.respondedAt = OffsetDateTime.now();
         softDelete();
     }
 
     public boolean isPending() {
-        return RequestState.PENDING.equals(this.status);
+        return RequestState.PENDING.equals(this.state);
     }
 
     public UUID getSenderId()  { return this.parcel.getOwner().getId(); }

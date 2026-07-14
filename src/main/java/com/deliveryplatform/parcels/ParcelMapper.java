@@ -26,12 +26,12 @@ public interface ParcelMapper {
 
     List<ParcelSummary> toSummaryDto(List<Parcel> parcels);
 
-    @Mapping(target = "parcelId", source = "id")
-    @Mapping(target = "fragile", source = "fragile")
-    @Mapping(target = "publishedAt", source = "createdAt")
-    ParcelDetails toDetailedDto(Parcel parcel);
+    @Mapping(target = "parcelId", source = "parcel.id")
+    @Mapping(target = "fragile", source = "parcel.fragile")
+    @Mapping(target = "publishedAt", source = "parcel.createdAt")
+    @Mapping(target = "bookingsCount", source = "bookingsCount")
+    ParcelDetails toDetailedDto(Parcel parcel, long bookingsCount);
 
-    @Mapping(target = "status", source = "state")
     @Mapping(target = "note", source = "message")
     TrackEventDto toTrackingEventDto(TrackEvent trackEvent);
 

@@ -18,7 +18,7 @@ public record BookingDto(
         UserBrief sender,
         UserBrief carrier,
         BigDecimal price,
-        BookingStatus status,
+        BookingStatus state,
         OffsetDateTime createdAt,
         OffsetDateTime paidAt,
         OffsetDateTime completedAt,

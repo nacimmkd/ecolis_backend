@@ -18,12 +18,12 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     List<Booking> findByTripId(UUID tripId);
 
-    @Query("""
-       SELECT b FROM Booking b
-       LEFT JOIN FETCH b.parcel p
-       LEFT JOIN FETCH b.trip t
-       WHERE p.id = :parcelId
-       ORDER BY b.createdAt DESC
-       """)
+    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.parcel p LEFT JOIN FETCH b.trip t WHERE p.id = :parcelId ORDER BY b.createdAt DESC")
     List<Booking> findByParcelId(@Param("parcelId") UUID parcelId);
+
+    long countByTripId(UUID tripId);
+
+    long countByParcelId(UUID parcelId);
+
+
 }

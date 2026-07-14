@@ -9,6 +9,9 @@ import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.requests.RequestMapper;
+import com.deliveryplatform.requests.RequestRepository;
+import com.deliveryplatform.requests.dto.TripRequestDto;
 import com.deliveryplatform.trips.dto.*;
 import com.deliveryplatform.users.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +29,17 @@ public class TripServiceImp implements TripService {
     private final UserRepository     userRepository;
     private final AddressService     addressService;
     private final BookingRepository  bookingRepository;
+    private final RequestRepository  requestRepository;
+    private final RequestMapper      requestMapper;
     private final TripMapper         tripMapper;
     private final BookingMapper      bookingMapper;
 
     @Override
     public TripDetails getTrip(UUID tripId) {
         var trip = getTripByIdOrThrow(tripId);
-        return tripMapper.toTripDetailsDto(trip);
+        var requestCount = requestRepository.countByTripId(tripId);
+        var bookingsCount = requestRepository.countByTripId(tripId);
+        return tripMapper.toTripDetailsDto(trip, requestCount, bookingsCount);
     }
 
     @Override
@@ -50,10 +57,20 @@ public class TripServiceImp implements TripService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
 
-        assertOwnership(trip, userId);
+        assertTripOwnership(trip, userId);
 
         List<Booking> bookings = bookingRepository.findByTripId(tripId);
         return bookingMapper.toTripBookingDto(bookings);
+    }
+
+    @Override
+    public List<TripRequestDto> getTripRequests(UUID tripId, UUID currentUserId) {
+        var trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
+
+        assertTripOwnership(trip, currentUserId);
+        var requests = requestRepository.findByTripId(tripId);
+        return requestMapper.toTripRequestDto(requests);
     }
 
     @Override
@@ -68,26 +85,30 @@ public class TripServiceImp implements TripService {
                 addressService.geocode(request.arrivalAddress()),
                 owner
         );
-        return tripMapper.toTripDetailsDto(tripRepository.save(trip));
+        return tripMapper.toTripDetailsDto(tripRepository.save(trip), 0, 0);
     }
 
     @Override
     @Transactional
     public TripDetails updateTrip(UUID tripId, UUID currentUserId, TripUpdateRequest request) {
         var trip = getTripByIdOrThrow(tripId);
-        assertOwnership(trip, currentUserId);
+        assertTripOwnership(trip, currentUserId);
         assertTripInStatusPublished(trip);
 
         applyUpdates(trip, request);
 
-        return tripMapper.toTripDetailsDto(tripRepository.save(trip));
+        var requestCount = requestRepository.countByTripId(tripId);
+        var bookingsCount = requestRepository.countByTripId(tripId);
+
+        tripRepository.save(trip);
+        return tripMapper.toTripDetailsDto(trip, requestCount, bookingsCount);
     }
 
     @Override
     @Transactional
     public void deleteTrip(UUID tripId, UUID currentUserId) {
         var trip = getTripByIdOrThrow(tripId);
-        assertOwnership(trip, currentUserId);
+        assertTripOwnership(trip, currentUserId);
         assertTripInStatusPublished(trip);
         trip.softDelete();
         tripRepository.save(trip);
@@ -97,7 +118,7 @@ public class TripServiceImp implements TripService {
     @Transactional
     public void addStop(UUID tripId, UUID currentUserId, AddressRequest address) {
         var trip = getTripByIdOrThrow(tripId);
-        assertOwnership(trip, currentUserId);
+        assertTripOwnership(trip, currentUserId);
 
         trip.addStop(addressService.geocode(address));
         tripRepository.save(trip);
@@ -107,7 +128,7 @@ public class TripServiceImp implements TripService {
     @Transactional
     public List<TripStopDto> updateStops(UUID tripId, UUID currentUserId, List<TripStopRequest> newStopsRequest) {
         var trip = getTripByIdOrThrow(tripId);
-        assertOwnership(trip, currentUserId);
+        assertTripOwnership(trip, currentUserId);
 
         var stops = newStopsRequest.stream()
                 .map(request -> {
@@ -124,7 +145,7 @@ public class TripServiceImp implements TripService {
     @Transactional
     public void deleteStop(UUID stopId, UUID tripId, UUID currentUserId) {
         var trip = getTripByIdOrThrow(tripId);
-        assertOwnership(trip, currentUserId);
+        assertTripOwnership(trip, currentUserId);
 
         var stop = findStopInTrip(trip, stopId);
         trip.removeStopAndReorder(stop);
@@ -138,7 +159,7 @@ public class TripServiceImp implements TripService {
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
     }
 
-    private void assertOwnership(Trip trip, UUID userId) {
+    private void assertTripOwnership(Trip trip, UUID userId) {
         if (!trip.getOwner().getId().equals(userId))
             throw new UnauthorizedActionException("User is not owner of this trip");
     }

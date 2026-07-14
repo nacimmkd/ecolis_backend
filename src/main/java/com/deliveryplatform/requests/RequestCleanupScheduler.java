@@ -17,7 +17,7 @@ public class RequestCleanupScheduler {
     @Transactional
     public void expireOldPendingRequests() {
         var cutoff = OffsetDateTime.now().minusDays(7);
-        var expired = requestRepository.findByStatusAndRequestedAtBefore(RequestState.PENDING, cutoff);
+        var expired = requestRepository.findByStateAndRequestedAtBefore(RequestState.PENDING, cutoff);
 
         expired.forEach(request -> request.reject("Expired - no response from carrier"));
 

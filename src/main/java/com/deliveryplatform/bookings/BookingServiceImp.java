@@ -108,7 +108,7 @@ public class BookingServiceImp implements BookingService {
 
 
     private void assertBookingInStatus(Booking booking, BookingStatus expected, String message) {
-        if (!booking.getStatus().equals(expected))
+        if (!booking.getState().equals(expected))
             throw new InvalidDomainStateException(message);
     }
 

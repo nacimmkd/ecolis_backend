@@ -2,8 +2,8 @@ CREATE TABLE bookings (
                           id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                           trip_id         UUID NOT NULL,
                           parcel_id       UUID NOT NULL,
-                          status             VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
-                              CHECK (status IN ('PENDING', 'PAID', 'COMPLETED', 'CANCELLED')),
+                          state             VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
+                              CHECK (state IN ('PENDING', 'PAID', 'COMPLETED', 'CANCELLED')),
                           price           NUMERIC(10, 2),
 
                           pickup_code      VARCHAR(20),
@@ -30,8 +30,8 @@ CREATE TABLE booking_requests (
                                   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                                   trip_id          UUID NOT NULL,
                                   parcel_id        UUID NOT NULL,
-                                  status           VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
-                                      CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED')),
+                                  state            VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
+                                      CHECK (state IN ('PENDING', 'ACCEPTED', 'REJECTED')),
                                   pickup_detour_km    NUMERIC(10,2) NOT NULL,
                                   dropoff_detour_km   NUMERIC(10,2) NOT NULL,
                                   rejection_reason TEXT,

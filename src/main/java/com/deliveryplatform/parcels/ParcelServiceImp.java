@@ -11,6 +11,9 @@ import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.*;
+import com.deliveryplatform.requests.RequestMapper;
+import com.deliveryplatform.requests.RequestRepository;
+import com.deliveryplatform.requests.dto.ParcelRequestDto;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -24,17 +27,21 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ParcelServiceImp implements ParcelService {
 
-    private final ParcelRepository parcelRepository;
-    private final UserRepository   userRepository;
-    private final AddressService   addressService;
-    private final ImageService     imageService;
-    private final BookingRepository bookingRepository;
-    private final BookingMapper bookingMapper;
-    private final ParcelMapper     parcelMapper;
+    private final ParcelRepository      parcelRepository;
+    private final UserRepository        userRepository;
+    private final AddressService        addressService;
+    private final ImageService          imageService;
+    private final BookingRepository     bookingRepository;
+    private final RequestRepository     requestRepository;
+    private final BookingMapper         bookingMapper;
+    private final RequestMapper         requestMapper;
+    private final ParcelMapper          parcelMapper;
 
     @Override
-    public ParcelDetails getParcel(UUID id) {
-        return parcelMapper.toDetailedDto(getParcelByIdOrThrow(id));
+    public ParcelDetails getParcel(UUID parcelId) {
+        var bookingsCount = bookingRepository.countByParcelId(parcelId);
+        var parcel = getParcelByIdOrThrow(parcelId);
+        return parcelMapper.toDetailedDto(parcel, bookingsCount);
     }
 
     @Override
@@ -48,10 +55,20 @@ public class ParcelServiceImp implements ParcelService {
     public List<ParcelBookingDto> getParcelBookings(UUID parcelId, UUID currentUserId) {
         Parcel parcel = getParcelByIdOrThrow(parcelId);
 
-        assertOwnership(parcel, currentUserId);
+        assertParcelOwnership(parcel, currentUserId);
 
         List<Booking> bookings = bookingRepository.findByParcelId(parcelId);
         return bookingMapper.toParcelBookingDto(bookings);
+    }
+
+    @Override
+    public List<ParcelRequestDto> getParcelRequests(UUID parcelId, UUID currentUserId) {
+        var parcel = parcelRepository.findById(parcelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
+
+        assertParcelOwnership(parcel, currentUserId);
+        var requests = requestRepository.findByParcelId(parcelId);
+        return requestMapper.toParcelRequestDto(requests);
     }
 
     @Override
@@ -73,14 +90,14 @@ public class ParcelServiceImp implements ParcelService {
                 imageService.getImage(request.thumbnailId(),owner),
                 imageService.getImages(request.imageIds())
         );
-        return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
+        return parcelMapper.toDetailedDto(parcelRepository.save(parcel), 0);
     }
 
     @Override
     @Transactional
     public ParcelDetails updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
         var parcel = getParcelByIdOrThrow(parcelId);
-        assertOwnership(parcel, userId);
+        assertParcelOwnership(parcel, userId);
         assertParcelIsInState(parcel, List.of(ParcelState.PUBLISHED));
 
         parcel.setDescription(request.description());
@@ -93,23 +110,15 @@ public class ParcelServiceImp implements ParcelService {
         updateThumbnail(parcel, request.thumbnailId());
         updateParcelImages(parcel, request.imageIds());
 
-        return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
-    }
-
-    @Override
-    @Transactional
-    public void updateState(UUID parcelId, ParcelState state) {
-        var parcel = parcelRepository.findById(parcelId)
-                .orElseThrow(() -> new ResourceNotFoundException("parcel not found"));
-        parcel.updateState(state);
-        parcelRepository.save(parcel);
+        var bookingsCount = bookingRepository.countByParcelId(parcelId);
+        return parcelMapper.toDetailedDto(parcelRepository.save(parcel), bookingsCount);
     }
 
     @Override
     @Transactional
     public void deleteParcel(UUID parcelId, UUID userId) {
         var parcel = getParcelByIdOrThrow(parcelId);
-        assertOwnership(parcel, userId);
+        assertParcelOwnership(parcel, userId);
         assertParcelIsInState(parcel, List.of(ParcelState.PUBLISHED));
 
         imageService.remove(parcel.getImages());
@@ -138,7 +147,7 @@ public class ParcelServiceImp implements ParcelService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
-    private void assertOwnership(Parcel parcel, UUID userId) {
+    private void assertParcelOwnership(Parcel parcel, UUID userId) {
         if (!parcel.isOwner(userId))
             throw new UnauthorizedActionException("User is not owner of this parcel");
     }

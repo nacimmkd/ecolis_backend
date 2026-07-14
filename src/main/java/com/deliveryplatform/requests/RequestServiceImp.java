@@ -53,26 +53,6 @@ public class RequestServiceImp implements RequestService {
         return requestMapper.toRequestDto(requests);
     }
 
-    @Override
-    public List<RequestDto> getMyTripRequests(UUID tripId, UUID currentUserId) {
-        var trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
-
-        assertIsTripOwner(trip, currentUserId);
-        var requests = requestRepository.findByTripId(tripId);
-        return requestMapper.toRequestDto(requests);
-    }
-
-    @Override
-    public List<RequestDto> getMyParcelRequests(UUID parcelId, UUID currentUserId) {
-        var parcel = parcelRepository.findById(parcelId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
-
-        assertIsParcelOwner(parcel, currentUserId);
-        var requests = requestRepository.findByParcelId(parcelId);
-        return requestMapper.toRequestDto(requests);
-    }
-
 
     @Override
     @Transactional
@@ -151,11 +131,6 @@ public class RequestServiceImp implements RequestService {
             throw new UnauthorizedActionException("You are not authorized to perform this action");
     }
 
-    private void assertIsTripOwner(Trip trip, UUID currentUserId){
-        if (!currentUserId.equals(trip.getOwnerId()))
-            throw new UnauthorizedActionException("You are not authorized to perform this action");
-    }
-
     private void assertParcelAvailable(ParcelState status) {
         if (!ParcelState.PUBLISHED.equals(status))
             throw new InvalidDomainStateException("Parcel is not available for booking");
@@ -179,7 +154,7 @@ public class RequestServiceImp implements RequestService {
     private void assertRequestIsPending(Request request) {
         if (!request.isPending())
             throw new InvalidDomainStateException(
-                    "Booking request is not pending, current state: " + request.getStatus()
+                    "Booking request is not pending, current state: " + request.getState()
             );
     }
 

@@ -40,7 +40,7 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private BookingStatus status = BookingStatus.PENDING;
+    private BookingStatus state = BookingStatus.PENDING;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
@@ -97,18 +97,18 @@ public class Booking {
     }
 
     public void pay() {
-        this.status = BookingStatus.PAID;
+        this.state = BookingStatus.PAID;
         this.paidAt = OffsetDateTime.now();
     }
 
     public void complete(String dropOffCode) {
         confirmDropOff(dropOffCode);
-        this.status = BookingStatus.COMPLETED;
+        this.state = BookingStatus.COMPLETED;
         this.completedAt = OffsetDateTime.now();
     }
 
     public void cancel(String reason, CancelledBy cancelledBy) {
-        this.status = BookingStatus.CANCELLED;
+        this.state = BookingStatus.CANCELLED;
         this.parcel.updateState(ParcelState.PUBLISHED);
         this.trip.removeBooking(this);
         this.cancelledAt = OffsetDateTime.now();
@@ -134,7 +134,7 @@ public class Booking {
     }
 
     public boolean isCompleted() {
-        return BookingStatus.COMPLETED.equals(this.status);
+        return BookingStatus.COMPLETED.equals(this.state);
     }
 
 
@@ -167,7 +167,7 @@ public class Booking {
 
 
     private static void assertValidRequestStatusOrThrow(Request request) {
-        if (!RequestState.ACCEPTED.equals(request.getStatus()))
+        if (!RequestState.ACCEPTED.equals(request.getState()))
             throw new InvalidDomainStateException("cannot create booking : request is not accepted");
     }
 

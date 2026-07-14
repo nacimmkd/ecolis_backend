@@ -2,6 +2,7 @@ package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.bookings.dto.ParcelBookingDto;
 import com.deliveryplatform.parcels.dto.*;
+import com.deliveryplatform.requests.dto.ParcelRequestDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,13 +15,13 @@ public interface ParcelService {
 
     List<ParcelBookingDto> getParcelBookings(UUID parcelId, UUID currentUserId);
 
+    List<ParcelRequestDto> getParcelRequests(UUID parcelId, UUID currentUserId);
+
     List<ParcelSummary> getParcels();
 
     ParcelDetails createParcel(UUID userId, ParcelCreateRequest request);
 
     ParcelDetails updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request);
-
-    void updateState(UUID parcelId, ParcelState state);
 
     void deleteParcel(UUID parcelId, UUID userId);
 

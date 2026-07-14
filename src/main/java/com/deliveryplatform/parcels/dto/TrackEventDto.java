@@ -9,7 +9,7 @@ import java.util.UUID;
 @Builder
 public record TrackEventDto(
         UUID id,
-        ParcelState status,
+        ParcelState state,
         String note,
         OffsetDateTime occurredAt
 ) {
