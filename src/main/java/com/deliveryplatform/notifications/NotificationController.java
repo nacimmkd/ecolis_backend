@@ -21,7 +21,7 @@ public class NotificationController {
     private final NotificationRepository notificationRepository;
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getAll(
+    public ResponseEntity<List<Notification>> getUserNotifications(
             @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(
                 notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId())

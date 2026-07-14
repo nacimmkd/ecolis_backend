@@ -4,5 +4,5 @@ spring:
 
 geocoding:
   nominatim:
-    base-url: ${NOMINATIM_BASE_URL}
-    user-agent: ${NOMINATIM_USER_AGENT}
+    base-url: https://nominatim.openstreetmap.org
+    user-agent: delivery-platform/1.0

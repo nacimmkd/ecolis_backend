@@ -16,21 +16,13 @@ import java.util.UUID;
 public class NotificationServiceImp implements NotificationService {
 
     private final NotificationRepository notificationRepository;
-    private final SimpUserRegistry simpUserRegistry;
     private final NotificationManager notificationManager;
-
 
 
     @Override
     @Transactional
     public void notify(NotificationPayload payload) {
-        var notification = notificationRepository.save(Notification.createFromNotificationPayload(payload));
-
-        var isConnected = this.isUserConnected(notification.getUserId());
-        if(!isConnected){
-            payload.channels().remove(ChannelType.IN_APP);
-            payload.channels().add(ChannelType.EMAIL);
-        }
+        notificationRepository.save(Notification.createFromNotificationPayload(payload));
         notificationManager.send(payload);
     }
 
@@ -60,11 +52,5 @@ public class NotificationServiceImp implements NotificationService {
                         "Notification %s not found for user %s".formatted(notificationId, userId)
                 ));
     }
-
-
-    private boolean isUserConnected(UUID userId) {
-        return simpUserRegistry.getUser(userId.toString()) != null;
-    }
-
 
 }
