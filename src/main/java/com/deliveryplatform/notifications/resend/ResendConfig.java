@@ -1,4 +1,4 @@
-package com.deliveryplatform.notifications.emails.resend;
+package com.deliveryplatform.notifications.resend;
 
 import com.resend.Resend;
 import org.springframework.beans.factory.annotation.Value;

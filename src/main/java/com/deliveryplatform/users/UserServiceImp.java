@@ -6,7 +6,6 @@ import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.notifications.emails.EmailService;
 import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserCreateRequest;
@@ -31,7 +30,6 @@ public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    private final EmailService emailService;
     private final CachingService cachingService;
     private final AuthService authService;
     private final ApplicationEventPublisher eventPublisher;
@@ -86,7 +84,7 @@ public class UserServiceImp implements UserService {
         }
         user.setVerified(true);
         userRepository.save(user);
-        eventPublisher.publishEvent(new UserCreatedEvent(user.getEmail(), user.getProfile().getFirstName()));
+        eventPublisher.publishEvent(new UserCreatedEvent(user));
     }
 
 
@@ -114,11 +112,6 @@ public class UserServiceImp implements UserService {
 
     public User getUserByIdOrThrow(UUID id) {
         return userRepository.findUserWithProfileById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    }
-
-    public User getUserByEmailOrThrow(String email) {
-        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
@@ -152,7 +145,7 @@ public class UserServiceImp implements UserService {
             cachingService.remove(key);
         cachingService.save(key, code , VERIFICATION_CODE_TTL);
 
-        eventPublisher.publishEvent(new EmailVerificationEvent(user.getEmail(), user.getProfile().getFirstName(), code));
+        eventPublisher.publishEvent(new EmailVerificationEvent(user, code));
     }
 
 

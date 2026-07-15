@@ -1,7 +1,8 @@
 package com.deliveryplatform.users.events;
 
+import com.deliveryplatform.users.User;
+
 public record UserCreatedEvent(
-        String userEmail,
-        String firstName
+        User user
 ) {
-}
+ }

@@ -17,17 +17,20 @@ public class InAppNotificationChannel implements NotificationChannel {
 
     @Override
     public void send(NotificationPayload payload) {
-        if (payload.receiverId() == null) {
+
+        var receiver = payload.user();
+
+        if (receiver.getId() == null) {
             throw new IllegalArgumentException("receiverId is required for IN_APP notifications");
         }
         try{
             messagingTemplate.convertAndSendToUser(
-                    payload.receiverId().toString(),
+                    receiver.getId().toString(),
                     WS_DEST,
                     payload
             );
         }catch (Exception e){
-            log.error("[WS] Failed to send notification — user={} — message={}", payload.receiverId().toString(), e.getMessage());
+            log.error("[WS] Failed to send notification — user={} — message={}", receiver.getId().toString(), e.getMessage());
         }
     }
 

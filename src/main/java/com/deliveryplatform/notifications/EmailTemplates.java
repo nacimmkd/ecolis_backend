@@ -1,16 +1,14 @@
-package com.deliveryplatform.notifications.emails;
+package com.deliveryplatform.notifications;
 
-import com.deliveryplatform.notifications.NotificationPayload;
+public final class EmailTemplates {
 
-public final class Templates {
-
-    private Templates() {}
+    private EmailTemplates() {}
 
     public record EmailTemplate(String subject, String body) {}
 
     public static EmailTemplate resolve(NotificationPayload payload) {
         return switch (payload.notificationType()) {
-            case USER_CREATED -> welcomeTemplate(payload);
+            case USER_CREATED -> welcomeTemplate();
             case VERIFY_USER -> confirmEmailTemplate(payload);
             default -> notificationReminderTemplate();
         };
@@ -49,9 +47,7 @@ public final class Templates {
         );
     }
 
-    private static EmailTemplate welcomeTemplate(NotificationPayload payload) {
-        String firstName = (String) payload.metadata().getOrDefault("firstName", "");
-
+    private static EmailTemplate welcomeTemplate() {
         return new EmailTemplate(
                 "Bienvenue sur ecolis 🎉",
                 """

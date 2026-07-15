@@ -47,7 +47,7 @@ public class Notification {
 
     public static Notification createFromNotificationPayload(NotificationPayload payload) {
         return Notification.builder()
-                .userId(payload.receiverId())
+                .userId(payload.user().getId())
                 .type(payload.notificationType())
                 .referenceId(payload.referenceId())
                 .isRead(false)

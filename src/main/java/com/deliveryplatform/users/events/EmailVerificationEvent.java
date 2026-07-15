@@ -1,8 +1,9 @@
 package com.deliveryplatform.users.events;
 
+import com.deliveryplatform.users.User;
+
 public record EmailVerificationEvent(
-        String userEmail,
-        String firstName,
+        User user,
         String code
 ) {
 }
