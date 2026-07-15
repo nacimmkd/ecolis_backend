@@ -29,6 +29,7 @@ public class NotificationEventListener {
                         .notificationType(NotificationType.VERIFY_USER)
                         .channels(Set.of(ChannelType.EMAIL))
                         .referenceId(null)
+                        .persist(false)
                         .metadata(Map.of(
                                 "code", event.code(),
                                 "firstName" , event.firstName()
@@ -47,6 +48,7 @@ public class NotificationEventListener {
                         .notificationType(NotificationType.USER_CREATED)
                         .channels(Set.of(ChannelType.EMAIL))
                         .referenceId(null)
+                        .persist(false)
                         .metadata(Map.of("firstName", event.firstName()))
                         .build()
         );

@@ -18,22 +18,12 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationService notificationService;
-    private final NotificationRepository notificationRepository;
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getUserNotifications(
+    public ResponseEntity<List<NotificationDto>> getUserNotifications(
             @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(
-                notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
-        );
-    }
-
-    @GetMapping("/unread-count")
-    public ResponseEntity<Long> unreadCount(
-            @AuthenticationPrincipal UserPrincipal user) {
-
-        return ResponseEntity.ok(
-                notificationRepository.countByUserIdAndIsReadFalse(user.getId())
+                notificationService.getUserNotifications(user.getId())
         );
     }
 
@@ -49,9 +39,9 @@ public class NotificationController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable UUID id,
-            @AuthenticationPrincipal UUID userId) {
+            @AuthenticationPrincipal UserPrincipal user) {
 
-        notificationService.delete(id, userId);
+        notificationService.delete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

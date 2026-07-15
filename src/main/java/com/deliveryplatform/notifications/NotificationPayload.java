@@ -1,19 +1,21 @@
 package com.deliveryplatform.notifications;
 
-
 import com.deliveryplatform.notifications.channels.ChannelType;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-@Builder
-public record NotificationPayload(
+@Builder(access = AccessLevel.PACKAGE)
+public record NotificationPayload (
         UUID receiverId,
         String receiverEmail,
         NotificationType notificationType,
         Set<ChannelType> channels,
         UUID referenceId,
+        boolean persist,
         Map<String, Object> metadata
-) {}
+) {
+}

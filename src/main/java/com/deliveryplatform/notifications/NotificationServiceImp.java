@@ -1,13 +1,12 @@
 package com.deliveryplatform.notifications;
 
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.notifications.channels.ChannelType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -18,23 +17,30 @@ public class NotificationServiceImp implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationManager notificationManager;
+    private final NotificationMapper notificationMapper;
 
 
     @Override
     @Transactional
     public void notify(NotificationPayload payload) {
-        var notification = Notification.createFromNotificationPayload(payload);
-        if (!Objects.isNull(notification.getId())) {
+        if (payload.persist()) {
             notificationRepository.save(Notification.createFromNotificationPayload(payload));
         }
         notificationManager.send(payload);
     }
 
     @Override
+    public List<NotificationDto> getUserNotifications(UUID userId){
+        return notificationMapper.toDto(
+                notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+        );
+    }
+
+    @Override
     @Transactional
     public void markAsRead(UUID notificationId, UUID userId) {
         var notification = getUserNotificationOrThrow(notificationId, userId);
-        notification.setRead(true);
+        notification.read();
         notificationRepository.save(notification);
     }
 
@@ -43,7 +49,8 @@ public class NotificationServiceImp implements NotificationService {
     @Transactional
     public void delete(UUID notificationId, UUID userId) {
         var notification = getUserNotificationOrThrow(notificationId, userId);
-        notificationRepository.delete(notification);
+        notification.delete();
+        notificationRepository.save(notification);
     }
 
 

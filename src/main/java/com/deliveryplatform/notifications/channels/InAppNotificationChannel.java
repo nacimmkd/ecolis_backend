@@ -17,8 +17,8 @@ public class InAppNotificationChannel implements NotificationChannel {
 
     @Override
     public void send(NotificationPayload payload) {
-        if (payload.referenceId() == null) {
-            throw new IllegalArgumentException("Missing receiverId");
+        if (payload.receiverId() == null) {
+            throw new IllegalArgumentException("receiverId is required for IN_APP notifications");
         }
         try{
             messagingTemplate.convertAndSendToUser(

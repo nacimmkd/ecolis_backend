@@ -2,17 +2,18 @@ package com.deliveryplatform.notifications;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Entity
 @Table(name = "notifications")
+@SQLRestriction("deleted = false")
 public class Notification {
 
     @Id
@@ -32,6 +33,13 @@ public class Notification {
     @Builder.Default
     private boolean isRead = false;
 
+    @Builder.Default
+    private boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    @Builder.Default
+    private OffsetDateTime deletedAt = null;
+
     @Column(name = "created_at", nullable = false)
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
@@ -44,6 +52,16 @@ public class Notification {
                 .referenceId(payload.referenceId())
                 .isRead(false)
                 .build();
+    }
+
+
+    public void delete() {
+        this.deleted = true;
+        this.deletedAt = OffsetDateTime.now();
+    }
+
+    public void read() {
+        this.isRead = true;
     }
 
 }
