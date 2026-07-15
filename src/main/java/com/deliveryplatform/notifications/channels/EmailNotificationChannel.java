@@ -2,7 +2,7 @@ package com.deliveryplatform.notifications.channels;
 
 
 import com.deliveryplatform.notifications.EmailTemplates;
-import com.deliveryplatform.notifications.NotificationPayload;
+import com.deliveryplatform.notifications.NotificationEvent;
 import com.resend.Resend;
 import com.resend.services.emails.model.CreateEmailOptions;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import org.thymeleaf.context.Context;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class EmailNotificationChannel implements NotificationChannel {
+class EmailNotificationChannel implements NotificationChannel {
 
     @Value("${resend.from-email}")
     private String from;
@@ -29,15 +29,16 @@ public class EmailNotificationChannel implements NotificationChannel {
 
     @Async
     @Override
-    public void send(NotificationPayload payload) {
+    public void send(NotificationEvent event) {
 
-        var receiver = payload.user();
-        var firstName = receiver.getProfile().getFirstName();
-        if (receiver.getId() == null) {
+        var receiver = event.getUser();
+        var firstName = receiver.getProfile() == null ? "" : receiver.getProfile().getFirstName();
+
+        if (receiver.getEmail() == null) {
             throw new IllegalArgumentException("receiver email is required for EMAIL notifications");
         }
 
-        var template = EmailTemplates.resolve(payload);
+        var template = EmailTemplates.resolve(event);
         var to = receiver.getEmail();
         var subject = template.subject();
         var body = template.body();
@@ -47,7 +48,7 @@ public class EmailNotificationChannel implements NotificationChannel {
                     .from(from)
                     .to(to)
                     .subject(subject)
-                    .html(resolveHTMLTemplate(body, receiver.getProfile().getFirstName()))
+                    .html(resolveHTMLTemplate(body, firstName))
                     .build();
 
             var response = resendClient.emails().send(params);

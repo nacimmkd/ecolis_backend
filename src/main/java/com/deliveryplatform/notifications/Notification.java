@@ -2,9 +2,12 @@ package com.deliveryplatform.notifications;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -33,6 +36,10 @@ public class Notification {
     @Builder.Default
     private boolean isRead = false;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "payload", columnDefinition = "jsonb", updatable = false)
+    private Map<String, Object> payload;
+
     @Builder.Default
     private boolean deleted = false;
 
@@ -45,12 +52,19 @@ public class Notification {
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
 
-    public static Notification createFromNotificationPayload(NotificationPayload payload) {
+    public static Notification createFromNotificationPayload(NotificationEvent event) {
+
+        var user = event.getUser();
+        if(user == null) throw new IllegalArgumentException("could not create notification - user is null");
+
         return Notification.builder()
-                .userId(payload.user().getId())
-                .type(payload.notificationType())
-                .referenceId(payload.referenceId())
+                .userId(user.getId())
+                .type(event.getNotificationType())
+                .referenceId(event.getReferenceId())
                 .isRead(false)
+                .payload(event.getPayload())
+                .deleted(false)
+                .deletedAt(null)
                 .build();
     }
 

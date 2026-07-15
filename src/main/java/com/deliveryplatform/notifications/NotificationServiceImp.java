@@ -7,13 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NotificationServiceImp implements NotificationService {
+class NotificationServiceImp implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationManager notificationManager;
@@ -22,11 +21,11 @@ public class NotificationServiceImp implements NotificationService {
 
     @Override
     @Transactional
-    public void notify(NotificationPayload payload) {
-        if (payload.persist()) {
-            notificationRepository.save(Notification.createFromNotificationPayload(payload));
+    public void notify(NotificationEvent event) {
+        if (event.getNotificationType().isPersistent()) {
+            notificationRepository.save(Notification.createFromNotificationPayload(event));
         }
-        notificationManager.send(payload);
+        notificationManager.send(event);
     }
 
     @Override
@@ -34,6 +33,12 @@ public class NotificationServiceImp implements NotificationService {
         return notificationMapper.toDto(
                 notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
         );
+    }
+
+    @Override
+    public NotificationDto getNotificationsById(UUID notifId, UUID userId){
+        var notif = getUserNotificationOrThrow(notifId, userId);
+        return notificationMapper.toDto(notif);
     }
 
     @Override

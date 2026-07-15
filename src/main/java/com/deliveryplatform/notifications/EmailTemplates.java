@@ -6,10 +6,10 @@ public final class EmailTemplates {
 
     public record EmailTemplate(String subject, String body) {}
 
-    public static EmailTemplate resolve(NotificationPayload payload) {
-        return switch (payload.notificationType()) {
+    public static EmailTemplate resolve(NotificationEvent event) {
+        return switch (event.getNotificationType()) {
             case USER_CREATED -> welcomeTemplate();
-            case VERIFY_USER -> confirmEmailTemplate(payload);
+            case VERIFY_USER -> confirmEmailTemplate(event);
             default -> notificationReminderTemplate();
         };
     }
@@ -28,7 +28,7 @@ public final class EmailTemplates {
         );
     }
 
-    private static EmailTemplate confirmEmailTemplate(NotificationPayload payload) {
+    private static EmailTemplate confirmEmailTemplate(NotificationEvent payload) {
         return new EmailTemplate(
                 "ecolis - confirmer votre email",
                 """
@@ -43,7 +43,7 @@ public final class EmailTemplates {
 
                 À bientôt,
                 L'équipe ecolis
-                """.formatted(payload.metadata().get("code"))
+                """.formatted(payload.getPayload().get("code"))
         );
     }
 

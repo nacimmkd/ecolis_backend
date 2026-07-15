@@ -1,6 +1,6 @@
 package com.deliveryplatform.notifications.channels;
 
-import com.deliveryplatform.notifications.NotificationPayload;
+import com.deliveryplatform.notifications.NotificationEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -9,16 +9,16 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class InAppNotificationChannel implements NotificationChannel {
+class InAppNotificationChannel implements NotificationChannel {
 
     private final SimpMessagingTemplate messagingTemplate;
     private static final String WS_DEST = "/queue/notifications";
 
 
     @Override
-    public void send(NotificationPayload payload) {
+    public void send(NotificationEvent event) {
 
-        var receiver = payload.user();
+        var receiver = event.getUser();
 
         if (receiver.getId() == null) {
             throw new IllegalArgumentException("receiverId is required for IN_APP notifications");
@@ -27,7 +27,7 @@ public class InAppNotificationChannel implements NotificationChannel {
             messagingTemplate.convertAndSendToUser(
                     receiver.getId().toString(),
                     WS_DEST,
-                    payload
+                    event
             );
         }catch (Exception e){
             log.error("[WS] Failed to send notification — user={} — message={}", receiver.getId().toString(), e.getMessage());

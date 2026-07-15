@@ -1,21 +1,25 @@
 package com.deliveryplatform.notifications;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public enum NotificationType {
 
-    VERIFY_USER,
-    USER_CREATED,
+    VERIFY_USER(false),
+    USER_CREATED(false),
 
-    MESSAGE_RECEIVED,
+    MESSAGE_RECEIVED(true),
 
-    NEW_REQUEST_RECEIVED,
+    NEW_REQUEST_RECEIVED(true),
 
-    BOOKING_CREATED,
-    BOOKING_CANCELED,
+    BOOKING_CREATED(true),
+    BOOKING_CANCELED(true),
 
-    TRIP_CANCELLED,
+    TRIP_CANCELLED(true),
 
-    PARCEL_DELIVERED
+    PARCEL_DELIVERED(true);
+
+    private boolean persistent;
 }

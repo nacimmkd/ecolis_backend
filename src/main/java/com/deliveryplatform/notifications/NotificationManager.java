@@ -9,14 +9,14 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationManager {
+class NotificationManager {
 
     private final Set<NotificationChannel> channels;
 
-    public void send(NotificationPayload payload) {
+    public void send(NotificationEvent event) {
         channels.stream()
-                .filter(channel -> payload.channels().contains(channel.type()))
-                .forEach(channel -> channel.send(payload));
+                .filter(channel -> event.getChannels().contains(channel.type()))
+                .forEach(channel -> channel.send(event));
     }
 
 }

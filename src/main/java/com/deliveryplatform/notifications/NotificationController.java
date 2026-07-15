@@ -20,10 +20,19 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping
-    public ResponseEntity<List<NotificationDto>> getUserNotifications(
+    public ResponseEntity<List<NotificationDto>> getMyNotifications(
             @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(
                 notificationService.getUserNotifications(user.getId())
+        );
+    }
+
+    @GetMapping("/{notifId}")
+    public ResponseEntity<NotificationDto> getNotificationByID(
+            @PathVariable UUID notifId,
+            @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(
+                notificationService.getNotificationsById(notifId, user.getId())
         );
     }
 
