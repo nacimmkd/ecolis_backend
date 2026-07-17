@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +28,6 @@ public class MessagingServiceImp implements MessagingService {
     private final MessageMapper        messageMapper;
 
     private static final String WS_DEST = "/queue/messages";
-
 
 
     @Override
@@ -50,37 +50,42 @@ public class MessagingServiceImp implements MessagingService {
     @Override
     public ConversationDetails getConversationDetails(UUID conversationId, UUID currentUserId) {
         var conversation = getConversationWithMessagesOrThrow(conversationId);
-        assertIsParticipant(conversation, currentUserId);
+        assertUserIsParticipant(conversation, currentUserId);
         return messageMapper.toDetailsDto(conversation);
-    }
-
-    @Override
-    @Transactional
-    public void deleteConversation(UUID conversationId, UUID currentUserId) {
-        var conversation = getConversationOrThrow(conversationId);
-        assertIsParticipant(conversation, currentUserId);
-        conversationRepository.delete(conversation);
     }
 
     @Override
     @Transactional
     public void sendMessage(SendMessageRequest request, UUID currentUserId) {
         var conversation = getConversationOrThrow(request.conversationId());
-        assertIsParticipant(conversation, currentUserId);
+        assertUserIsParticipant(conversation, currentUserId);
         assertMessageNotEmpty(request);
 
         var sender  = resolveParticipant(conversation, currentUserId);
-        var message = Message.builder()
-                .conversation(conversation)
-                .sender(sender)
-                .content(request.content())
-                .images(resolveImages(request.imageIds()))
-                .build();
+        var images = resolveImages(request.imageIds());
 
+        var message = Message.create(conversation, sender, request.content(), images);
         conversation.addMessage(message);
         conversationRepository.save(conversation);
 
         broadcastToReceiver(conversation, currentUserId, messageMapper.toSummaryDto(message));
+    }
+
+    @Override
+    @Transactional
+    public int markConversationAsRead(UUID conversationId, UUID readerId) {
+        var conversation = getConversationOrThrow(conversationId);
+        assertUserIsParticipant(conversation, readerId);
+        return conversationRepository.markMessagesAsRead(conversationId, readerId, OffsetDateTime.now());
+    }
+
+
+    @Override
+    public long getUnreadCount(UUID conversationId, UUID userId) {
+        var conversation = getConversationOrThrow(conversationId);
+        assertUserIsParticipant(conversation, userId);
+
+        return conversationRepository.countUnreadMessages(conversationId, userId);
     }
 
 
@@ -90,9 +95,7 @@ public class MessagingServiceImp implements MessagingService {
         var current = getUserOrThrow(currentUserId);
         var other   = getUserOrThrow(otherUserId);
         return conversationRepository.save(
-                Conversation.builder()
-                        .participants(List.of(current, other))
-                        .build()
+                Conversation.create(List.of(current, other))
         );
     }
 
@@ -107,7 +110,7 @@ public class MessagingServiceImp implements MessagingService {
     }
 
 
-    private void assertIsParticipant(Conversation conversation, UUID userId) {
+    private void assertUserIsParticipant(Conversation conversation, UUID userId) {
         if (!conversation.involves(userId))
             throw new UnauthorizedActionException("User is not a participant of this conversation");
     }

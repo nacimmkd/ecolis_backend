@@ -3,6 +3,7 @@ package com.deliveryplatform.messages;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -11,11 +12,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "conversations")
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
+@SQLRestriction("deleted = false")
 public class Conversation {
 
     @Id
@@ -29,8 +30,7 @@ public class Conversation {
             joinColumns = @JoinColumn(name = "conversation_id"),
             inverseJoinColumns = @JoinColumn(name = "participant_id")
     )
-    @Builder.Default
-    private List<User> participants = new ArrayList<>();
+    private List<User> participants;
 
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -40,22 +40,38 @@ public class Conversation {
 
     @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @OrderBy("sentAt ASC")
-    private List<Message> messages;
+    @Builder.Default
+    private List<Message> messages = new ArrayList<>();
 
     @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
 
-    public boolean involves(UUID userId) {
-        return participants.stream().anyMatch(m -> m.getId().equals(userId));
+    public static Conversation create(List<User> participants) {
+
+        if (participants.size() != 2)
+            throw new IllegalArgumentException("conversation must have 2 participants");
+
+        return Conversation.builder()
+                .lastMessage(null)
+                .participants(participants)
+                .build();
     }
 
     public void addMessage(Message message) {
-        message.setConversation(this);
         messages.add(message);
         lastMessage = message;
     }
 
+    public boolean involves(UUID userId) {
+        return participants.stream().anyMatch(m -> m.getId().equals(userId));
+    }
 
+    public User getReceiver(UUID senderId) {
+        return participants.stream()
+                .filter(p -> !p.getId().equals(senderId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Conversation has no other participant"));
+    }
 }

@@ -58,16 +58,6 @@ public class MessagingController {
     }
 
 
-    @DeleteMapping("/{conversationId}")
-    public ResponseEntity<Void> deleteConversation(
-            @PathVariable @NotNull UUID conversationId,
-            @AuthenticationPrincipal UserPrincipal user) {
-
-        messagingService.deleteConversation(conversationId, user.getId());
-        return ResponseEntity.noContent().build();
-    }
-
-
     @MessageMapping("/chat.send")
     public void sendMessage(
             @Payload @Valid SendMessageRequest request,
@@ -75,5 +65,21 @@ public class MessagingController {
 
         UserPrincipal user = (UserPrincipal) ((Authentication) principal).getPrincipal();
         messagingService.sendMessage(request, user.getId());
+    }
+
+    @PatchMapping("/{conversationId}/read")
+    public ResponseEntity<Integer> markAsRead(
+            @PathVariable UUID conversationId,
+            @AuthenticationPrincipal UUID currentUserId
+    ) {
+        return ResponseEntity.ok(messagingService.markConversationAsRead(conversationId, currentUserId));
+    }
+
+    @GetMapping("/{conversationId}/unread-count")
+    public ResponseEntity<Long> getUnreadCount(
+            @PathVariable UUID conversationId,
+            @AuthenticationPrincipal UUID currentUserId
+    ) {
+        return ResponseEntity.ok(messagingService.getUnreadCount(conversationId, currentUserId));
     }
 }

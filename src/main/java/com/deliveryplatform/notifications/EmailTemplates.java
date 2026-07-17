@@ -13,6 +13,7 @@ public final class EmailTemplates {
             case BOOKING_CREATED -> bookingCreatedTemplate(event);
             case BOOKING_CANCELED -> bookingCanceledTemplate(event);
             case BOOKING_COMPLETED -> bookingCompletedTemplate(event);
+            case MESSAGE_RECEIVED -> messageReceivedTemplate(event);
             default -> notificationReminderTemplate();
         };
     }
@@ -114,6 +115,23 @@ public final class EmailTemplates {
                 À bientôt,
                 L'équipe ecolis
                 """
+        );
+    }
+
+    private static EmailTemplate messageReceivedTemplate(NotificationEvent event) {
+        var senderName = event.getPayload().get("senderName");
+        var unreadCount = event.getPayload().get("unreadCount");
+
+        return new EmailTemplate(
+                "ecolis - Nouveau message 💬",
+                """
+                Vous avez reçu %s nouveau(x) message(s) de %s.
+    
+                Connectez-vous à votre espace personnel pour consulter la conversation et répondre.
+    
+                À bientôt,
+                L'équipe ecolis
+                """.formatted(unreadCount, senderName)
         );
     }
 }
