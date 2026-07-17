@@ -92,7 +92,7 @@ public class Booking {
                 .pickupCode(CodeGeneratorUtil.generateBookingCode())
                 .build();
         parcel.updateState(ParcelState.BOOKED);
-        trip.addBooking(booking);
+        trip.reserveBooking(booking);
         return booking;
     }
 
@@ -141,6 +141,10 @@ public class Booking {
     public boolean involves(UUID userId) {
         return !this.trip.getOwner().getId().equals(userId)
                 && !this.parcel.getOwner().getId().equals(userId);
+    }
+
+    public User getSender() {
+        return this.parcel.getOwner();
     }
 
     public User resolveParticipant(UUID userId) {

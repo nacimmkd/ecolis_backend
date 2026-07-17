@@ -156,6 +156,8 @@ public class Trip {
         this.state = newState;
     }
 
+    public boolean isFull() {return this.state.equals(TripState.FULL);}
+
     public UUID getOwnerId() {
         return this.owner.getId();
     }
@@ -239,7 +241,7 @@ public class Trip {
 
     // bookings ---------------------------------------------------------------------------------
 
-    public void addBooking(Booking newBooking) {
+    public void reserveBooking(Booking newBooking) {
         assertTripNotDeleted();
         newBooking.setTrip(this);
         this.bookings.add(newBooking);

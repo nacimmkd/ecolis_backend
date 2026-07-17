@@ -14,7 +14,7 @@ import java.util.UUID;
 @Repository
 public interface RequestRepository extends JpaRepository<Request, UUID> {
 
-    @EntityGraph(attributePaths = {"trip", "trip.owner", "parcel", "parcel.owner"})
+    @EntityGraph(attributePaths = {"trip", "trip.owner", "trip.stops" , "parcel", "parcel.owner"})
     Optional<Request> findRequestById(UUID id);
 
     @EntityGraph(attributePaths = {"trip", "trip.owner", "parcel", "parcel.owner"})

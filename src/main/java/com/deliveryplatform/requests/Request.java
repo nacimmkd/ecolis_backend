@@ -3,7 +3,9 @@ package com.deliveryplatform.requests;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.parcels.Parcel;
+import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.trips.Trip;
+import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
@@ -67,9 +69,11 @@ public class Request {
 
     public static Request create(Trip trip, Parcel parcel, Detour detour) {
         if (Objects.isNull(trip) || Objects.isNull(detour) || Objects.isNull(parcel))
-            throw new InvalidDomainStateException("required trip & parcel & detour to create a request");
+            throw new IllegalArgumentException("required trip & parcel & detour to create a request");
 
         assertMaxTripDetourRequirementOrThrow(trip, detour);
+        assertParcelAvailable(parcel.getState());
+        assertTripNotFull(trip);
 
         return Request.builder()
                 .trip(trip)
@@ -85,6 +89,16 @@ public class Request {
             throw new InvalidDomainStateException("cannot create request : max detour not satisfied");
     }
 
+    private static void assertParcelAvailable(ParcelState status) {
+        if (!ParcelState.PUBLISHED.equals(status))
+            throw new InvalidDomainStateException("Parcel is not available for booking");
+    }
+
+    private static void assertTripNotFull(Trip trip) {
+        if (trip.isFull())
+            throw new InvalidDomainStateException("can not request this trip because it is full");
+    }
+
     public void accept() {
         this.state = RequestState.ACCEPTED;
         this.respondedAt = OffsetDateTime.now();
@@ -94,7 +108,7 @@ public class Request {
         this.state = RequestState.REJECTED;
         this.rejectionReason = reason;
         this.respondedAt = OffsetDateTime.now();
-        softDelete();
+        delete();
     }
 
     public boolean isPending() {
@@ -105,11 +119,13 @@ public class Request {
 
     public UUID getCarrierId() { return this.trip.getOwner().getId();   }
 
+    public User getCarrier() {return this.trip.getOwner();}
+
     public boolean involves(UUID userId) {
         return getSenderId().equals(userId) || getCarrierId().equals(userId);
     }
 
-    public void softDelete() {
+    public void delete() {
         this.deleted = true;
         this.deletedAt = OffsetDateTime.now();
     }

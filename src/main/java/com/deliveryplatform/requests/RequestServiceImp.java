@@ -7,11 +7,10 @@ import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.matching.DetourCalculatorService;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelRepository;
-import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.dto.CreateRequest;
 import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.requests.events.RequestAcceptedEvent;
-import com.deliveryplatform.trips.Trip;
+import com.deliveryplatform.requests.events.RequestCreatedEvent;
 import com.deliveryplatform.trips.TripRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -62,23 +61,21 @@ public class RequestServiceImp implements RequestService {
 
         assertIsParcelOwner(parcel, senderId);
         assertRequestUniqueness(dto.parcelId(), dto.tripId());
-        assertParcelAvailable(parcel.getState());
 
         var trip = tripRepository.findTripById(dto.tripId())
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
 
         var detour = detourCalculator.calculate(trip,parcel);
 
-        var bookingRequest = Request.create(trip, parcel, detour);
+        var request = Request.create(trip, parcel, detour);
+        requestRepository.save(request);
         if (trip.isInstantBooking()) {
-            bookingRequest.accept();
-            var request = requestRepository.save(bookingRequest);
+            request.accept();
             eventPublisher.publishEvent(new RequestAcceptedEvent(request.getId()));
-        } else {
-            requestRepository.save(bookingRequest);
         }
 
-        return requestMapper.toRequestDto(bookingRequest);
+        eventPublisher.publishEvent(new RequestCreatedEvent(request.getId(), request.getCarrier()));
+        return requestMapper.toRequestDto(request);
     }
 
     private void assertRequestUniqueness(UUID parcelId, UUID tripId) {
@@ -115,7 +112,7 @@ public class RequestServiceImp implements RequestService {
         var request = getRequestByIdOrThrow(requestId);
         assertIsCarrier(request, currentUserId);
         assertRequestIsPending(request);
-        request.softDelete();
+        request.delete();
         requestRepository.save(request);
     }
 
@@ -131,19 +128,9 @@ public class RequestServiceImp implements RequestService {
             throw new UnauthorizedActionException("You are not authorized to perform this action");
     }
 
-    private void assertParcelAvailable(ParcelState status) {
-        if (!ParcelState.PUBLISHED.equals(status))
-            throw new InvalidDomainStateException("Parcel is not available for booking");
-    }
-
     private void assertIsCarrier(Request request, UUID currentUserId) {
         if (!currentUserId.equals(request.getCarrierId()))
             throw new UnauthorizedActionException("you can no perform this action");
-    }
-
-    private void assertIsSender(Request request,  UUID currentUserId) {
-        if(!currentUserId.equals(request.getSenderId()))
-            throw new UnauthorizedActionException("You can perform this action");
     }
 
     private void assertInvolves(boolean involves) {

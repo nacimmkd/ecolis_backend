@@ -1,4 +1,4 @@
-package com.deliveryplatform.notifications.resend;
+package com.deliveryplatform.notifications.emails.resend;
 
 import com.resend.Resend;
 import org.springframework.beans.factory.annotation.Value;
@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ResendConfig {
+class ResendConfig {
 
     @Value("${resend.api-key}")
     private String apiKey;

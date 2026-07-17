@@ -12,10 +12,11 @@ public enum NotificationType {
 
     MESSAGE_RECEIVED(true),
 
-    NEW_REQUEST_RECEIVED(true),
+    REQUEST_RECEIVED(true),
 
     BOOKING_CREATED(true),
     BOOKING_CANCELED(true),
+    BOOKING_COMPLETED(true),
 
     TRIP_CANCELLED(true),
 

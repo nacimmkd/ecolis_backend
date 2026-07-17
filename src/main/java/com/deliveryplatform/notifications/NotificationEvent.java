@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface NotificationEvent {
-    User getUser();
+    User getReceiver();
     NotificationType getNotificationType();
     Set<ChannelType> getChannels();
     UUID getReferenceId();

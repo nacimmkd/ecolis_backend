@@ -1,44 +1,38 @@
-package com.deliveryplatform.users.events;
+package com.deliveryplatform.bookings.events;
 
 import com.deliveryplatform.notifications.NotificationEvent;
 import com.deliveryplatform.notifications.NotificationType;
 import com.deliveryplatform.notifications.channels.ChannelType;
 import com.deliveryplatform.users.User;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public record EmailVerificationEvent(
-        User user,
-        String code
-) implements NotificationEvent
+public record BookingCompletedEvent(UUID bookingId, User parcelSender) implements NotificationEvent {
 
-{
     @Override
     public User getReceiver() {
-        return user;
+        return parcelSender;
     }
 
     @Override
     public NotificationType getNotificationType() {
-        return NotificationType.VERIFY_USER;
+        return NotificationType.BOOKING_COMPLETED;
     }
 
     @Override
     public Set<ChannelType> getChannels() {
-        return Set.of(ChannelType.EMAIL);
+        return Set.of(ChannelType.EMAIL, ChannelType.IN_APP);
     }
 
     @Override
     public UUID getReferenceId() {
-        return null;
+        return bookingId;
     }
 
     @Override
     public Map<String, Object> getPayload() {
-        return Map.of("code", code);
+        return Map.of();
     }
-
 }

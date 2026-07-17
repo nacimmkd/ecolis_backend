@@ -1,15 +1,19 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
+import com.deliveryplatform.bookings.events.BookingCanceledEvent;
+import com.deliveryplatform.bookings.events.BookingCompletedEvent;
+import com.deliveryplatform.bookings.events.BookingCreatedEvent;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.requests.RequestRepository;
 import com.deliveryplatform.trips.Trip;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -20,6 +24,7 @@ public class BookingServiceImp implements BookingService {
     private final BookingRepository        bookingRepository;
     private final RequestRepository        requestRepository;
     private final BookingMapper            bookingMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Override
@@ -35,10 +40,11 @@ public class BookingServiceImp implements BookingService {
         var request = requestRepository.findRequestById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("request not found"));
         var booking = Booking.createFromRequest(request);
-        request.softDelete();
+        request.delete();
         bookingRepository.save(booking);
         requestRepository.save(request);
-        return bookingMapper.toDto(bookingRepository.save(booking));
+        eventPublisher.publishEvent(new BookingCreatedEvent(booking.getId(), booking.getSender()));
+        return bookingMapper.toDto(booking);
     }
 
     @Override
@@ -51,7 +57,7 @@ public class BookingServiceImp implements BookingService {
 
         var cancelledBy = booking.resolveCanceller(currentUserId);
         booking.cancel(reason, cancelledBy);
-
+        eventPublisher.publishEvent(new BookingCanceledEvent(booking.getId(), booking.getSender()));
         bookingRepository.save(booking);
     }
 
@@ -82,6 +88,7 @@ public class BookingServiceImp implements BookingService {
         assertBookingInStatus(booking, BookingStatus.PAID, "Only PAID bookings can be completed");
         booking.complete(dropOfCode);
         bookingRepository.save(booking);
+        eventPublisher.publishEvent(new BookingCompletedEvent(booking.getId(), booking.getSender()));
     }
 
     // PRIVATE ─────────────────────────────────────────────────────────────────

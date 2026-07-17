@@ -23,7 +23,7 @@ class NotificationServiceImp implements NotificationService {
     @Transactional
     public void notify(NotificationEvent event) {
         if (event.getNotificationType().isPersistent()) {
-            notificationRepository.save(Notification.createFromNotificationPayload(event));
+            notificationRepository.save(Notification.createFromNotificationEvent(event));
         }
         notificationManager.send(event);
     }

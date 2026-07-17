@@ -10,8 +10,59 @@ public final class EmailTemplates {
         return switch (event.getNotificationType()) {
             case USER_CREATED -> welcomeTemplate();
             case VERIFY_USER -> confirmEmailTemplate(event);
+            case BOOKING_CREATED -> bookingCreatedTemplate(event);
+            case BOOKING_CANCELED -> bookingCanceledTemplate(event);
+            case BOOKING_COMPLETED -> bookingCompletedTemplate(event);
             default -> notificationReminderTemplate();
         };
+    }
+
+    private static EmailTemplate bookingCreatedTemplate(NotificationEvent event) {
+        return new EmailTemplate(
+                "ecolis - Réservation confirmée ✅",
+                """
+                Bonne nouvelle ! Votre réservation a été confirmée.
+
+                Référence de la réservation : %s
+
+                Vous pouvez suivre l'évolution de votre envoi ou trajet directement depuis votre espace personnel.
+
+                À bientôt,
+                L'équipe ecolis
+                """.formatted(event.getReferenceId())
+        );
+    }
+
+    private static EmailTemplate bookingCanceledTemplate(NotificationEvent event) {
+        return new EmailTemplate(
+                "ecolis - Réservation annulée ❌",
+                """
+                Nous vous informons que votre réservation a été annulée.
+
+                Référence de la réservation : %s
+
+                Si un paiement a été effectué, le remboursement sera traité selon nos conditions. Connectez-vous à votre compte pour plus de détails.
+
+                À bientôt,
+                L'équipe ecolis
+                """.formatted(event.getReferenceId())
+        );
+    }
+
+    private static EmailTemplate bookingCompletedTemplate(NotificationEvent event) {
+        return new EmailTemplate(
+                "ecolis - Colis livré ! 📦",
+                """
+                Mission accomplie ! Le colis est bien arrivé à destination.
+
+                Référence de la réservation : %s
+
+                Merci de faire vivre la communauté ecolis. N'oublie pas de laisser un avis sur cette expérience !
+
+                À bientôt,
+                L'équipe ecolis
+                """.formatted(event.getReferenceId())
+        );
     }
 
     private static EmailTemplate notificationReminderTemplate() {
@@ -28,7 +79,7 @@ public final class EmailTemplates {
         );
     }
 
-    private static EmailTemplate confirmEmailTemplate(NotificationEvent payload) {
+    private static EmailTemplate confirmEmailTemplate(NotificationEvent event) {
         return new EmailTemplate(
                 "ecolis - confirmer votre email",
                 """
@@ -43,7 +94,7 @@ public final class EmailTemplates {
 
                 À bientôt,
                 L'équipe ecolis
-                """.formatted(payload.getPayload().get("code"))
+                """.formatted(event.getPayload().get("code"))
         );
     }
 

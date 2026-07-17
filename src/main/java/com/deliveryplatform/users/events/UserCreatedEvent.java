@@ -14,7 +14,7 @@ public record UserCreatedEvent(
 )  implements NotificationEvent
 {
  @Override
- public User getUser() {
+ public User getReceiver() {
   return user;
  }
 

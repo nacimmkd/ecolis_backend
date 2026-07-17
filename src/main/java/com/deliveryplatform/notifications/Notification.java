@@ -52,9 +52,9 @@ public class Notification {
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
 
-    public static Notification createFromNotificationPayload(NotificationEvent event) {
+    public static Notification createFromNotificationEvent(NotificationEvent event) {
 
-        var user = event.getUser();
+        var user = event.getReceiver();
         if(user == null) throw new IllegalArgumentException("could not create notification - user is null");
 
         return Notification.builder()

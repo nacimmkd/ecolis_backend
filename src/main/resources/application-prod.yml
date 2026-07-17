@@ -33,6 +33,11 @@ resend:
   api-key: ${RESEND_API_KEY}
   from-email: onboarding@resend.dev
 
+mail:
+  username: ${MAIL_USERNAME}
+  password: ${MAIL_PASSWORD}
+
+
 cors:
   allowed-origins:
     - http://localhost:3000

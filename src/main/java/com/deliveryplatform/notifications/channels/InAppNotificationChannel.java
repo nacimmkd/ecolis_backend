@@ -18,7 +18,7 @@ class InAppNotificationChannel implements NotificationChannel {
     @Override
     public void send(NotificationEvent event) {
 
-        var receiver = event.getUser();
+        var receiver = event.getReceiver();
 
         if (receiver.getId() == null) {
             throw new IllegalArgumentException("receiverId is required for IN_APP notifications");
