@@ -74,7 +74,13 @@ public class RequestServiceImp implements RequestService {
             eventPublisher.publishEvent(new RequestAcceptedEvent(request.getId()));
         }
 
-        eventPublisher.publishEvent(new RequestCreatedEvent(request.getId(), request.getCarrier()));
+        eventPublisher.publishEvent(new RequestCreatedEvent(
+                request.getId(),
+                request.getCarrier(),
+                trip.getDepartureAddress().getCity(),
+                trip.getArrivalAddress().getCity()
+        ));
+
         return requestMapper.toRequestDto(request);
     }
 

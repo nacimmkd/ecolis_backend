@@ -11,7 +11,9 @@ import java.util.UUID;
 
 public record RequestCreatedEvent(
         UUID requestId,
-        User receiver
+        User receiver,
+        String departureCity,
+        String arrivalCity
 
 ) implements NotificationEvent {
 
@@ -37,6 +39,9 @@ public record RequestCreatedEvent(
 
     @Override
     public Map<String, Object> getPayload() {
-        return Map.of();
+        return Map.of(
+                "departureCity", departureCity,
+                "arrivalCity", arrivalCity
+        );
     }
 }

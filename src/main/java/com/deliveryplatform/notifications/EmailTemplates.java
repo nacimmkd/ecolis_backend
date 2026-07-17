@@ -14,6 +14,7 @@ public final class EmailTemplates {
             case BOOKING_CANCELED -> bookingCanceledTemplate(event);
             case BOOKING_COMPLETED -> bookingCompletedTemplate(event);
             case MESSAGE_RECEIVED -> messageReceivedTemplate(event);
+            case REQUEST_RECEIVED -> requestReceivedTemplate(event);
             default -> notificationReminderTemplate();
         };
     }
@@ -132,6 +133,25 @@ public final class EmailTemplates {
                 À bientôt,
                 L'équipe ecolis
                 """.formatted(unreadCount, senderName)
+        );
+    }
+
+    private static EmailTemplate requestReceivedTemplate(NotificationEvent event) {
+        var departureCity = event.getPayload().get("departureCity");
+        var arrivalCity = event.getPayload().get("arrivalCity");
+
+        return new EmailTemplate(
+                "ecolis - Nouvelle demande reçue 📩",
+                """
+                Vous avez reçu une nouvelle demande pour le trajet %s → %s.
+    
+                Référence de la demande : %s
+    
+                Connectez-vous à votre espace personnel pour la consulter et y répondre.
+    
+                À bientôt,
+                L'équipe ecolis
+                """.formatted(departureCity, arrivalCity, event.getReferenceId())
         );
     }
 }
