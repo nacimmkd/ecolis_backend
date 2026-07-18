@@ -2,6 +2,7 @@ package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.users.User;
@@ -20,8 +21,8 @@ import static java.util.stream.Collectors.toSet;
 @Entity
 @Table(name = "parcels")
 @Getter
-@Setter
-@NoArgsConstructor
+@Setter(AccessLevel.PACKAGE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @SQLRestriction("deleted = false")
@@ -121,10 +122,6 @@ public class Parcel {
 
     // ── Ownership ────────────────────────────────────────────────────────────
 
-    public boolean isOwner(UUID userId) {
-        return this.owner.getId().equals(userId);
-    }
-
     public UUID getOwnerId() {
         return this.owner.getId();
     }
@@ -139,13 +136,9 @@ public class Parcel {
     }
 
     public void updateState(ParcelState state) {
-        assertParcelNotDeleted();
+        assertNotDeleted();
         this.state = state;
         addTrackingEvent(TrackEvent.of(state, state.getMessage()));
-    }
-
-    private void assertParcelNotDeleted() {
-        if (this.deleted) throw new InvalidDomainStateException("action can not be performed because parcel is deleted");
     }
 
     // ── Images ───────────────────────────────────────────────────────────────
@@ -174,5 +167,21 @@ public class Parcel {
     private void addTrackingEvent(TrackEvent event) {
         event.setParcel(this);
         this.trackEvents.add(event);
+    }
+
+    // ── Assertions ─────────────────────────────────────────────────────────────
+
+    public void assertOwnership(UUID userId) {
+        if (!userId.equals(this.owner.getId()))
+            throw new UnauthorizedActionException("User with id : %s  is not owner of this parcel".formatted(userId));
+    }
+
+    public void assertNotDeleted() {
+        if (this.deleted) throw new InvalidDomainStateException("action can not be performed : parcel is deleted");
+    }
+
+    public void assertIsInState(List<ParcelState> states) {
+        if (!states.contains(this.state))
+            throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
     }
 }

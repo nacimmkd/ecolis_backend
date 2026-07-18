@@ -19,7 +19,7 @@ public interface UserService {
 
     void verify(UUID userId, String code);
 
-    void changePassword(UUID id, UpdatePasswordRequest request);
+    void updatePassword(UUID id, UpdatePasswordRequest request);
 
     void softDelete(UUID id);
 }

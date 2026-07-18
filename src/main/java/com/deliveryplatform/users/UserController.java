@@ -62,11 +62,11 @@ public class UserController {
 
 
     @PutMapping("/me/password")
-    public ResponseEntity<Void> changePassword(
+    public ResponseEntity<Void> updatePassword(
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody UpdatePasswordRequest request
     ) {
-        userService.changePassword(principal.getId(), request);
+        userService.updatePassword(principal.getId(), request);
         return ResponseEntity.noContent().build();
     }
 

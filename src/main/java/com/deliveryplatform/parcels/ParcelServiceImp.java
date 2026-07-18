@@ -5,9 +5,7 @@ import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingMapper;
 import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.bookings.dto.ParcelBookingDto;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.*;
@@ -55,7 +53,7 @@ public class ParcelServiceImp implements ParcelService {
     public List<ParcelBookingDto> getParcelBookings(UUID parcelId, UUID currentUserId) {
         Parcel parcel = getParcelByIdOrThrow(parcelId);
 
-        assertParcelOwnership(parcel, currentUserId);
+        parcel.assertOwnership(currentUserId);
 
         List<Booking> bookings = bookingRepository.findByParcelId(parcelId);
         return bookingMapper.toParcelBookingDto(bookings);
@@ -66,7 +64,7 @@ public class ParcelServiceImp implements ParcelService {
         var parcel = parcelRepository.findById(parcelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
 
-        assertParcelOwnership(parcel, currentUserId);
+        parcel.assertOwnership(currentUserId);
         var requests = requestRepository.findByParcelId(parcelId);
         return requestMapper.toParcelRequestDto(requests);
     }
@@ -97,8 +95,9 @@ public class ParcelServiceImp implements ParcelService {
     @Transactional
     public ParcelDetails updateParcel(UUID parcelId, UUID userId, ParcelUpdateRequest request) {
         var parcel = getParcelByIdOrThrow(parcelId);
-        assertParcelOwnership(parcel, userId);
-        assertParcelIsInState(parcel, List.of(ParcelState.PUBLISHED));
+
+        parcel.assertOwnership(userId);
+        parcel.assertIsInState(List.of(ParcelState.PUBLISHED));
 
         parcel.setDescription(request.description());
         parcel.setWeightKg(request.weightKg());
@@ -118,8 +117,8 @@ public class ParcelServiceImp implements ParcelService {
     @Transactional
     public void deleteParcel(UUID parcelId, UUID userId) {
         var parcel = getParcelByIdOrThrow(parcelId);
-        assertParcelOwnership(parcel, userId);
-        assertParcelIsInState(parcel, List.of(ParcelState.PUBLISHED));
+        parcel.assertOwnership(userId);
+        parcel.assertIsInState(List.of(ParcelState.PUBLISHED));
 
         imageService.remove(parcel.getImages());
         parcel.removeAllImages();
@@ -145,16 +144,6 @@ public class ParcelServiceImp implements ParcelService {
     private User getUserByIdOrThrow(UUID id) {
         return userRepository.findUserWithProfileById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    }
-
-    private void assertParcelOwnership(Parcel parcel, UUID userId) {
-        if (!parcel.isOwner(userId))
-            throw new UnauthorizedActionException("User is not owner of this parcel");
-    }
-
-    private void assertParcelIsInState(Parcel parcel, List<ParcelState> state) {
-        if (!state.contains(parcel.getState()))
-            throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
     }
 
     private void updateParcelImages(Parcel parcel, List<UUID> imageIds) {

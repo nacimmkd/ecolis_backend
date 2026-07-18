@@ -1,22 +1,23 @@
 package com.deliveryplatform.users;
 
 
+import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.profiles.Profile;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@Getter
-@Setter
 @Entity
 @Table(name = "users")
 @SQLRestriction("deleted = false")
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -42,22 +43,47 @@ public class User {
     private boolean deleted = false;
 
     @Column(name = "deleted_at")
-    private OffsetDateTime deletedAt;
+    @Builder.Default
+    private OffsetDateTime deletedAt = null;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = false)
     private Profile profile;
 
-    public void setProfile(Profile profile) {
+
+    public static User create(String email, String hashedPassword, Profile profile) {
+        var user = User.builder()
+                .email(email)
+                .password(hashedPassword)
+                .role(Role.USER)
+                .verified(false)
+                .build();
+        user.setProfile(profile);
+        return user;
+    };
+
+
+    private void setProfile(Profile profile) {
         if (profile != null) {
-            this.profile = profile;
             profile.setUser(this);
+            this.profile = profile;
         }
     }
 
-    public void softDelete(){
+    public void delete(){
         this.deleted = true;
-        this.setEmail("_deleted_" + UUID.randomUUID() + "_" + this.getEmail());
-        this.setDeletedAt(OffsetDateTime.now());
+        this.email = "_deleted_" + UUID.randomUUID() + "_" + this.getEmail();
+        this.deletedAt = OffsetDateTime.now();
+    }
+
+    public void verify(){
+        this.verified = true;
+    }
+
+    public void updatePassword(String newHashedPassword) {
+        if (Objects.isNull(newHashedPassword))
+            throw new InvalidDomainStateException("can not update password");
+
+        this.password = newHashedPassword;
     }
 
 }
