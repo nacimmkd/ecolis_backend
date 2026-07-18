@@ -3,7 +3,6 @@ package com.deliveryplatform.messages;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -16,7 +15,6 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
-@SQLRestriction("deleted = false")
 public class Conversation {
 
     @Id
