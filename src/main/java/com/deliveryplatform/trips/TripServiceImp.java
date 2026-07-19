@@ -6,9 +6,7 @@ import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingMapper;
 import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.bookings.dto.TripBookingDto;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.requests.RequestMapper;
 import com.deliveryplatform.requests.RequestRepository;
 import com.deliveryplatform.requests.dto.TripRequestDto;
@@ -54,10 +52,8 @@ public class TripServiceImp implements TripService {
 
     @Override
     public List<TripBookingDto> getTripBookings(UUID tripId, UUID userId) {
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
-
-        assertTripOwnership(trip, userId);
+        var trip = getTripByIdOrThrow(tripId);
+        trip.assertOwnedBy(userId);
 
         List<Booking> bookings = bookingRepository.findByTripId(tripId);
         return bookingMapper.toTripBookingDto(bookings);
@@ -65,10 +61,9 @@ public class TripServiceImp implements TripService {
 
     @Override
     public List<TripRequestDto> getTripRequests(UUID tripId, UUID currentUserId) {
-        var trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
+        var trip = getTripByIdOrThrow(tripId);
+        trip.assertOwnedBy(currentUserId);
 
-        assertTripOwnership(trip, currentUserId);
         var requests = requestRepository.findByTripId(tripId);
         return requestMapper.toTripRequestDto(requests);
     }
@@ -92,13 +87,22 @@ public class TripServiceImp implements TripService {
     @Transactional
     public TripDetails updateTrip(UUID tripId, UUID currentUserId, TripUpdateRequest request) {
         var trip = getTripByIdOrThrow(tripId);
-        assertTripOwnership(trip, currentUserId);
-        assertTripInStatusPublished(trip);
 
-        applyUpdates(trip, request);
+        trip.update(
+                currentUserId,
+                addressService.geocode(request.departureAddress()),
+                addressService.geocode(request.arrivalAddress()),
+                request.departureDate(),
+                request.arrivalDate(),
+                request.availableWeightKg(),
+                request.pricePerKg(),
+                request.maxDetourKm(),
+                request.notes(),
+                request.instantBooking()
+        );
 
         var requestCount = requestRepository.countByTripId(tripId);
-        var bookingsCount = requestRepository.countByTripId(tripId);
+        var bookingsCount = bookingRepository.countByTripId(tripId);
 
         tripRepository.save(trip);
         return tripMapper.toTripDetailsDto(trip, requestCount, bookingsCount);
@@ -108,9 +112,7 @@ public class TripServiceImp implements TripService {
     @Transactional
     public void deleteTrip(UUID tripId, UUID currentUserId) {
         var trip = getTripByIdOrThrow(tripId);
-        assertTripOwnership(trip, currentUserId);
-        assertTripInStatusPublished(trip);
-        trip.softDelete();
+        trip.delete(currentUserId);
         tripRepository.save(trip);
     }
 
@@ -118,9 +120,7 @@ public class TripServiceImp implements TripService {
     @Transactional
     public void addStop(UUID tripId, UUID currentUserId, AddressRequest address) {
         var trip = getTripByIdOrThrow(tripId);
-        assertTripOwnership(trip, currentUserId);
-
-        trip.addStop(addressService.geocode(address));
+        trip.addStop(currentUserId, addressService.geocode(address));
         tripRepository.save(trip);
     }
 
@@ -128,27 +128,21 @@ public class TripServiceImp implements TripService {
     @Transactional
     public List<TripStopDto> updateStops(UUID tripId, UUID currentUserId, List<TripStopRequest> newStopsRequest) {
         var trip = getTripByIdOrThrow(tripId);
-        assertTripOwnership(trip, currentUserId);
 
         var stops = newStopsRequest.stream()
-                .map(request -> {
-                    var address = addressService.geocode(request.address());
-                    return TripStop.create(address, request.order());
-                }).toList();
+                .map(request -> TripStop.create(addressService.geocode(request.address()), request.order()))
+                .toList();
 
-        trip.updateStops(stops);
-        var updatedTrip = tripRepository.save(trip);
-        return tripMapper.toTripStopDto(updatedTrip.getStops());
+        var updatedStops = trip.updateStops(currentUserId, stops);
+        tripRepository.save(trip);
+        return tripMapper.toTripStopDto(updatedStops);
     }
 
     @Override
     @Transactional
     public void deleteStop(UUID stopId, UUID tripId, UUID currentUserId) {
         var trip = getTripByIdOrThrow(tripId);
-        assertTripOwnership(trip, currentUserId);
-
-        var stop = findStopInTrip(trip, stopId);
-        trip.removeStopAndReorder(stop);
+        trip.removeStop(currentUserId, stopId);
         tripRepository.save(trip);
     }
 
@@ -158,34 +152,4 @@ public class TripServiceImp implements TripService {
         return tripRepository.findTripById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
     }
-
-    private void assertTripOwnership(Trip trip, UUID userId) {
-        if (!trip.getOwner().getId().equals(userId))
-            throw new UnauthorizedActionException("User is not owner of this trip");
-    }
-
-    private void assertTripInStatusPublished(Trip trip) {
-        if (!trip.getState().equals(TripState.PUBLISHED))
-            throw new InvalidDomainStateException("Trip is not published");
-    }
-
-    private TripStop findStopInTrip(Trip trip, UUID stopId) {
-        return trip.getStops().stream()
-                .filter(s -> s.getId().equals(stopId))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Trip stop not found"));
-    }
-
-    private void applyUpdates(Trip trip, TripUpdateRequest request) {
-        trip.setDepartureAddress(addressService.geocode(request.departureAddress()));
-        trip.setArrivalAddress(addressService.geocode(request.arrivalAddress()));
-        trip.setDepartureDate(request.departureDate());
-        trip.setArrivalDate(request.arrivalDate());
-        trip.updateAvailableWeightKg(request.availableWeightKg());
-        trip.setPricePerKg(request.pricePerKg());
-        trip.setMaxDetourKm(request.maxDetourKm());
-        trip.setNotes(request.notes());
-        trip.setInstantBooking(request.instantBooking());
-    }
-
 }

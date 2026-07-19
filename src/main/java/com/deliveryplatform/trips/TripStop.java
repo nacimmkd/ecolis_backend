@@ -14,38 +14,36 @@ import java.util.UUID;
 @Entity
 @Table(name = "trip_stops")
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Setter(AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @SQLRestriction("deleted = false")
 public class TripStop {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Setter(AccessLevel.PRIVATE)
     private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "trip_id")
     @JsonIgnore
-    @Setter(AccessLevel.PROTECTED)
     private Trip trip;
 
     @Column(name = "stop_order")
-    @Setter(AccessLevel.PRIVATE)
     private int order;
 
     @Embedded
-    @Setter(AccessLevel.PRIVATE)
     private Address address;
 
-    @Setter(AccessLevel.PRIVATE)
     private boolean deleted;
 
     @Column(name = "deleted_at")
-    @Setter(AccessLevel.PRIVATE)
     private OffsetDateTime deletedAt;
 
     public static TripStop create(Address address, int order) {
+        if (order < 1)
+            throw new InvalidDomainStateException("stop order must be >= 1");
+
         var stop = new TripStop();
         stop.setOrder(order);
         stop.setAddress(address);
@@ -60,4 +58,10 @@ public class TripStop {
         }
     }
 
+    public void delete() {
+        if (this.deleted)
+            throw new InvalidDomainStateException("stop already deleted");
+        this.deleted = true;
+        this.deletedAt = OffsetDateTime.now();
+    }
 }

@@ -1,6 +1,5 @@
 package com.deliveryplatform.profiles;
 
-
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.profiles.dto.ProfileCreateRequest;
 import com.deliveryplatform.users.User;
@@ -11,11 +10,10 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder(access = AccessLevel.PRIVATE)
 @Getter
-@Setter
 @Entity
 @Table(name = "profiles")
 public class Profile {
@@ -54,8 +52,8 @@ public class Profile {
     @JoinColumn(name = "id")
     @JsonIgnore
     @MapsId
+    @Setter
     private User user;
-
 
     public static Profile createFromRequest(ProfileCreateRequest request) {
         return Profile.builder()

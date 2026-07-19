@@ -171,7 +171,7 @@ public class Parcel {
 
     // ── Assertions ─────────────────────────────────────────────────────────────
 
-    public void assertOwnership(UUID userId) {
+    public void assertOwnedBy(UUID userId) {
         if (!userId.equals(this.owner.getId()))
             throw new UnauthorizedActionException("User with id : %s  is not owner of this parcel".formatted(userId));
     }
