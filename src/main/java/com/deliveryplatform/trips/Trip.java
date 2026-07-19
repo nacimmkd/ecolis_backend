@@ -88,7 +88,7 @@ public class Trip {
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     @OrderBy("order ASC")
     @Builder.Default
     private List<TripStop> stops = new ArrayList<>();
@@ -256,6 +256,7 @@ public class Trip {
     public void removeStop(UUID userId, UUID stopId) {
         assertOwnedBy(userId);
         var stop = getStopById(stopId);
+        stop.delete();
         this.stops.remove(stop);
         TripStop.reorderStops(this.stops);
     }
@@ -275,9 +276,8 @@ public class Trip {
     }
 
     private void removeStops(List<TripStop> stopsToRemove) {
-        this.stops.stream()
-                .filter(stopsToRemove::contains)
-                .forEach(TripStop::delete);
+        stopsToRemove.forEach(TripStop::delete);
+        this.stops.removeAll(stopsToRemove);
     }
 
     private void deleteAllStops() {
