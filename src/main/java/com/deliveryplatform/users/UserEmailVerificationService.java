@@ -12,7 +12,7 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
-class EmailVerificationService{
+class UserEmailVerificationService {
 
     private final CachingService cachingService;
     private final ApplicationEventPublisher eventPublisher;

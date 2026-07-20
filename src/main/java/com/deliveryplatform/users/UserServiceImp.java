@@ -1,8 +1,6 @@
 package com.deliveryplatform.users;
 
 import com.deliveryplatform.auth.AuthService;
-import com.deliveryplatform.common.caching.CachingService;
-import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.common.exceptions.ConflictException;
 import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
@@ -11,7 +9,6 @@ import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserCreateRequest;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserSummary;
-import com.deliveryplatform.users.events.EmailVerificationEvent;
 import com.deliveryplatform.users.events.UserCreatedEvent;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +16,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +27,7 @@ class UserServiceImp implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final AuthService authService;
-    private final EmailVerificationService emailVerificationService;
+    private final UserEmailVerificationService emailVerificationService;
     private final ApplicationEventPublisher eventPublisher;
 
 
