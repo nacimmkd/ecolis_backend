@@ -6,31 +6,43 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JwtService {
 
     private final JwtConfig jwtConfig;
+    private SecretKey signingKey;
 
-    public String generateAccessToken(UserPrincipal user) {
-        return generateToken(user, jwtConfig.getAccessTokenDuration());
+    @PostConstruct
+    void init() {
+        this.signingKey = Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes());
     }
 
-    public String generateRefreshToken(UserPrincipal user) {
-        return generateToken(user, jwtConfig.getRefreshTokenDuration());
+    public Jwt generateAccessToken(UserPrincipal user) {
+        return generateToken(user, Duration.ofSeconds(jwtConfig.getAccessTokenDuration()));
+    }
+
+    public Jwt generateRefreshToken(UserPrincipal user) {
+        return generateToken(user, Duration.ofSeconds(jwtConfig.getRefreshTokenDuration()));
     }
 
     public boolean isValid(String token) {
         try {
             var claims = parseClaims(token);
             return claims.getExpiration().after(new Date());
-        } catch (Exception e) {
+        } catch (JwtException | IllegalArgumentException e) {
+            log.debug("Token validation failed: {}", e.getMessage());
             return false;
         }
     }
@@ -39,44 +51,39 @@ public class JwtService {
         return UUID.fromString(parseClaims(token).getSubject());
     }
 
-    public String getEmailFromToken(String token) {
-        return parseClaims(token).get("email", String.class);
-    }
-
-
-    public Role getRoleFromToken(String token) {
-        return Role.valueOf(parseClaims(token).get("role", String.class));
-    }
-
-
     public UserPrincipal extractPrincipal(String token) {
+        var claims = parseClaims(token);
+
         return new UserPrincipal(
-                getUserIdFromToken(token),
-                getEmailFromToken(token),
-                getRoleFromToken(token),
-                null);
+                UUID.fromString(claims.getSubject()),
+                claims.get("email", String.class),
+                Role.valueOf(claims.get("role", String.class)),
+                null,
+                claims.get("verified", Boolean.class)
+        );
     }
+
     // ---------------------------------------------------------------------
 
-
-    private String generateToken(UserPrincipal user, int expiration) {
-        return Jwts.builder()
+    private Jwt generateToken(UserPrincipal user, Duration durationInSeconds) {
+        var token = Jwts.builder()
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
-                .claim("role", user.getRole())
-                .signWith(Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes()))
+                .claim("role", user.getRole().name())
+                .claim("verified", user.isVerified())
+                .signWith(signingKey)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + (expiration * 1000L)))
+                .expiration(new Date(System.currentTimeMillis() + durationInSeconds.toMillis()))
                 .compact();
+
+        return new Jwt(token, durationInSeconds);
     }
 
     private Claims parseClaims(String token) throws JwtException {
         return Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes()))
+                .verifyWith(signingKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
-
 }

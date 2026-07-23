@@ -1,8 +1,8 @@
 package com.deliveryplatform.auth;
 
+import com.deliveryplatform.auth.jwt.Jwt;
+
 public record AuthResponse(
-        String accessToken,
-        String refreshToken,
-        int refreshExpiration
-) {
-}
+        Jwt accessToken,
+        Jwt refreshToken
+) {}

@@ -1,5 +1,6 @@
 package com.deliveryplatform.users;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
 public class UserPrincipal implements UserDetails {
 
@@ -20,10 +20,11 @@ public class UserPrincipal implements UserDetails {
     private String email;
     private Role role;
     private String password;
+    private boolean verified;
 
 
     public static UserPrincipal from(User user) {
-        return new UserPrincipal(user.getId(), user.getEmail(), user.getRole(), user.getPassword());
+        return new UserPrincipal(user.getId(), user.getEmail(), user.getRole(), user.getPassword(), user.isVerified());
     }
 
     @Override
@@ -33,11 +34,16 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return this.email;
     }
 
     @Override
     public String getPassword() {
-        return password;
+        return this.password;
+    }
+
+    @Override
+    public boolean isEnabled(){
+        return this.verified;
     }
 }
