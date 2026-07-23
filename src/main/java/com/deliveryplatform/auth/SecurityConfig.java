@@ -1,7 +1,7 @@
 package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.jwt.JwtAuthenticationFilter;
-import com.deliveryplatform.common.ApiError;
+import com.deliveryplatform.common.exceptions.ApiError;
 import com.deliveryplatform.users.UserPrincipal;
 import com.deliveryplatform.users.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,7 +71,7 @@ public class SecurityConfig {
                 // to return the right HTTP code (401 & 403)
                 .exceptionHandling(ex -> {
                     ex.authenticationEntryPoint((request, response, e) -> {
-                        var error = ApiError.of(401, "Unauthorized access", request.getRequestURI());
+                        var error = ApiError.of(HttpStatus.UNAUTHORIZED, "Unauthorized access", request.getRequestURI());
                         response.setStatus(HttpStatus.UNAUTHORIZED.value());
                         response.setContentType("application/json");
                         response.getWriter().write(new ObjectMapper()
@@ -79,7 +79,7 @@ public class SecurityConfig {
                                 .writeValueAsString(error));
                     });
                     ex.accessDeniedHandler((request, response, e) -> {
-                        var error = ApiError.of(403, "Access denied", request.getRequestURI());
+                        var error = ApiError.of(HttpStatus.FORBIDDEN, "Access denied", request.getRequestURI());
                         response.setStatus(HttpStatus.FORBIDDEN.value());
                         response.setContentType("application/json");
                         response.getWriter().write(new ObjectMapper()

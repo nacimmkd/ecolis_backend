@@ -1,128 +1,62 @@
 package com.deliveryplatform.common.exceptions;
 
-import com.deliveryplatform.common.ApiError;
 import com.deliveryplatform.common.validations.ApiValidationError;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiError> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiError.of(HttpStatus.NOT_FOUND.value(), ex.getMessage(), request.getRequestURI()));
+    // ---- DOMAIN ------------------------------------------------------------
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ApiError> handleDomainException(DomainException ex, HttpServletRequest req) {
+        log.warn("Domain error [{}] on {}: {}", ex.getErrorCode().name(), req.getRequestURI(), ex.getMessage());
+        var error = ApiError.of(ex, req.getRequestURI());
+        return ResponseEntity.status(ex.getErrorCode().status()).body(error);
     }
 
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiError> handleConflictException(ConflictException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                ApiError.of(HttpStatus.CONFLICT.value() ,ex.getMessage(), request.getRequestURI())
-        );
-    }
-
-    @ExceptionHandler(UnauthorizedActionException.class)
-    public ResponseEntity<ApiError> handleUnauthorizedActionException(UnauthorizedActionException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiError.of(HttpStatus.FORBIDDEN.value(), ex.getMessage(), request.getRequestURI()));
-    }
-
-    @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<ApiError> handleAuthorizationDeniedException(AuthorizationDeniedException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiError.of(HttpStatus.FORBIDDEN.value(), ex.getMessage(), request.getRequestURI()));
-    }
-
-    @ExceptionHandler(InvalidDomainStateException.class)
-    public ResponseEntity<ApiError> handleInvalidDomainStateException(InvalidDomainStateException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(ApiError.of(HttpStatus.UNPROCESSABLE_ENTITY.value(), ex.getMessage(), request.getRequestURI()));
-    }
-
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ApiError> handleInvalidCredentialsException(InvalidCredentialsException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiError.of(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), request.getRequestURI()));
-    }
-
-    @ExceptionHandler(UnprocessableEntityException.class)
-    public ResponseEntity<ApiError> handleUnprocessableEntityException(UnprocessableEntityException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(ApiError.of(
-                        HttpStatus.UNPROCESSABLE_ENTITY.value(),
-                        ex.getMessage(),
-                        request.getRequestURI()));
-    }
-
-    // AUTH
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiError> handleBadCredentialsException(HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiError.of(HttpStatus.UNAUTHORIZED.value(), "Email or password is invalid", request.getRequestURI()));
-    }
+    // ---- AUTH ------------------------------------------------------------
 
     @ExceptionHandler(MissingRequestCookieException.class)
-    public ResponseEntity<ApiError> handleMissingRequestCookieException(HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiError.of(HttpStatus.UNAUTHORIZED.value(), "Authentication token is missing", request.getRequestURI()));
+    public ResponseEntity<ApiError> handleMissingCookie(MissingRequestCookieException ex, HttpServletRequest req) {
+        log.warn("Missing cookie [{}] on {}", ex.getCookieName(), req.getRequestURI());
+        var error = ApiError.of(HttpStatus.BAD_REQUEST, "Missing required cookie", req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiError> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiError.of(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), request.getRequestURI()));
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex, HttpServletRequest req) {
+        log.warn("Invalid email or password");
+        var error = ApiError.of(HttpStatus.UNAUTHORIZED, "Invalid email or password", req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
-    // EXTERNAL SERVICES
-    @ExceptionHandler(ExternalServiceException.class)
-    public ResponseEntity<ApiError> handleExternalServiceException(ExternalServiceException ex, HttpServletRequest request) {
-        log.error("External service error : {}", ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                .body(ApiError.of(
-                        HttpStatus.BAD_GATEWAY.value(),
-                        "Service temporarily not available, please try later",
-                        request.getRequestURI()));
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ApiError> handleAuthDenied(AuthorizationDeniedException ex, HttpServletRequest req) {
+        log.warn("Access denied on {}", req.getRequestURI());
+        var error = ApiError.of(HttpStatus.FORBIDDEN, "Access denied", req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiError> handleBadRequestException(BadRequestException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiError.of(
-                        HttpStatus.BAD_REQUEST.value(),
-                        ex.getMessage(),
-                        request.getRequestURI()
-                ));
-    }
+    // ---- VALIDATIONS ------------------------------------------------------------
 
-    // OTHERS
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleUnexpected(Exception ex, HttpServletRequest request) {
-        log.error("Unexpected error on {} : {}", request.getRequestURI(), ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiError.of(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "Internal server error",
-                        request.getRequestURI()
-                ));
-    }
-
-    // VALIDATIONS
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiValidationError> handleValidationErrors(
-            MethodArgumentNotValidException ex
+            MethodArgumentNotValidException ex,
+            HttpServletRequest req
     ){
         List<ApiValidationError.ValidationError> errors = ex.getBindingResult()
                 .getFieldErrors()
@@ -134,7 +68,15 @@ public class GlobalExceptionHandler {
                 .toList();
 
         return ResponseEntity.badRequest().body(
-                ApiValidationError.of(errors)
+                ApiValidationError.of(errors, req.getRequestURI())
         );
+    }
+
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleUnexpected(Exception ex, HttpServletRequest request) {
+        log.error("Unexpected error on {}", request.getRequestURI(), ex);
+        var error = ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }

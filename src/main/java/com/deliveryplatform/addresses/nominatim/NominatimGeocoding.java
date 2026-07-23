@@ -2,8 +2,8 @@ package com.deliveryplatform.addresses.nominatim;
 
 import com.deliveryplatform.addresses.Coordinates;
 import com.deliveryplatform.addresses.GeocodingPort;
-import com.deliveryplatform.common.exceptions.ExternalServiceException;
-import com.deliveryplatform.common.exceptions.UnprocessableEntityException;
+import com.deliveryplatform.addresses.exceptions.AddressErrorCode;
+import com.deliveryplatform.addresses.exceptions.AddressException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,7 +25,7 @@ class NominatimGeocoding implements GeocodingPort {
                         Double.parseDouble(result.lat()),
                         Double.parseDouble(result.lon())
                 ))
-                .orElseThrow(() -> new UnprocessableEntityException("The address could not be found"));
+                .orElseThrow(() -> new AddressException(AddressErrorCode.ADDRESS_NOT_FOUND, "The address could not be found"));
     }
 
     private Optional<NominatimResponse> fetchFirstResult(String address) {
@@ -45,7 +45,7 @@ class NominatimGeocoding implements GeocodingPort {
             return results == null || results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
 
         } catch (WebClientResponseException e) {
-            throw new ExternalServiceException(getClass(), "HTTP Error: " + e.getStatusCode());
+            throw new AddressException(AddressErrorCode.GEOCODING_SERVICE_ERROR, "External geocoding service error");
         }
     }
 }

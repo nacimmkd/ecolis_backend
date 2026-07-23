@@ -1,15 +1,14 @@
 package com.deliveryplatform.users;
 
 import com.deliveryplatform.auth.AuthService;
-import com.deliveryplatform.common.exceptions.ConflictException;
-import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserCreateRequest;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserSummary;
 import com.deliveryplatform.users.events.UserCreatedEvent;
+import com.deliveryplatform.users.exceptions.UserErrorCode;
+import com.deliveryplatform.users.exceptions.UserException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -30,7 +29,6 @@ class UserServiceImp implements UserService {
     private final UserEmailVerificationService emailVerificationService;
     private final ApplicationEventPublisher eventPublisher;
 
-
     @Override
     public UserDetails findById(UUID id) {
         return userMapper.toDetailsDto(getUserByIdOrThrow(id));
@@ -43,7 +41,6 @@ class UserServiceImp implements UserService {
                 .map(userMapper::toSummaryDto)
                 .toList();
     }
-
 
     @Override
     @Transactional
@@ -64,10 +61,11 @@ class UserServiceImp implements UserService {
     @Override
     public void sendVerificationCode(UUID id) {
         var user = getUserByIdOrThrow(id);
-        if (user.isVerified()) throw new ConflictException("User is already verified");
+        if (user.isVerified()) {
+            throw new UserException(UserErrorCode.USER_ALREADY_VERIFIED, "User is already verified");
+        }
         emailVerificationService.sendCode(user);
     }
-
 
     @Override
     @Transactional
@@ -78,7 +76,6 @@ class UserServiceImp implements UserService {
         userRepository.save(user);
         eventPublisher.publishEvent(new UserCreatedEvent(user));
     }
-
 
     @Override
     @Transactional
@@ -94,29 +91,27 @@ class UserServiceImp implements UserService {
     public void softDelete(UUID id) {
         User user = getUserByIdOrThrow(id);
         user.delete();
-        // delete related things later (profile, parcels,trips ...)
+        // delete related things later (profile, parcels, trips ...)
         authService.logout(user.getId());
         userRepository.save(user);
     }
-
 
     // ----------------------------------------------------------------
 
     public User getUserByIdOrThrow(UUID id) {
         return userRepository.findUserWithProfileById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "User not found"));
     }
 
     private void assertEmailUniqueness(String email) {
         if (userRepository.existsByEmail(email)) {
-            throw new ConflictException("Account with this email already exists");
+            throw new UserException(UserErrorCode.EMAIL_ALREADY_EXISTS, "A user with this email already exists");
         }
     }
 
-    private void assertPasswordMatch(String oldPassword, String newPassword) {
-        if (!passwordEncoder.matches(oldPassword, newPassword)) {
-            throw new InvalidCredentialsException("old password doesn't match");
+    private void assertPasswordMatch(String rawPassword, String encodedPassword) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new UserException(UserErrorCode.INVALID_PASSWORD, "Current password does not match");
         }
     }
 }
-

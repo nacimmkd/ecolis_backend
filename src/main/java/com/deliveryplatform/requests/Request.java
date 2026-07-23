@@ -1,9 +1,9 @@
 package com.deliveryplatform.requests;
 
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.parcels.Parcel;
-import com.deliveryplatform.parcels.ParcelState;
+import com.deliveryplatform.requests.exceptions.RequestErrorCode;
+import com.deliveryplatform.requests.exceptions.RequestException;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -18,10 +18,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "booking_requests")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @SQLRestriction("deleted = false")
 public class Request {
 
@@ -65,39 +64,46 @@ public class Request {
     @Builder.Default
     private OffsetDateTime deletedAt = null;
 
-    // ----------------------------------------------------------------
+    // ---- factory ------------------------------------------------------------
 
     public static Request create(Trip trip, Parcel parcel, Detour detour) {
         if (Objects.isNull(trip) || Objects.isNull(detour) || Objects.isNull(parcel))
-            throw new IllegalArgumentException("required trip & parcel & detour to create a request");
+            throw new RequestException(RequestErrorCode.MISSING_REQUIRED_DATA, "Required trip & parcel & detour to create a request");
 
-        assertMaxTripDetourRequirementOrThrow(trip, detour);
-        assertParcelAvailable(parcel.getState());
-        assertTripNotFull(trip);
+        trip.assertMaxTripDetourRequirement(detour);
+        trip.assertNotFull();
+        parcel.assertIsAvailable();
 
         return Request.builder()
                 .trip(trip)
                 .parcel(parcel)
                 .pickupDetourKm(BigDecimal.valueOf(detour.pickupDetourKm()))
-                .dropOffDetourKm(BigDecimal.valueOf(detour.pickupDetourKm()))
+                .dropOffDetourKm(BigDecimal.valueOf(detour.dropoffDetourKm()))
                 .requestedAt(OffsetDateTime.now())
                 .build();
     }
 
-    private static void assertMaxTripDetourRequirementOrThrow(Trip trip, Detour detour) {
-        if (!trip.isMaxDetourAccepted(BigDecimal.valueOf(detour.pickupDetourKm()), BigDecimal.valueOf(detour.dropoffDetourKm())))
-            throw new InvalidDomainStateException("cannot create request : max detour not satisfied");
+    // ---- invariants / guards ------------------------------------------------
+
+    public void assertIsPending() {
+        if (!isPending())
+            throw new RequestException(
+                    RequestErrorCode.INVALID_STATE_TRANSITION,
+                    "Booking request is not pending, current state: %s".formatted(this.state)
+            );
     }
 
-    private static void assertParcelAvailable(ParcelState status) {
-        if (!ParcelState.PUBLISHED.equals(status))
-            throw new InvalidDomainStateException("Parcel is not available for booking");
+    public void assertIsCarrier(UUID userId) {
+        if (!userId.equals(this.getCarrier().getId()))
+            throw new RequestException(RequestErrorCode.NOT_CARRIER, "User is not allowed to perform this action");
     }
 
-    private static void assertTripNotFull(Trip trip) {
-        if (trip.isFull())
-            throw new InvalidDomainStateException("can not request this trip because it is full");
+    public void assertInvolves(UUID userId) {
+        if (!involves(userId))
+            throw new RequestException(RequestErrorCode.USER_NOT_INVOLVED, "User is not allowed to perform this action");
     }
+
+    // ---- lifecycle ------------------------------------------------------------
 
     public void accept() {
         this.state = RequestState.ACCEPTED;
@@ -111,22 +117,26 @@ public class Request {
         delete();
     }
 
+    public void delete() {
+        this.deleted = true;
+        this.deletedAt = OffsetDateTime.now();
+    }
+
+    // ---- queries ------------------------------------------------------------
+
     public boolean isPending() {
         return RequestState.PENDING.equals(this.state);
     }
 
-    public UUID getSenderId()  { return this.parcel.getOwner().getId(); }
-
-    public UUID getCarrierId() { return this.trip.getOwner().getId();   }
-
-    public User getCarrier() {return this.trip.getOwner();}
-
     public boolean involves(UUID userId) {
-        return getSenderId().equals(userId) || getCarrierId().equals(userId);
+        return getSender().getId().equals(userId) || getCarrier().getId().equals(userId);
     }
 
-    public void delete() {
-        this.deleted = true;
-        this.deletedAt = OffsetDateTime.now();
+    public User getSender() {
+        return this.parcel.getOwner();
+    }
+
+    public User getCarrier() {
+        return this.trip.getOwner();
     }
 }

@@ -1,6 +1,6 @@
 package com.deliveryplatform.bookings.dto;
 
-import com.deliveryplatform.bookings.BookingStatus;
+import com.deliveryplatform.bookings.BookingState;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
 import com.deliveryplatform.trips.dto.TripSummary;
 import com.deliveryplatform.users.dto.UserBrief;
@@ -18,7 +18,7 @@ public record BookingDto(
         UserBrief sender,
         UserBrief carrier,
         BigDecimal price,
-        BookingStatus state,
+        BookingState state,
         OffsetDateTime createdAt,
         OffsetDateTime paidAt,
         OffsetDateTime completedAt,

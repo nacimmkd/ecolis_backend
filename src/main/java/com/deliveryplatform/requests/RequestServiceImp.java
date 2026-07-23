@@ -1,17 +1,18 @@
 package com.deliveryplatform.requests;
 
-import com.deliveryplatform.common.exceptions.ConflictException;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.matching.DetourCalculatorService;
-import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelRepository;
+import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
+import com.deliveryplatform.parcels.exceptions.ParcelException;
 import com.deliveryplatform.requests.dto.CreateRequest;
 import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.requests.events.RequestAcceptedEvent;
 import com.deliveryplatform.requests.events.RequestCreatedEvent;
+import com.deliveryplatform.requests.exceptions.RequestErrorCode;
+import com.deliveryplatform.requests.exceptions.RequestException;
 import com.deliveryplatform.trips.TripRepository;
+import com.deliveryplatform.trips.exceptions.TripErrorCode;
+import com.deliveryplatform.trips.exceptions.TripException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -36,7 +37,7 @@ public class RequestServiceImp implements RequestService {
     @Override
     public RequestDto getRequest(UUID requestId, UUID currentUserId) {
         var request = getRequestByIdOrThrow(requestId);
-        assertInvolves(request.involves(currentUserId));
+        request.assertInvolves(currentUserId);
         return requestMapper.toRequestDto(request);
     }
 
@@ -52,23 +53,23 @@ public class RequestServiceImp implements RequestService {
         return requestMapper.toRequestDto(requests);
     }
 
-
     @Override
     @Transactional
     public RequestDto createRequest(CreateRequest dto, UUID senderId) {
         var parcel = parcelRepository.findParcelSummaryById(dto.parcelId())
-                .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
+                .orElseThrow(() -> new ParcelException(ParcelErrorCode.PARCEL_NOT_FOUND, "Parcel not found"));
 
-        assertIsParcelOwner(parcel, senderId);
+        parcel.assertOwnedBy(senderId);
         assertRequestUniqueness(dto.parcelId(), dto.tripId());
 
         var trip = tripRepository.findTripById(dto.tripId())
-                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
+                .orElseThrow(() -> new TripException(TripErrorCode.TRIP_NOT_OWNED, "Trip not found"));
 
-        var detour = detourCalculator.calculate(trip,parcel);
+        var detour = detourCalculator.calculate(trip, parcel);
 
         var request = Request.create(trip, parcel, detour);
         requestRepository.save(request);
+
         if (trip.isInstantBooking()) {
             request.accept();
             eventPublisher.publishEvent(new RequestAcceptedEvent(request.getId()));
@@ -85,17 +86,17 @@ public class RequestServiceImp implements RequestService {
     }
 
     private void assertRequestUniqueness(UUID parcelId, UUID tripId) {
-        if (requestRepository.existsByParcelIdAndTripId(parcelId,tripId))
-            throw new ConflictException("request for this trip and parcel already exists");
+        if (requestRepository.existsByParcelIdAndTripId(parcelId, tripId))
+            throw new RequestException(RequestErrorCode.REQUEST_ALREADY_EXISTS, "Request for this trip and parcel already exists");
     }
 
     @Override
     @Transactional
-    public void acceptRequest(UUID requestId, UUID carrierId) {
+    public void acceptRequest(UUID requestId, UUID currentUserId) {
         var request = getRequestByIdOrThrow(requestId);
 
-        assertIsCarrier(request, carrierId);
-        assertRequestIsPending(request);
+        request.assertIsCarrier(currentUserId);
+        request.assertIsPending();
 
         request.accept();
         requestRepository.save(request);
@@ -106,8 +107,8 @@ public class RequestServiceImp implements RequestService {
     @Transactional
     public void rejectRequest(UUID requestId, UUID carrierId, String reason) {
         var request = getRequestByIdOrThrow(requestId);
-        assertIsCarrier(request, carrierId);
-        assertRequestIsPending(request);
+        request.assertIsCarrier(carrierId);
+        request.assertIsPending();
         request.reject(reason);
         requestRepository.save(request);
     }
@@ -116,8 +117,8 @@ public class RequestServiceImp implements RequestService {
     @Transactional
     public void deleteRequest(UUID requestId, UUID currentUserId) {
         var request = getRequestByIdOrThrow(requestId);
-        assertIsCarrier(request, currentUserId);
-        assertRequestIsPending(request);
+        request.assertIsCarrier(currentUserId);
+        request.assertIsPending();
         request.delete();
         requestRepository.save(request);
     }
@@ -126,29 +127,6 @@ public class RequestServiceImp implements RequestService {
 
     private Request getRequestByIdOrThrow(UUID id) {
         return requestRepository.findRequestById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking request not found"));
+                .orElseThrow(() -> new RequestException(RequestErrorCode.REQUEST_NOT_FOUND, "Booking request not found"));
     }
-
-    private void assertIsParcelOwner(Parcel parcel, UUID currentUserId) {
-        if (!currentUserId.equals(parcel.getOwnerId()))
-            throw new UnauthorizedActionException("You are not authorized to perform this action");
-    }
-
-    private void assertIsCarrier(Request request, UUID currentUserId) {
-        if (!currentUserId.equals(request.getCarrierId()))
-            throw new UnauthorizedActionException("you can no perform this action");
-    }
-
-    private void assertInvolves(boolean involves) {
-        if (!involves)
-            throw new UnauthorizedActionException("You are not involved in this booking");
-    }
-
-    private void assertRequestIsPending(Request request) {
-        if (!request.isPending())
-            throw new InvalidDomainStateException(
-                    "Booking request is not pending, current state: " + request.getState()
-            );
-    }
-
 }

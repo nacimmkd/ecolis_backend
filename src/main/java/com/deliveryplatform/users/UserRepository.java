@@ -12,6 +12,7 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
+    @EntityGraph(attributePaths = {"profile"})
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);

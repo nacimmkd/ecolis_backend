@@ -6,12 +6,15 @@ import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingMapper;
 import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.bookings.dto.TripBookingDto;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.requests.RequestMapper;
 import com.deliveryplatform.requests.RequestRepository;
 import com.deliveryplatform.requests.dto.TripRequestDto;
 import com.deliveryplatform.trips.dto.*;
+import com.deliveryplatform.trips.exceptions.TripErrorCode;
+import com.deliveryplatform.trips.exceptions.TripException;
 import com.deliveryplatform.users.UserRepository;
+import com.deliveryplatform.users.exceptions.UserErrorCode;
+import com.deliveryplatform.users.exceptions.UserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +75,7 @@ public class TripServiceImp implements TripService {
     @Transactional
     public TripDetails createTrip(UUID currentUserId, TripCreateRequest request) {
         var owner = userRepository.findUserWithProfileById(currentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "trip owner not found"));
 
         var trip = Trip.createFromRequest(
                 request,
@@ -150,6 +153,6 @@ public class TripServiceImp implements TripService {
 
     private Trip getTripByIdOrThrow(UUID id) {
         return tripRepository.findTripById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Trip not found"));
+                .orElseThrow(() -> new TripException(TripErrorCode.TRIP_NOT_FOUND, "Trip Not found"));
     }
 }

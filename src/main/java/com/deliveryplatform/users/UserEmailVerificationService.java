@@ -2,8 +2,9 @@ package com.deliveryplatform.users;
 
 import com.deliveryplatform.common.caching.CachingService;
 import com.deliveryplatform.common.CodeGeneratorUtil;
-import com.deliveryplatform.common.exceptions.InvalidCredentialsException;
 import com.deliveryplatform.users.events.EmailVerificationEvent;
+import com.deliveryplatform.users.exceptions.UserErrorCode;
+import com.deliveryplatform.users.exceptions.UserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,6 @@ class UserEmailVerificationService {
     private static final String VERIFICATION_CODE_PREFIX = "email:verify:";
     private static final Duration VERIFICATION_CODE_TTL = Duration.ofMinutes(5);
 
-
     public void sendCode(User user) {
         var key = VERIFICATION_CODE_PREFIX + user.getEmail();
         var code = CodeGeneratorUtil.generateVerificationCode();
@@ -33,11 +33,10 @@ class UserEmailVerificationService {
         eventPublisher.publishEvent(new EmailVerificationEvent(user, code));
     }
 
-
     public void verifyCode(User user, String code) {
         var key = VERIFICATION_CODE_PREFIX + user.getEmail();
         if (!cachingService.isValid(key, code)) {
-            throw new InvalidCredentialsException("Code invalid or expired");
+            throw new UserException(UserErrorCode.INVALID_VERIFICATION_CODE, "Code invalid or expired");
         }
     }
 }

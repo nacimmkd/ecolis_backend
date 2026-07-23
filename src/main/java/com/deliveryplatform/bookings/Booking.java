@@ -1,7 +1,8 @@
 package com.deliveryplatform.bookings;
 
+import com.deliveryplatform.bookings.exceptions.BookingErrorCode;
+import com.deliveryplatform.bookings.exceptions.BookingException;
 import com.deliveryplatform.common.CodeGeneratorUtil;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.requests.Request;
@@ -18,9 +19,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "bookings")
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class Booking {
 
     @Id
@@ -40,7 +41,7 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private BookingStatus state = BookingStatus.PENDING;
+    private BookingState state = BookingState.PENDING;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
@@ -77,7 +78,7 @@ public class Booking {
     @Builder.Default
     private String cancelReason = null;
 
-    // ----------------------------------------------------------------
+    // ---- factory ------------------------------------------------------------
 
     public static Booking createFromRequest(Request request) {
         var parcel = request.getParcel();
@@ -86,29 +87,62 @@ public class Booking {
         assertValidRequestStatusOrThrow(request);
 
         var booking = Booking.builder()
-                .parcel(request.getParcel())
-                .trip(request.getTrip())
-                .price(BookingPriceCalculator.calculate(request.getParcel(), request.getTrip()))
+                .parcel(parcel)
+                .trip(trip)
+                .price(BookingPriceCalculator.calculate(parcel, trip))
                 .pickupCode(CodeGeneratorUtil.generateBookingCode())
                 .build();
+
         parcel.updateState(ParcelState.BOOKED);
         trip.reserveBooking(booking);
         return booking;
     }
 
+    // ---- invariants / guards ------------------------------------------------
+
+    public void assertUserInvolved(UUID userId) {
+        if (!involves(userId))
+            throw new BookingException(BookingErrorCode.NOT_INVOLVED_IN_BOOKING, "User is not part of this booking");
+    }
+
+    public void assertIsCompleted() {
+        if (!BookingState.COMPLETED.equals(this.state))
+            throw new BookingException(BookingErrorCode.INVALID_STATE, "Booking must be completed before reviewing");
+    }
+
+    public void assertIsInState(BookingState expected, String errorMessage) {
+        if (!expected.equals(this.state))
+            throw new BookingException(BookingErrorCode.INVALID_STATE, errorMessage);
+    }
+
+    private static void assertValidRequestStatusOrThrow(Request request) {
+        if (!RequestState.ACCEPTED.equals(request.getState()))
+            throw new BookingException(BookingErrorCode.REQUEST_NOT_ACCEPTED, "Cannot create booking: request is not accepted");
+    }
+
+    // ---- lifecycle ------------------------------------------------------------
+
     public void pay() {
-        this.state = BookingStatus.PAID;
+        this.state = BookingState.PAID;
         this.paidAt = OffsetDateTime.now();
+    }
+
+    public void confirmPickUp(String pickupCode) {
+        if (!this.pickupCode.equals(pickupCode))
+            throw new BookingException(BookingErrorCode.INVALID_PICKUP_CODE, "Pickup code is invalid");
+        this.parcel.updateState(ParcelState.IN_TRANSIT);
+        this.pickupCode = null;
+        this.dropOffCode = CodeGeneratorUtil.generateBookingCode();
     }
 
     public void complete(String dropOffCode) {
         confirmDropOff(dropOffCode);
-        this.state = BookingStatus.COMPLETED;
+        this.state = BookingState.COMPLETED;
         this.completedAt = OffsetDateTime.now();
     }
 
     public void cancel(String reason, CancelledBy cancelledBy) {
-        this.state = BookingStatus.CANCELLED;
+        this.state = BookingState.CANCELLED;
         this.parcel.updateState(ParcelState.PUBLISHED);
         this.trip.removeBooking(this);
         this.cancelledAt = OffsetDateTime.now();
@@ -116,31 +150,18 @@ public class Booking {
         this.cancelReason = reason;
     }
 
-    public void confirmPickUp(String pickupCode) {
-        if (!this.pickupCode.equals(pickupCode))
-            throw new InvalidDomainStateException("pickup code is incorrect");
-        this.parcel.updateState(ParcelState.IN_TRANSIT);
-        this.pickupCode = null;
-
-        // set dropOff code
-        this.dropOffCode = CodeGeneratorUtil.generateBookingCode();
-    }
-
     private void confirmDropOff(String dropOffCode) {
         if (!this.dropOffCode.equals(dropOffCode))
-            throw new InvalidDomainStateException("dropOff code is incorrect");
+            throw new BookingException(BookingErrorCode.INVALID_DROPOFF_CODE, "Dropoff code is invalid");
         this.parcel.updateState(ParcelState.DELIVERED);
         this.dropOffCode = null;
     }
 
-    public boolean isCompleted() {
-        return BookingStatus.COMPLETED.equals(this.state);
-    }
-
+    // ---- queries ------------------------------------------------------------
 
     public boolean involves(UUID userId) {
-        return !this.trip.getOwner().getId().equals(userId)
-                && !this.parcel.getOwner().getId().equals(userId);
+        return this.trip.getOwner().getId().equals(userId)
+                || this.parcel.getOwner().getId().equals(userId);
     }
 
     public User getSender() {
@@ -149,31 +170,23 @@ public class Booking {
 
     public User resolveParticipant(UUID userId) {
         var parcelOwner = this.parcel.getOwner();
-        var tripOwner   = this.trip.getOwner();
+        var tripOwner = this.trip.getOwner();
         return parcelOwner.getId().equals(userId) ? parcelOwner : tripOwner;
     }
 
     public User resolveOtherParticipant(UUID userId) {
         var parcelOwner = this.parcel.getOwner();
-        var tripOwner   = this.trip.getOwner();
+        var tripOwner = this.trip.getOwner();
         return parcelOwner.getId().equals(userId) ? tripOwner : parcelOwner;
     }
 
     public CancelledBy resolveCanceller(UUID currentUserId) {
-        if (currentUserId.equals(this.getParcel().getOwner().getId())) return CancelledBy.SENDER;
-        if (currentUserId.equals(this.getTrip().getOwner().getId())) return CancelledBy.CARRIER;
+        if (currentUserId.equals(this.parcel.getOwner().getId())) return CancelledBy.SENDER;
+        if (currentUserId.equals(this.trip.getOwner().getId())) return CancelledBy.CARRIER;
         return CancelledBy.ADMIN;
     }
 
     public BigDecimal getBookingWeight() {
         return this.parcel.getWeightKg();
     }
-
-
-    private static void assertValidRequestStatusOrThrow(Request request) {
-        if (!RequestState.ACCEPTED.equals(request.getState()))
-            throw new InvalidDomainStateException("cannot create booking : request is not accepted");
-    }
-
-
 }

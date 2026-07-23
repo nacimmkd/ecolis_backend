@@ -1,6 +1,7 @@
 package com.deliveryplatform.notifications;
 
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
+import com.deliveryplatform.notifications.exceptions.NotificationErrorCode;
+import com.deliveryplatform.notifications.exceptions.NotificationException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +65,8 @@ class NotificationServiceImp implements NotificationService {
 
     private Notification getUserNotificationOrThrow(UUID notificationId, UUID userId) {
         return notificationRepository.findByIdAndUserId(notificationId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException(
+                .orElseThrow(() -> new NotificationException(
+                        NotificationErrorCode.NOTIFICATION_NOT_FOUND,
                         "Notification %s not found for user %s".formatted(notificationId, userId)
                 ));
     }

@@ -1,6 +1,6 @@
 package com.deliveryplatform.bookings.dto;
 
-import com.deliveryplatform.bookings.BookingStatus;
+import com.deliveryplatform.bookings.BookingState;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
 import com.deliveryplatform.users.dto.UserBrief;
 import lombok.Builder;
@@ -15,7 +15,7 @@ public record TripBookingDto(
         ParcelSummary parcel,
         UserBrief sender,
         BigDecimal price,
-        BookingStatus state,
+        BookingState state,
         OffsetDateTime createdAt,
         OffsetDateTime paidAt,
         OffsetDateTime completedAt,

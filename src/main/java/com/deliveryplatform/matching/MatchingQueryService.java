@@ -1,9 +1,9 @@
 package com.deliveryplatform.matching;
 
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelRepository;
+import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
+import com.deliveryplatform.parcels.exceptions.ParcelException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,11 +31,11 @@ public class MatchingQueryService {
 
     private Parcel getParcelByIdOrThrow(UUID parcelId) {
         return parcelRepository.findById(parcelId)
-                .orElseThrow(() -> new ResourceNotFoundException("parcel not found"));
+                .orElseThrow(() -> new ParcelException(ParcelErrorCode.PARCEL_NOT_FOUND,"parcel not found"));
     }
 
     private void assertOwnership(Parcel parcel, UUID userId) {
         var parcelOwner = parcel.getOwner();
-        if (!parcelOwner.getId().equals(userId)) throw new UnauthorizedActionException("Unauthorized action");
+        if (!parcelOwner.getId().equals(userId)) throw new ParcelException(ParcelErrorCode.PARCEL_NOT_OWNED,"parcel not found");
     }
 }

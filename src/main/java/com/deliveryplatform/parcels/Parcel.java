@@ -1,10 +1,10 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
+import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
+import com.deliveryplatform.parcels.exceptions.ParcelException;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -173,15 +173,21 @@ public class Parcel {
 
     public void assertOwnedBy(UUID userId) {
         if (!userId.equals(this.owner.getId()))
-            throw new UnauthorizedActionException("User with id : %s  is not owner of this parcel".formatted(userId));
+            throw new ParcelException(ParcelErrorCode.PARCEL_NOT_OWNED, "User with id: %s is not owner of this parcel".formatted(userId));
     }
 
     public void assertNotDeleted() {
-        if (this.deleted) throw new InvalidDomainStateException("action can not be performed : parcel is deleted");
+        if (this.deleted)
+            throw new ParcelException(ParcelErrorCode.PARCEL_DELETED, "Action can not be performed: parcel is deleted");
     }
 
     public void assertIsInState(List<ParcelState> states) {
         if (!states.contains(this.state))
-            throw new InvalidDomainStateException("Parcel is not in a valid state for this operation");
+            throw new ParcelException(ParcelErrorCode.INVALID_STATE, "Parcel is not in a valid state for this operation");
+    }
+
+    public void assertIsAvailable() {
+        if (!ParcelState.PUBLISHED.equals(this.state))
+            throw new ParcelException(ParcelErrorCode.PARCEL_NOT_AVAILABLE, "Parcel is not available");
     }
 }

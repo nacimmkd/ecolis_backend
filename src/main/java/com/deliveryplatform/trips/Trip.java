@@ -2,10 +2,10 @@ package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.trips.dto.TripCreateRequest;
+import com.deliveryplatform.trips.exceptions.TripErrorCode;
+import com.deliveryplatform.trips.exceptions.TripException;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -110,6 +110,8 @@ public class Trip {
         }
     }
 
+    // ---- factory ------------------------------------------------------------
+
     public static Trip createFromRequest(TripCreateRequest request, Address departureAddress, Address arrivalAddress, User owner) {
         BigDecimal weight = request.availableWeightKg();
         return Trip.builder()
@@ -131,27 +133,37 @@ public class Trip {
 
     public void assertOwnedBy(UUID userId) {
         if (!this.owner.getId().equals(userId))
-            throw new UnauthorizedActionException("User is not owner of this trip");
+            throw new TripException(TripErrorCode.TRIP_NOT_OWNED, "User is not the owner of this trip");
     }
 
-    private void assertPublished() {
-        if (this.state != TripState.PUBLISHED)
-            throw new InvalidDomainStateException("Trip is not published");
+    public void assertIsPublished() {
+        if (!TripState.PUBLISHED.equals(this.state))
+            throw new TripException(TripErrorCode.TRIP_NOT_PUBLISHED, "Trip is not published");
     }
 
-    private void assertNotDeleted() {
+    public void assertNotDeleted() {
         if (this.deleted)
-            throw new InvalidDomainStateException("action can not be performed because trip is deleted");
+            throw new TripException(TripErrorCode.TRIP_DELETED, "Action cannot be performed because trip is deleted");
     }
 
-    // ---- trip lifecycle -------------------------------------------------------
+    public void assertNotFull() {
+        if (TripState.FULL.equals(this.state))
+            throw new TripException(TripErrorCode.TRIP_FULL, "Trip is full");
+    }
+
+    public void assertMaxTripDetourRequirement(Detour detour) {
+        if (!isMaxDetourAccepted(BigDecimal.valueOf(detour.pickupDetourKm()), BigDecimal.valueOf(detour.dropoffDetourKm())))
+            throw new TripException(TripErrorCode.MAX_DETOUR_EXCEEDED, "Trip max detour not satisfied");
+    }
+
+    // ---- lifecycle -------------------------------------------------------
 
     public void update(UUID userId, Address departureAddress, Address arrivalAddress,
                        LocalDate departureDate, LocalDate arrivalDate,
                        BigDecimal availableWeightKg, BigDecimal pricePerKg,
                        BigDecimal maxDetourKm, String notes, boolean instantBooking) {
-        assertOwnedBy(userId);
-        assertPublished();
+        this.assertOwnedBy(userId);
+        this.assertIsPublished();
 
         this.departureAddress = departureAddress;
         this.arrivalAddress = arrivalAddress;
@@ -161,12 +173,12 @@ public class Trip {
         this.maxDetourKm = maxDetourKm;
         this.notes = notes;
         this.instantBooking = instantBooking;
-        updateAvailableWeightKg(availableWeightKg);
+        this.updateAvailableWeightKg(availableWeightKg);
     }
 
     public void delete(UUID userId) {
         assertOwnedBy(userId);
-        assertPublished();
+        assertIsPublished();
         deleteAllStops();
         this.deleted = true;
         this.deletedAt = OffsetDateTime.now();
@@ -176,54 +188,30 @@ public class Trip {
         if (newState.equals(this.state)) return;
         assertNotDeleted();
         if (!isValidTransition(newState))
-            throw new InvalidDomainStateException(
-                    "Invalid state transition: Cannot transition trip from %s to %s".formatted(this.state, newState));
+            throw new TripException(TripErrorCode.INVALID_STATE_TRANSITION,
+                    "Cannot transition trip from %s to %s".formatted(this.state, newState));
         this.state = newState;
-    }
-
-    public boolean isFull() {
-        return this.state.equals(TripState.FULL);
-    }
-
-    public UUID getOwnerId() {
-        return this.owner.getId();
-    }
-
-    public boolean isMaxDetourAccepted(BigDecimal pickUpDetour, BigDecimal dropOffDetour) {
-        return this.maxDetourKm.compareTo(pickUpDetour) >= 0
-                && this.maxDetourKm.compareTo(dropOffDetour) >= 0;
     }
 
     public void updateAvailableWeightKg(BigDecimal newAvailableWeightKg) {
         assertNotDeleted();
 
         if (newAvailableWeightKg.compareTo(MIN_WEIGHT_KG) < 0)
-            throw new InvalidDomainStateException(
-                    "available weight must not be under %s kg".formatted(MIN_WEIGHT_KG));
+            throw new TripException(TripErrorCode.WEIGHT_BELOW_MINIMUM,
+                    "Available weight must not be under %s kg".formatted(MIN_WEIGHT_KG));
 
         BigDecimal alreadyReservedWeight = this.availableWeightKg.subtract(this.remainingWeightKg);
         if (newAvailableWeightKg.compareTo(alreadyReservedWeight) < 0)
-            throw new InvalidDomainStateException(
-                    "available weight must not be under already reserved weight of %s kg".formatted(alreadyReservedWeight));
+            throw new TripException(TripErrorCode.WEIGHT_BELOW_RESERVED,
+                    "Available weight must not be under already reserved weight of %s kg".formatted(alreadyReservedWeight));
 
         BigDecimal difference = newAvailableWeightKg.subtract(this.availableWeightKg);
-        if (difference.compareTo(BigDecimal.ZERO) == 0) return; // rien à changer
+        if (difference.compareTo(BigDecimal.ZERO) == 0) return;
 
         if (difference.compareTo(BigDecimal.ZERO) > 0) releaseWeight(difference);
         else reserveWeight(difference.abs());
 
         this.availableWeightKg = newAvailableWeightKg;
-    }
-
-    public List<Address> getWayPoints() {
-        var wayPoints = new ArrayList<Address>();
-        wayPoints.add(departureAddress);
-        this.stops.stream()
-                .sorted(Comparator.comparingInt(TripStop::getOrder))
-                .map(TripStop::getAddress)
-                .forEach(wayPoints::add);
-        wayPoints.add(arrivalAddress);
-        return wayPoints;
     }
 
     // ---- stops ------------------------------------------------------------
@@ -265,23 +253,7 @@ public class Trip {
         return this.stops.stream()
                 .filter(s -> s.getId().equals(stopId))
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Trip stop not found"));
-    }
-
-    private void addStops(List<TripStop> newStops) {
-        assertStopUniquenessInTripOrThrow(newStops);
-        validateStopsSequence(newStops);
-        newStops.forEach(stop -> stop.setTrip(this));
-        this.stops.addAll(newStops);
-    }
-
-    private void removeStops(List<TripStop> stopsToRemove) {
-        stopsToRemove.forEach(TripStop::delete);
-        this.stops.removeAll(stopsToRemove);
-    }
-
-    private void deleteAllStops() {
-        this.stops.forEach(TripStop::delete);
+                .orElseThrow(() -> new TripException(TripErrorCode.STOP_NOT_FOUND, "Trip stop not found"));
     }
 
     // ---- bookings ------------------------------------------------------------
@@ -299,45 +271,80 @@ public class Trip {
         releaseWeight(bookingToRemove.getBookingWeight());
     }
 
+    // ---- queries ------------------------------------------------------------
+
+    public UUID getOwnerId() {
+        return this.owner.getId();
+    }
+
+    public boolean isMaxDetourAccepted(BigDecimal pickUpDetour, BigDecimal dropOffDetour) {
+        return this.maxDetourKm.compareTo(pickUpDetour) >= 0
+                && this.maxDetourKm.compareTo(dropOffDetour) >= 0;
+    }
+
+    public List<Address> getWayPoints() {
+        var wayPoints = new ArrayList<Address>();
+        wayPoints.add(departureAddress);
+        this.stops.stream()
+                .sorted(Comparator.comparingInt(TripStop::getOrder))
+                .map(TripStop::getAddress)
+                .forEach(wayPoints::add);
+        wayPoints.add(arrivalAddress);
+        return wayPoints;
+    }
+
     // ---- private helpers ------------------------------------------------------------
+
+    private void addStops(List<TripStop> newStops) {
+        assertStopUniquenessInTripOrThrow(newStops);
+        validateStopsSequence(newStops);
+        newStops.forEach(stop -> stop.setTrip(this));
+        this.stops.addAll(newStops);
+    }
+
+    private void removeStops(List<TripStop> stopsToRemove) {
+        stopsToRemove.forEach(TripStop::delete);
+        this.stops.removeAll(stopsToRemove);
+    }
+
+    private void deleteAllStops() {
+        this.stops.forEach(TripStop::delete);
+    }
 
     private void validateStopsSequence(List<TripStop> newStops) {
         int offset = this.stops.size();
         for (int i = 0; i < newStops.size(); i++) {
             int expected = offset + i + 1;
             if (newStops.get(i).getOrder() != expected)
-                throw new InvalidDomainStateException(
+                throw new TripException(TripErrorCode.STOP_SEQUENCE_INVALID,
                         "Stop at index %s must have order %s but got %s".formatted(i, expected, newStops.get(i).getOrder()));
         }
     }
 
     private void assertAddressUniquenessInTripOrThrow(Address addressToAdd) {
         var exists = this.getWayPoints().stream().anyMatch(address -> address.equals(addressToAdd));
-        if (exists) throw new InvalidDomainStateException("way point already in trip");
+        if (exists) throw new TripException(TripErrorCode.STOP_DUPLICATE_ADDRESS, "Stop address already exists in trip");
     }
 
     private void assertStopUniquenessInTripOrThrow(List<TripStop> stopsToAdd) {
         var existingAddresses = new HashSet<>(this.getWayPoints());
         for (TripStop stop : stopsToAdd) {
             if (existingAddresses.contains(stop.getAddress()))
-                throw new InvalidDomainStateException("way point already in trip: " + stop.getAddress());
+                throw new TripException(TripErrorCode.STOP_DUPLICATE_ADDRESS,
+                        "Way point already in trip: " + stop.getAddress());
         }
     }
 
     private void reserveWeight(BigDecimal weight) {
         assertNotDeleted();
-        if (weight == null || weight.compareTo(BigDecimal.ZERO) <= 0)
-            throw new InvalidDomainStateException("Weight must be positive");
         if (weight.compareTo(this.remainingWeightKg) > 0)
-            throw new InvalidDomainStateException(
+            throw new TripException(TripErrorCode.WEIGHT_INSUFFICIENT_REMAINING,
                     "Not enough remaining weight: requested=%s, available=%s".formatted(weight, this.remainingWeightKg));
         this.remainingWeightKg = this.remainingWeightKg.subtract(weight);
         if (this.remainingWeightKg.compareTo(BigDecimal.ZERO) == 0) updateState(TripState.FULL);
     }
 
     private void releaseWeight(BigDecimal weight) {
-        if (weight == null || weight.compareTo(BigDecimal.ZERO) <= 0)
-            throw new InvalidDomainStateException("Weight must be positive");
         this.remainingWeightKg = this.remainingWeightKg.add(weight);
         if (this.state == TripState.FULL) updateState(TripState.PUBLISHED);
     }

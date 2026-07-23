@@ -10,11 +10,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "reviews")
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
 public class Review {
 
     @Id
@@ -41,5 +40,15 @@ public class Review {
     @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    public static Review create (Booking booking, User reviewer, User reviewee, Short rating, String comment) {
+        return Review.builder()
+                .booking(booking)
+                .reviewer(reviewer)
+                .reviewee(reviewee)
+                .rating(rating)
+                .comment(comment)
+                .build();
+    }
 
 }

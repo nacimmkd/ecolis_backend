@@ -1,21 +1,22 @@
 package com.deliveryplatform.images;
 
+import com.deliveryplatform.images.exceptions.ImageErrorCode;
+import com.deliveryplatform.images.exceptions.ImageException;
 import com.deliveryplatform.storage.MediaType;
+import com.deliveryplatform.storage.PresignedUrl;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "images")
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 public class Image {
 
     @Id
@@ -38,8 +39,26 @@ public class Image {
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
-    public boolean isOwnedBy(User user) {
-        if (user == null) return false;
-        return this.uploadedBy.equals(user.getId());
+
+    public static Image create(MediaType mediaType, PresignedUrl presignedUrl, UUID uploadedBy) {
+        return Image.builder()
+                .key(presignedUrl.key())
+                .mediaType(mediaType)
+                .uploadedBy(uploadedBy)
+                .build();
+    }
+
+    public void confirm() {
+        this.confirmed = true;
+    }
+
+    public boolean isOwnedBy(User requestedBy) {
+        return this.uploadedBy.equals(requestedBy.getId());
+    }
+
+    public void assertOwnedBy(UUID requestedBy) {
+        if (!this.uploadedBy.equals(requestedBy)) {
+            throw new ImageException(ImageErrorCode.IMAGE_NOT_OWNED, "Not allowed to perform this action");
+        }
     }
 }

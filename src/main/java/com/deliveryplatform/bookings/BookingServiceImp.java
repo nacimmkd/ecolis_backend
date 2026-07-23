@@ -4,12 +4,11 @@ import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.bookings.events.BookingCanceledEvent;
 import com.deliveryplatform.bookings.events.BookingCompletedEvent;
 import com.deliveryplatform.bookings.events.BookingCreatedEvent;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
-import com.deliveryplatform.parcels.Parcel;
+import com.deliveryplatform.bookings.exceptions.BookingErrorCode;
+import com.deliveryplatform.bookings.exceptions.BookingException;
 import com.deliveryplatform.requests.RequestRepository;
-import com.deliveryplatform.trips.Trip;
+import com.deliveryplatform.requests.exceptions.RequestErrorCode;
+import com.deliveryplatform.requests.exceptions.RequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ public class BookingServiceImp implements BookingService {
     @Override
     public BookingDto getBooking(UUID bookingId, UUID currentUserId) {
         var booking = getBookingByIdOrThrow(bookingId);
-        assertInvolves(booking, currentUserId);
+        booking.assertUserInvolved(currentUserId);
         return bookingMapper.toDto(booking);
     }
 
@@ -38,7 +37,7 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public BookingDto create(UUID requestId) {
         var request = requestRepository.findRequestById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("request not found"));
+                .orElseThrow(() -> new RequestException(RequestErrorCode.REQUEST_NOT_FOUND, "request not found"));
         var booking = Booking.createFromRequest(request);
         request.delete();
         bookingRepository.save(booking);
@@ -52,8 +51,8 @@ public class BookingServiceImp implements BookingService {
     public void cancel(UUID bookingId, String reason, UUID currentUserId) {
 
         var booking = getBookingByIdOrThrow(bookingId);
-        assertInvolves(booking, currentUserId);
-        assertBookingInStatus(booking, BookingStatus.PENDING, "Only PENDING bookings can be cancelled");
+        booking.assertUserInvolved(currentUserId);
+        booking.assertIsInState(BookingState.PENDING, "Only PENDING bookings can be cancelled");
 
         var cancelledBy = booking.resolveCanceller(currentUserId);
         booking.cancel(reason, cancelledBy);
@@ -63,19 +62,25 @@ public class BookingServiceImp implements BookingService {
 
     @Override
     @Transactional
-    public void pay(UUID bookingId, UUID senderId) {
+    public void pay(UUID bookingId, UUID currentUserId) {
         var booking = getBookingByIdOrThrow(bookingId);
-        assertIsParcelOwner(booking.getParcel(), senderId);
-        assertBookingInStatus(booking, BookingStatus.PENDING, "Only PENDING bookings can be paid");
+
+        var parcel = booking.getParcel();
+        parcel.assertOwnedBy(currentUserId);
+
+        booking.assertIsInState(BookingState.PENDING, "Only PENDING bookings can be paid");
         booking.pay();
         bookingRepository.save(booking);
     }
 
     @Override
     @Transactional
-    public void confirmPickUp(UUID bookingId, String pickUpCode, UUID userId) {
+    public void confirmPickUp(UUID bookingId, String pickUpCode, UUID currentUserId) {
         var booking = getBookingByIdOrThrow(bookingId);
-        assertIsTripOwner(booking.getTrip(), userId);
+
+        var trip = booking.getTrip();
+        trip.assertOwnedBy(currentUserId);
+
         booking.confirmPickUp(pickUpCode);
         bookingRepository.save(booking);
     }
@@ -84,8 +89,11 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public void complete(UUID bookingId, String dropOfCode, UUID currentUserId) {
         var booking = getBookingByIdOrThrow(bookingId);
-        assertIsTripOwner(booking.getTrip(), currentUserId);
-        assertBookingInStatus(booking, BookingStatus.PAID, "Only PAID bookings can be completed");
+
+        var trip = booking.getTrip();
+        trip.assertOwnedBy(currentUserId);
+
+        booking.assertIsInState(BookingState.PAID, "Only PAID bookings can be completed");
         booking.complete(dropOfCode);
         bookingRepository.save(booking);
         eventPublisher.publishEvent(new BookingCompletedEvent(booking.getId(), booking.getSender()));
@@ -95,28 +103,10 @@ public class BookingServiceImp implements BookingService {
 
     private Booking getBookingByIdOrThrow(UUID id) {
         return bookingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
-    }
-
-    private void assertIsTripOwner(Trip trip, UUID currentUserId) {
-        if (!currentUserId.equals(trip.getOwnerId()))
-            throw new UnauthorizedActionException("You are not the carrier of this trip");
-    }
-
-    private void assertIsParcelOwner(Parcel parcel, UUID currentUserId) {
-        if (!currentUserId.equals(parcel.getOwnerId()))
-            throw new UnauthorizedActionException("You are not the sender of this parcel");
-    }
-
-    private void assertInvolves(Booking booking, UUID currentUserId) {
-        if (booking.involves(currentUserId))
-            throw new UnauthorizedActionException("You are not involved in this booking");
+                .orElseThrow(() -> new BookingException(BookingErrorCode.BOOKING_NOT_FOUND,"Booking not found"));
     }
 
 
-    private void assertBookingInStatus(Booking booking, BookingStatus expected, String message) {
-        if (!booking.getState().equals(expected))
-            throw new InvalidDomainStateException(message);
-    }
+
 
 }

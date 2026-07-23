@@ -26,11 +26,11 @@ public class JwtService {
         return generateToken(user, jwtConfig.getRefreshTokenDuration());
     }
 
-    public boolean isValidToken(String token) {
+    public boolean isValid(String token) {
         try {
             var claims = parseClaims(token);
             return claims.getExpiration().after(new Date());
-        } catch (JwtException e) {
+        } catch (Exception e) {
             return false;
         }
     }

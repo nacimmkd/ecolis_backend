@@ -1,11 +1,9 @@
 package com.deliveryplatform.messages;
 
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
-import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.messages.dto.*;
+import com.deliveryplatform.messages.exceptions.MessageErrorCode;
+import com.deliveryplatform.messages.exceptions.MessageException;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -25,7 +23,7 @@ public class MessagingServiceImp implements MessagingService {
     private final UserRepository         userRepository;
     private final ImageService           imageService;
     private final SimpMessagingTemplate  messagingTemplate;
-    private final MessageMapper        messageMapper;
+    private final MessageMapper          messageMapper;
 
     private static final String WS_DEST = "/queue/messages";
 
@@ -35,7 +33,7 @@ public class MessagingServiceImp implements MessagingService {
     public ConversationDetails getOrCreateConversation(UUID otherUserId, UUID currentUserId) {
         var conversation = conversationRepository
                 .findByParticipants(currentUserId, otherUserId)
-                .orElseGet(() -> createConversation(currentUserId, otherUserId));
+                .orElseGet(() -> createAndSaveConversation(currentUserId, otherUserId));
 
         return messageMapper.toDetailsDto(conversation);
     }
@@ -49,8 +47,9 @@ public class MessagingServiceImp implements MessagingService {
 
     @Override
     public ConversationDetails getConversationDetails(UUID conversationId, UUID currentUserId) {
-        var conversation = getConversationWithMessagesOrThrow(conversationId);
-        assertUserIsParticipant(conversation, currentUserId);
+        var conversation = conversationRepository.getConversationWithMessagesById(conversationId)
+                .orElseThrow(() -> new MessageException(MessageErrorCode.CONVERSATION_NOT_FOUND, "Conversation not found"));
+        conversation.assertIsParticipant(currentUserId);
         return messageMapper.toDetailsDto(conversation);
     }
 
@@ -58,40 +57,40 @@ public class MessagingServiceImp implements MessagingService {
     @Transactional
     public void sendMessage(SendMessageRequest request, UUID currentUserId) {
         var conversation = getConversationOrThrow(request.conversationId());
-        assertUserIsParticipant(conversation, currentUserId);
-        assertMessageNotEmpty(request);
+        conversation.assertIsParticipant(currentUserId);
 
-        var sender  = resolveParticipant(conversation, currentUserId);
-        var images = resolveImages(request.imageIds());
+        var sender = conversation.resolveParticipant(currentUserId);
+        var images = imageService.getImages(request.imageIds());
 
         var message = Message.create(conversation, sender, request.content(), images);
         conversation.addMessage(message);
         conversationRepository.save(conversation);
 
-        broadcastToReceiver(conversation, currentUserId, messageMapper.toSummaryDto(message));
+        var receiver = conversation.resolveOtherParticipant(currentUserId);
+        messagingTemplate.convertAndSendToUser(receiver.getId().toString(), WS_DEST, message);
     }
 
     @Override
     @Transactional
-    public int markConversationAsRead(UUID conversationId, UUID readerId) {
+    public int markConversationAsRead(UUID conversationId, UUID currentUserId) {
         var conversation = getConversationOrThrow(conversationId);
-        assertUserIsParticipant(conversation, readerId);
-        return conversationRepository.markMessagesAsRead(conversationId, readerId, OffsetDateTime.now());
+        conversation.assertIsParticipant(currentUserId);
+        return conversationRepository.markMessagesAsRead(conversationId, currentUserId, OffsetDateTime.now());
     }
 
 
     @Override
-    public long getUnreadCount(UUID conversationId, UUID userId) {
+    public long getUnreadCount(UUID conversationId, UUID currentUserId) {
         var conversation = getConversationOrThrow(conversationId);
-        assertUserIsParticipant(conversation, userId);
+        conversation.assertIsParticipant(currentUserId);
 
-        return conversationRepository.countUnreadMessages(conversationId, userId);
+        return conversationRepository.countUnreadMessages(conversationId, currentUserId);
     }
 
 
     // Private ---------------------------------------------------------------------------
 
-    private Conversation createConversation(UUID currentUserId, UUID otherUserId) {
+    private Conversation createAndSaveConversation(UUID currentUserId, UUID otherUserId) {
         var current = getUserOrThrow(currentUserId);
         var other   = getUserOrThrow(otherUserId);
         return conversationRepository.save(
@@ -99,55 +98,14 @@ public class MessagingServiceImp implements MessagingService {
         );
     }
 
-    private void broadcastToReceiver(Conversation conversation, UUID currentUserId, MessageSummary message) {
-        var receiverId = resolveOtherParticipant(conversation, currentUserId).getId();
-        messagingTemplate.convertAndSendToUser(receiverId.toString(), WS_DEST, message);
-    }
-
-    private List<Image> resolveImages(List<UUID> imageIds) {
-        if (imageIds == null || imageIds.isEmpty()) return List.of();
-        return imageService.getImages(imageIds);
-    }
-
-
-    private void assertUserIsParticipant(Conversation conversation, UUID userId) {
-        if (!conversation.involves(userId))
-            throw new UnauthorizedActionException("User is not a participant of this conversation");
-    }
-
-    private void assertMessageNotEmpty(SendMessageRequest request) {
-        boolean hasContent = request.content() != null && !request.content().isBlank();
-        boolean hasImages  = request.imageIds() != null && !request.imageIds().isEmpty();
-        if (!hasContent && !hasImages)
-            throw new InvalidDomainStateException("Message must have content or at least one image");
-    }
-
-    private User resolveParticipant(Conversation conversation, UUID userId) {
-        return conversation.getParticipants().stream()
-                .filter(u -> u.getId().equals(userId))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("User not found in conversation"));
-    }
-
-    private User resolveOtherParticipant(Conversation conversation, UUID currentUserId) {
-        return conversation.getParticipants().stream()
-                .filter(u -> !u.getId().equals(currentUserId))
-                .findFirst()
-                .orElseThrow(() -> new InvalidDomainStateException("Other participant not found"));
-    }
-
     private Conversation getConversationOrThrow(UUID id) {
         return conversationRepository.getConversationById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
+                .orElseThrow(() -> new MessageException(MessageErrorCode.CONVERSATION_NOT_FOUND, "Conversation not found"));
     }
 
-    private Conversation getConversationWithMessagesOrThrow(UUID id) {
-        return conversationRepository.getConversationWithMessagesById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
-    }
 
     private User getUserOrThrow(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new MessageException(MessageErrorCode.PARTICIPANT_NOT_FOUND, "Conversation participant not found"));
     }
 }

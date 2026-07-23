@@ -1,12 +1,13 @@
 package com.deliveryplatform.images;
 
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
 import com.deliveryplatform.images.dto.ImageDto;
+import com.deliveryplatform.images.exceptions.ImageErrorCode;
+import com.deliveryplatform.images.exceptions.ImageException;
 import com.deliveryplatform.storage.MediaType;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.storage.PresignedUrl;
+import com.deliveryplatform.storage.exceptions.StorageErrorCode;
+import com.deliveryplatform.storage.exceptions.StorageException;
 import com.deliveryplatform.users.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,26 +24,23 @@ public class ImageServiceImp implements ImageService {
     private final ImageRepository imageRepository;
     private final ImageMapper imageMapper;
 
+    private static final String IMAGES_FOLDER_NAME = "images";
+
 
     @Override
-    public PresignedUrl getPresignUrl(String contentType, UUID uploadedBy) {
+    public PresignedUrl getPresignUrl(String contentType, UUID currentUserId) {
         var mediaType = resolveMediaType(contentType);
-        var presignedUrl = s3StorageService.generatePresignedUrl(mediaType, "images");
-
-        imageRepository.save(Image.builder()
-                .key(presignedUrl.key())
-                .mediaType(mediaType)
-                .uploadedBy(uploadedBy)
-                .build());
+        var presignedUrl = s3StorageService.generatePresignedUrl(mediaType, IMAGES_FOLDER_NAME);
+        imageRepository.save(Image.create(mediaType, presignedUrl, currentUserId));
         return presignedUrl;
     }
 
     @Override
-    public ImageDto confirmUpload(String key, UUID uploadedBy) {
+    public ImageDto confirmUpload(String key, UUID currentUserId) {
         var image = getByKeyOrThrow(key);
-        assertOwnership(image, uploadedBy);
+        image.assertOwnedBy(currentUserId);
         assertExistsInStorage(key);
-        image.setConfirmed(true);
+        image.confirm();
         return imageMapper.toDto(imageRepository.save(image));
     }
 
@@ -66,10 +64,10 @@ public class ImageServiceImp implements ImageService {
     }
 
     @Override
-    public Image getImage(UUID imageId, User user) {
+    public Image getImage(UUID imageId, User currentUser) {
         if (Objects.isNull(imageId)) return null;
         var image = getByIdOrThrow(imageId);
-        if (!image.isOwnedBy(user)) throw new UnauthorizedActionException("User is not the owner of image");
+        image.assertOwnedBy(currentUser.getId());
         if (!image.isConfirmed()) return null;
         return image;
     }
@@ -84,28 +82,22 @@ public class ImageServiceImp implements ImageService {
 
     private MediaType resolveMediaType(String content) {
         return MediaType.of(content)
-                .orElseThrow(() -> new InvalidDomainStateException("Content type not supported"));
+                .orElseThrow(() -> new StorageException(StorageErrorCode.INVALID_MEDIA_TYPE, "Content type not supported"));
     }
 
     private Image getByKeyOrThrow(String key) {
         return imageRepository.findByKey(key)
-                .orElseThrow(() -> new ResourceNotFoundException("Image not found : " + key));
+                .orElseThrow(() -> new ImageException(ImageErrorCode.IMAGE_NOT_FOUND, "Image not found"));
     }
 
     private Image getByIdOrThrow(UUID id) {
         return imageRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Image not found"));
-    }
-
-    private void assertOwnership(Image image, UUID requestedBy) {
-        if (image == null || !image.getUploadedBy().equals(requestedBy)) {
-            throw new UnauthorizedActionException("You are not allowed to perform this action");
-        }
+                .orElseThrow(() -> new ImageException(ImageErrorCode.IMAGE_NOT_FOUND, "Image not found"));
     }
 
     private void assertExistsInStorage(String key) {
         if (!s3StorageService.exists(key)) {
-            throw new ResourceNotFoundException("Image not found : " + key);
+            throw new StorageException(StorageErrorCode.FILE_NOT_FOUND, "Image not found : " + key);
         }
     }
 }

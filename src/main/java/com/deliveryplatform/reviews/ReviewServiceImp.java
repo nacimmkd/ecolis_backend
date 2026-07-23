@@ -2,20 +2,18 @@ package com.deliveryplatform.reviews;
 
 import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingRepository;
-import com.deliveryplatform.common.exceptions.ConflictException;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
-import com.deliveryplatform.common.exceptions.UnauthorizedActionException;
+import com.deliveryplatform.bookings.exceptions.BookingErrorCode;
+import com.deliveryplatform.bookings.exceptions.BookingException;
 import com.deliveryplatform.reviews.dto.CreateReviewRequest;
 import com.deliveryplatform.reviews.dto.ReviewDto;
-import com.deliveryplatform.users.User;
+import com.deliveryplatform.reviews.exceptions.ReviewErrorCode;
+import com.deliveryplatform.reviews.exceptions.ReviewException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-
 
 @Service
 @RequiredArgsConstructor
@@ -25,77 +23,43 @@ public class ReviewServiceImp implements ReviewService {
     private final BookingRepository bookingRepository;
     private final ReviewMapper reviewMapper;
 
-
     public List<ReviewDto> getUserReviews(UUID userId) {
         return reviewMapper.toDto(reviewRepository.findByRevieweeId(userId));
     }
 
     @Transactional
     public ReviewDto create(CreateReviewRequest request, UUID reviewerId) {
-
         var booking = getBookingByIdOrThrow(request.bookingId());
-
-        assertBookingIsCompleted(booking);
-        assertReviewerInvolvedInBooking(booking, reviewerId);
+        booking.assertIsCompleted();
+        booking.assertUserInvolved(reviewerId);
         assertNotAlreadyReviewed(booking.getId(), reviewerId);
-
         var reviewer = booking.resolveParticipant(reviewerId);
         var reviewee = booking.resolveOtherParticipant(reviewerId);
-
-        var review = buildReview(booking, reviewer, reviewee, request.rating(), request.comment());
+        var review = Review.create(booking, reviewer, reviewee, request.rating(), request.comment());
         return reviewMapper.toDto(reviewRepository.save(review));
     }
-
 
     public void remove(UUID reviewId, UUID reviewerId) {
         assertOwnedReviewExists(reviewId, reviewerId);
         reviewRepository.deleteById(reviewId);
     }
 
-
     // --------------------------------------------------------
 
     private void assertNotAlreadyReviewed(UUID bookingId, UUID reviewerId) {
         if (reviewRepository.existsByBookingIdAndReviewerId(bookingId, reviewerId)) {
-            throw new ConflictException("You have already reviewed this booking");
+            throw new ReviewException(ReviewErrorCode.REVIEW_ALREADY_EXISTS, "Booking has already been reviewed");
         }
-    }
-
-    private void assertBookingIsCompleted(Booking booking) {
-        if (!booking.isCompleted()) {
-            throw new InvalidDomainStateException("Booking must be completed before reviewing");
-        }
-    }
-
-    private void assertReviewerInvolvedInBooking(Booking booking, UUID reviewerId) {
-        if (!booking.involves(reviewerId))
-            throw new UnauthorizedActionException("You are not part of this booking");
     }
 
     private Booking getBookingByIdOrThrow(UUID bookingId) {
         return bookingRepository.findBookingById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+                .orElseThrow(() -> new BookingException(BookingErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
     }
-
 
     private void assertOwnedReviewExists(UUID reviewId, UUID userId) {
-        // checks if review exists
-        // checks if requester is the one who did the review
         if (!reviewRepository.existsByIdAndReviewerId(reviewId, userId)) {
-            throw new UnauthorizedActionException("Action not allowed");
+            throw new ReviewException(ReviewErrorCode.REVIEW_NOT_FOUND, "Review not found");
         }
     }
-
-
-    private Review buildReview(Booking booking, User reviewer, User reviewee, Short rating, String comment) {
-        return Review.builder()
-                .booking(booking)
-                .reviewer(reviewer)
-                .reviewee(reviewee)
-                .rating(rating)
-                .comment(comment)
-                .build();
-    }
-
-
 }

@@ -1,5 +1,7 @@
 package com.deliveryplatform.messages;
 
+import com.deliveryplatform.messages.exceptions.MessageErrorCode;
+import com.deliveryplatform.messages.exceptions.MessageException;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -47,10 +49,8 @@ public class Conversation {
 
 
     public static Conversation create(List<User> participants) {
-
         if (participants.size() != 2)
             throw new IllegalArgumentException("conversation must have 2 participants");
-
         return Conversation.builder()
                 .lastMessage(null)
                 .participants(participants)
@@ -66,10 +66,25 @@ public class Conversation {
         return participants.stream().anyMatch(m -> m.getId().equals(userId));
     }
 
-    public User getReceiver(UUID senderId) {
+
+    public User resolveParticipant(UUID userId) {
         return participants.stream()
-                .filter(p -> !p.getId().equals(senderId))
+                .filter(p -> p.getId().equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Conversation has no other participant"));
+                .orElseThrow(() -> new MessageException(MessageErrorCode.PARTICIPANT_NOT_FOUND, "Conversation participant not found"));
+    }
+
+    public User resolveOtherParticipant(UUID userId) {
+        return participants.stream()
+                .filter(p -> !p.getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new MessageException(MessageErrorCode.PARTICIPANT_NOT_FOUND, "Other conversation participant not found"));
+    }
+
+    // --------- assertions -------------------------------------------------------------------------------
+
+    public void assertIsParticipant(UUID userId) {
+        if (!this.involves(userId))
+            throw new MessageException(MessageErrorCode.NOT_A_PARTICIPANT, "User is not a participant of this conversation");
     }
 }

@@ -1,10 +1,10 @@
 package com.deliveryplatform.storage.aws;
 
-import com.deliveryplatform.common.exceptions.ExternalServiceException;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.storage.MediaType;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.storage.PresignedUrl;
+import com.deliveryplatform.storage.exceptions.StorageErrorCode;
+import com.deliveryplatform.storage.exceptions.StorageException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,6 @@ public class S3StorageService implements StorageService {
     private final S3Presigner s3Presigner;
     private final S3Properties s3Properties;
 
-
     @Override
     public PresignedUrl generatePresignedUrl(MediaType mediaType, String folder) {
         String key = generateKey(mediaType, folder);
@@ -41,7 +40,6 @@ public class S3StorageService implements StorageService {
         );
     }
 
-
     @Override
     public String generateReadUrl(String key) {
         PresignedGetObjectRequest presigned = s3Presigner.presignGetObject(r -> r
@@ -54,41 +52,40 @@ public class S3StorageService implements StorageService {
         return presigned.url().toString();
     }
 
-
     @Override
     public boolean exists(String key) {
-        try{
+        try {
             s3Client.headObject(r -> r.bucket(s3Properties.getBucketName()).key(key));
             return true;
         } catch (NoSuchKeyException e) {
             return false;
         } catch (S3Exception e) {
-            throw new ExternalServiceException(
-                    S3StorageService.class,
+            throw new StorageException(
+                    StorageErrorCode.STORAGE_SERVICE_ERROR,
                     "Error while checking file existence: " + key
             );
         }
     }
-
 
     @Override
     public void delete(String key) {
         try {
             s3Client.deleteObject(r -> r.bucket(s3Properties.getBucketName()).key(key));
         } catch (NoSuchKeyException e) {
-            throw new ResourceNotFoundException("File not found on S3 : " + key);
-        }catch (S3Exception e) {
+            throw new StorageException(StorageErrorCode.FILE_NOT_FOUND, "File not found on S3 : " + key);
+        } catch (S3Exception e) {
             log.error("Error while deleting file — key={}", key, e);
-            throw new ExternalServiceException(S3StorageService.class,
-                    "Error while deleting file: " + key);
+            throw new StorageException(
+                    StorageErrorCode.STORAGE_SERVICE_ERROR,
+                    "Error while deleting file: " + key
+            );
         }
     }
-
 
     //---------------------------------------------------------------------
 
     private String generateKey(MediaType mediaType, String folder) {
-        return  folder + "/" + UUID.randomUUID() + mediaType.getExtension();
+        return folder + "/" + UUID.randomUUID() + mediaType.getExtension();
     }
 
     private PresignedPutObjectRequest createPresignedRequest(String key, String content) {
@@ -104,6 +101,4 @@ public class S3StorageService implements StorageService {
                 .putObjectRequest(putObjectRequest)
         );
     }
-
-
 }

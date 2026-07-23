@@ -1,10 +1,11 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.dto.ProfileSummary;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
 import com.deliveryplatform.profiles.dto.ProfileDetails;
+import com.deliveryplatform.profiles.exceptions.ProfileErrorCode;
+import com.deliveryplatform.profiles.exceptions.ProfileException;
 import com.deliveryplatform.reviews.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class ProfileServiceImp implements ProfileService {
 
     private Profile getByIdOrThrow(UUID userId) {
         return profileRepository.findProfileById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
+                .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND, "Profile not found"));
     }
 
     private void updateAvatar(Profile profile, UUID avatarId) {
@@ -53,7 +54,6 @@ public class ProfileServiceImp implements ProfileService {
             profile.setAvatar(null);
             return;
         }
-        // if avatarId in not null, we update avatar with new one
         var image = imageService.getImage(avatarId, profile.getUser());
         profile.setAvatar(image);
     }

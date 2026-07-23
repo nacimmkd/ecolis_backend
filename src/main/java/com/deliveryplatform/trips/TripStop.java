@@ -1,7 +1,8 @@
 package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.common.exceptions.InvalidDomainStateException;
+import com.deliveryplatform.trips.exceptions.TripErrorCode;
+import com.deliveryplatform.trips.exceptions.TripException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,7 +43,7 @@ public class TripStop {
 
     public static TripStop create(Address address, int order) {
         if (order < 1)
-            throw new InvalidDomainStateException("stop order must be >= 1");
+            throw new TripException(TripErrorCode.STOP_SEQUENCE_INVALID, "stop order must be >= 1");
 
         var stop = new TripStop();
         stop.setOrder(order);
@@ -60,7 +61,7 @@ public class TripStop {
 
     public void delete() {
         if (this.deleted)
-            throw new InvalidDomainStateException("stop already deleted");
+            throw new TripException(TripErrorCode.STOP_ALREADY_DELETED, "stop already deleted");
         this.deleted = true;
         this.deletedAt = OffsetDateTime.now();
     }

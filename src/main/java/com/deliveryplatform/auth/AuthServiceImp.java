@@ -1,14 +1,14 @@
 package com.deliveryplatform.auth;
 
+import com.deliveryplatform.auth.exceptions.AuthErrorCode;
+import com.deliveryplatform.auth.exceptions.AuthException;
 import com.deliveryplatform.auth.jwt.JwtConfig;
 import com.deliveryplatform.auth.jwt.JwtService;
 import com.deliveryplatform.common.caching.CachingService;
-import com.deliveryplatform.common.exceptions.AuthenticationException;
 import com.deliveryplatform.users.UserPrincipal;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -29,7 +29,7 @@ public class AuthServiceImp implements AuthService {
     @Override
     public AuthResponse login(AuthRequest request) {
 
-        var auth = authenticate(request.getEmail(), request.getPassword());
+        var auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var principal = (UserPrincipal) auth.getPrincipal();
 
         var accessToken = jwtService.generateAccessToken(principal);
@@ -44,7 +44,7 @@ public class AuthServiceImp implements AuthService {
     @Override
     public AuthResponse refresh(String refreshToken) {
         validateRefreshTokenOrThrow(refreshToken);
-        var principal = getPrincipalFromRefreshToken(refreshToken);
+        var principal = jwtService.extractPrincipal(refreshToken);
 
         // Refresh Token Rotation for more security
         var newRefreshToken = jwtService.generateRefreshToken(principal);
@@ -68,20 +68,16 @@ public class AuthServiceImp implements AuthService {
 
     // --------------------------------------------------------------------
 
-    private Authentication authenticate(String email, String password) {
-        return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-    }
-
-    private UserPrincipal getPrincipalFromRefreshToken(String refreshToken) {
-        return jwtService.extractPrincipal(refreshToken);
-    }
 
     private void validateRefreshTokenOrThrow(String refreshToken) {
+        if (!jwtService.isValid(refreshToken)) {
+            throw new AuthException(AuthErrorCode.REFRESH_TOKEN_EXPIRED, "Refresh token expired or malformed");
+        }
+
         var userId = jwtService.getUserIdFromToken(refreshToken);
         var key = REFRESH_TOKEN_PREFIX + userId.toString();
-        var isValid =  cachingService.isValid(key, refreshToken) && jwtService.isValidToken(refreshToken);
-        if (!isValid) {
-            throw new AuthenticationException("Session expired");
+        if (!cachingService.isValid(key, refreshToken)) {
+            throw new AuthException(AuthErrorCode.REFRESH_TOKEN_INVALID, "Refresh token has been revoked");
         }
     }
 }

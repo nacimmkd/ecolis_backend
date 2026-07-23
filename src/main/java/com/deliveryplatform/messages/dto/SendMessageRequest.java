@@ -1,5 +1,6 @@
 package com.deliveryplatform.messages.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
@@ -9,6 +10,7 @@ public record SendMessageRequest(
         @NotNull
         UUID conversationId,
 
+        @NotBlank
         String content,
 
         List<UUID> imageIds

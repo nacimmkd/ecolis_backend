@@ -5,15 +5,18 @@ import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingMapper;
 import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.bookings.dto.ParcelBookingDto;
-import com.deliveryplatform.common.exceptions.ResourceNotFoundException;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.*;
+import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
+import com.deliveryplatform.parcels.exceptions.ParcelException;
 import com.deliveryplatform.requests.RequestMapper;
 import com.deliveryplatform.requests.RequestRepository;
 import com.deliveryplatform.requests.dto.ParcelRequestDto;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
+import com.deliveryplatform.users.exceptions.UserErrorCode;
+import com.deliveryplatform.users.exceptions.UserException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,7 +65,7 @@ public class ParcelServiceImp implements ParcelService {
     @Override
     public List<ParcelRequestDto> getParcelRequests(UUID parcelId, UUID currentUserId) {
         var parcel = parcelRepository.findById(parcelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
+                .orElseThrow(() -> new ParcelException(ParcelErrorCode.PARCEL_NOT_FOUND, "Parcel not found"));
 
         parcel.assertOwnedBy(currentUserId);
         var requests = requestRepository.findByParcelId(parcelId);
@@ -130,7 +133,7 @@ public class ParcelServiceImp implements ParcelService {
     @Override
     public List<TrackEventDto> getTrackingEvents(UUID parcelId) {
         var parcel = parcelRepository.findParcelWithTrackingById(parcelId)
-                .orElseThrow(() -> new ResourceNotFoundException("parcel not found"));
+                .orElseThrow(() -> new ParcelException(ParcelErrorCode.PARCEL_NOT_FOUND, "Parcel not found"));
         return parcelMapper.toListTrackingEventDto(parcel.getTrackEvents());
     }
 
@@ -138,12 +141,12 @@ public class ParcelServiceImp implements ParcelService {
 
     private Parcel getParcelByIdOrThrow(UUID id) {
         return parcelRepository.findParcelDetailsById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Parcel not found"));
+                .orElseThrow(() -> new ParcelException(ParcelErrorCode.PARCEL_NOT_FOUND, "Parcel not found"));
     }
 
     private User getUserByIdOrThrow(UUID id) {
         return userRepository.findUserWithProfileById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "User not found"));
     }
 
     private void updateParcelImages(Parcel parcel, List<UUID> imageIds) {

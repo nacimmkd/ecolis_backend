@@ -41,7 +41,7 @@ public class UnreadMessageNotificationScheduler {
     private void notifyConversationUnreadMessages(List<Message> conversationMessages) {
         var lastMessage = conversationMessages.get(conversationMessages.size() - 1);
         var sender = lastMessage.getSender();
-        var receiver = lastMessage.getConversation().getReceiver(sender.getId());
+        var receiver = lastMessage.getConversation().resolveOtherParticipant(sender.getId());
 
         eventPublisher.publishEvent(new NewMessageEvent(
                 lastMessage.getConversation().getId(),

@@ -22,15 +22,19 @@ public class Profile {
     private UUID id;
 
     @Column(name = "first_name")
+    @Setter(AccessLevel.PACKAGE)
     private String firstName;
 
     @Column(name = "last_name")
+    @Setter(AccessLevel.PACKAGE)
     private String lastName;
 
+    @Setter(AccessLevel.PACKAGE)
     private String phone;
 
     @OneToOne
     @JoinColumn(name = "avatar_image_id")
+    @Setter(AccessLevel.PACKAGE)
     private Image avatar;
 
     @Column(name = "avg_rating", precision = 2, scale = 1)
@@ -63,5 +67,4 @@ public class Profile {
                 .avatar(null)
                 .build();
     }
-
 }
