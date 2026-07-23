@@ -58,7 +58,7 @@ public class ParcelServiceImp implements ParcelService {
 
         parcel.assertOwnedBy(currentUserId);
 
-        List<Booking> bookings = bookingRepository.findByParcelId(parcelId);
+        List<Booking> bookings = bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId);
         return bookingMapper.toParcelBookingDto(bookings);
     }
 

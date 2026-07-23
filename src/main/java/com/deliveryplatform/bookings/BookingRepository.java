@@ -1,8 +1,7 @@
 package com.deliveryplatform.bookings;
 
-
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -13,17 +12,16 @@ import java.util.UUID;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
-    @Query("SELECT b FROM Booking b JOIN FETCH b.parcel p JOIN FETCH p.owner JOIN FETCH b.trip t JOIN FETCH t.owner WHERE b.id = :bookingId ")
-    Optional<Booking> findBookingById(@Param("bookingId") UUID bookingId);
+    @EntityGraph(attributePaths = {"parcel", "parcel.owner", "trip", "trip.owner"})
+    Optional<Booking> findBookingById(UUID bookingId);
 
-    List<Booking> findByTripId(UUID tripId);
+    @EntityGraph(attributePaths = {"parcel", "parcel.owner", "parcel.owner.profile"})
+    List<Booking> findByTripIdOrderByCreatedAtDesc(UUID tripId);
 
-    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.parcel p LEFT JOIN FETCH b.trip t WHERE p.id = :parcelId ORDER BY b.createdAt DESC")
-    List<Booking> findByParcelId(@Param("parcelId") UUID parcelId);
+    @EntityGraph(attributePaths = {"parcel", "trip", "trip.owner", "trip.owner.profile"})
+    List<Booking> findByParcelIdOrderByCreatedAtDesc(UUID parcelId);
 
     long countByTripId(UUID tripId);
 
     long countByParcelId(UUID parcelId);
-
-
 }

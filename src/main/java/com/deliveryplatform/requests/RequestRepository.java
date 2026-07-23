@@ -14,10 +14,16 @@ import java.util.UUID;
 @Repository
 public interface RequestRepository extends JpaRepository<Request, UUID> {
 
-    @EntityGraph(attributePaths = {"trip", "trip.owner", "trip.stops" , "parcel", "parcel.owner"})
+    @EntityGraph(attributePaths = {
+            "trip", "trip.owner", "trip.owner.profile", "trip.stops",
+            "parcel", "parcel.owner", "parcel.owner.profile"
+    })
     Optional<Request> findRequestById(UUID id);
 
-    @EntityGraph(attributePaths = {"trip", "trip.owner", "parcel", "parcel.owner"})
+    @EntityGraph(attributePaths = {
+            "trip", "trip.owner", "trip.owner.profile",
+            "parcel", "parcel.owner", "parcel.owner.profile"
+    })
     @Query("""
             SELECT r FROM Request r
             WHERE r.parcel.owner.id = :userId
@@ -25,7 +31,10 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
             """)
     List<Request> findSentRequestsByUserId(@Param("userId") UUID userId);
 
-    @EntityGraph(attributePaths = {"trip", "trip.owner", "parcel", "parcel.owner"})
+    @EntityGraph(attributePaths = {
+            "trip", "trip.owner", "trip.owner.profile",
+            "parcel", "parcel.owner", "parcel.owner.profile"
+    })
     @Query("""
             SELECT r FROM Request r
             WHERE r.trip.owner.id = :userId
@@ -33,7 +42,10 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
             """)
     List<Request> findReceivedRequestsByUserId(@Param("userId") UUID userId);
 
-    @EntityGraph(attributePaths = {"trip", "trip.owner", "parcel", "parcel.owner"})
+    @EntityGraph(attributePaths = {
+            "trip", "trip.owner", "trip.owner.profile",
+            "parcel", "parcel.owner", "parcel.owner.profile"
+    })
     @Query("""
             SELECT r FROM Request r
             WHERE r.parcel.id = :parcelId
@@ -41,7 +53,10 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
             """)
     List<Request> findByParcelId(@Param("parcelId") UUID parcelId);
 
-    @EntityGraph(attributePaths = {"trip", "trip.owner", "parcel", "parcel.owner"})
+    @EntityGraph(attributePaths = {
+            "trip", "trip.owner", "trip.owner.profile",
+            "parcel", "parcel.owner", "parcel.owner.profile"
+    })
     @Query("""
             SELECT r FROM Request r
             WHERE r.trip.id = :tripId
@@ -49,9 +64,13 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
             """)
     List<Request> findByTripId(@Param("tripId") UUID tripId);
 
-    boolean existsByParcelIdAndTripId(UUID parcelId, UUID tripId);
-
+    @EntityGraph(attributePaths = {
+            "trip", "trip.owner",
+            "parcel", "parcel.owner"
+    })
     List<Request> findByStateAndRequestedAtBefore(RequestState status, OffsetDateTime cutoff);
+
+    boolean existsByParcelIdAndTripId(UUID parcelId, UUID tripId);
 
     long countByTripId(UUID tripId);
 }

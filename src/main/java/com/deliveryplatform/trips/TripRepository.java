@@ -16,12 +16,10 @@ import java.util.UUID;
 public interface TripRepository extends JpaRepository<Trip, UUID> {
 
     @EntityGraph(attributePaths = {"stops"})
-    @Query("SELECT t FROM Trip t WHERE t.id = :tripId")
-    Optional<Trip> findTripById(@Param("tripId")UUID tripId);
+    Optional<Trip> findTripById(UUID id);
 
     @EntityGraph(attributePaths = {"stops"})
-    @Query("SELECT t FROM Trip t WHERE t.owner.id = :ownerId")
-    List<Trip> findByOwnerId(@Param("ownerId") UUID ownerId);
+    List<Trip> findTripByOwner_Id(UUID id);
 
     @EntityGraph(attributePaths = {"stops", "owner.profile"})
     @Query("""

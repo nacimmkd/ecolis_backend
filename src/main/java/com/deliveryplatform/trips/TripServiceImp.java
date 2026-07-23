@@ -50,7 +50,7 @@ public class TripServiceImp implements TripService {
 
     @Override
     public List<TripSummary> getMyTrips(UUID currentUserId) {
-        return tripMapper.toTripSummaryDto(tripRepository.findByOwnerId(currentUserId));
+        return tripMapper.toTripSummaryDto(tripRepository.findTripByOwner_Id(currentUserId));
     }
 
     @Override
@@ -58,7 +58,7 @@ public class TripServiceImp implements TripService {
         var trip = getTripByIdOrThrow(tripId);
         trip.assertOwnedBy(userId);
 
-        List<Booking> bookings = bookingRepository.findByTripId(tripId);
+        List<Booking> bookings = bookingRepository.findByTripIdOrderByCreatedAtDesc(tripId);
         return bookingMapper.toTripBookingDto(bookings);
     }
 
