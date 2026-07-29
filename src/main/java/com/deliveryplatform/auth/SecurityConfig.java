@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification/verify").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification/send").permitAll()
+                        .requestMatchers("/api/v1/webhooks/stripe").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated() // to be changed later
                 )

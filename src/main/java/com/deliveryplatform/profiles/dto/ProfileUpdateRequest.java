@@ -16,5 +16,8 @@ public record ProfileUpdateRequest(
         @NotNull @Phone
         String phone,
 
+        @NotNull
+        String country,
+
         UUID avatarId
 ) {}

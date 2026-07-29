@@ -13,5 +13,7 @@ public record ProfileCreateRequest(
         String lastName,
 
         @Phone
-        String phone
+        String phone,
+
+        String country
 ) {}

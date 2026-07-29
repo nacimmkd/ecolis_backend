@@ -14,6 +14,7 @@ public record ProfileDetails(
         String firstName,
         String lastName,
         String phone,
+        String country,
         BigDecimal avgRating,
         int reviewCount,
         int completedTrips,

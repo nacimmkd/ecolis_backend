@@ -98,6 +98,11 @@ public class Request {
             throw new RequestException(RequestErrorCode.NOT_CARRIER, "User is not allowed to perform this action");
     }
 
+    public void assertIsSender(UUID userId) {
+        if (!userId.equals(this.getSender().getId()))
+            throw new RequestException(RequestErrorCode.NOT_CARRIER, "User is not allowed to perform this action");
+    }
+
     public void assertInvolves(UUID userId) {
         if (!involves(userId))
             throw new RequestException(RequestErrorCode.USER_NOT_INVOLVED, "User is not allowed to perform this action");
@@ -138,5 +143,10 @@ public class Request {
 
     public User getCarrier() {
         return this.trip.getOwner();
+    }
+
+    public long getPriceInCents(){
+        var price = this.trip.getPricePerKg().multiply(this.parcel.getWeightKg());
+        return price.movePointRight(2).longValueExact();
     }
 }

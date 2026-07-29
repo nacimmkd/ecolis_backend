@@ -11,5 +11,6 @@ public record ProfileSummary(
         String firstName,
         String lastName,
         String phone,
+        String country,
         ImageDto avatar
 ) {}

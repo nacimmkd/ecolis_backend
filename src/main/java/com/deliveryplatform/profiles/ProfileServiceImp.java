@@ -37,6 +37,7 @@ public class ProfileServiceImp implements ProfileService {
         profile.setFirstName(request.firstName());
         profile.setLastName(request.lastName());
         profile.setPhone(request.phone());
+        profile.setCountry(request.country());
         updateAvatar(profile, request.avatarId());
 
         return profileMapper.toSummaryDto(profileRepository.save(profile));

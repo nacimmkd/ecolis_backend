@@ -15,6 +15,7 @@ CREATE TABLE profiles (
                                  first_name          VARCHAR(100)    NOT NULL,
                                  last_name           VARCHAR(100)    NOT NULL,
                                  phone               VARCHAR(20),
+                                 country             VARCHAR(20),
                                  avg_rating          NUMERIC(2,1),
                                  review_count        INT             NOT NULL DEFAULT 0,
                                  completed_trips     INT             NOT NULL DEFAULT 0,

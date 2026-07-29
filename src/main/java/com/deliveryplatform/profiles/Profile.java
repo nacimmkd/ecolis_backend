@@ -32,6 +32,9 @@ public class Profile {
     @Setter(AccessLevel.PACKAGE)
     private String phone;
 
+    @Setter(AccessLevel.PACKAGE)
+    private String country;
+
     @OneToOne
     @JoinColumn(name = "avatar_image_id")
     @Setter(AccessLevel.PACKAGE)
@@ -64,6 +67,7 @@ public class Profile {
                 .firstName(request.firstName())
                 .lastName(request.lastName())
                 .phone(request.phone())
+                .country(request.country())
                 .avatar(null)
                 .build();
     }

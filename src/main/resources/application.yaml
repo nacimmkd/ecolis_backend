@@ -6,3 +6,20 @@ geocoding:
   nominatim:
     base-url: https://nominatim.openstreetmap.org
     user-agent: delivery-platform/1.0
+
+
+mail:
+  username: ${MAIL_USERNAME}
+  password: ${MAIL_PASSWORD}
+
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  checkout:
+    validity-minutes: 60
+
+platform:
+  const-fee: 50
+  fee-rate: 25
+  currency: eur

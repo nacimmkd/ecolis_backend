@@ -5,12 +5,15 @@ import com.deliveryplatform.auth.exceptions.AuthException;
 import com.deliveryplatform.auth.jwt.JwtConfig;
 import com.deliveryplatform.auth.jwt.JwtService;
 import com.deliveryplatform.common.caching.CachingService;
+import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserPrincipal;
+import com.deliveryplatform.users.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -25,6 +28,7 @@ public class AuthServiceImp implements AuthService {
     private final JwtService jwtService;
     private final CachingService cachingService;
     private final JwtConfig jwtConfig;
+    private final UserRepository userRepository;
 
     @Override
     public AuthResponse login(AuthRequest request) {
@@ -57,6 +61,19 @@ public class AuthServiceImp implements AuthService {
         cachingService.remove(refreshTokenCacheKey(userId));
     }
 
+    @Override
+    public UserPrincipal getCurrentUserPrincipal() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (UserPrincipal) authentication.getPrincipal();
+    }
+
+    @Override
+    public User getCurrentUser() {
+        var principal = this.getCurrentUserPrincipal();
+        var userId = principal.getId();
+        return userRepository.findUserWithProfileById(userId).orElse(null);
+    }
+
     // ---------------------------------------------------------------------
 
     private UserPrincipal authenticate(AuthRequest request) {
@@ -67,7 +84,7 @@ public class AuthServiceImp implements AuthService {
         } catch (BadCredentialsException e) {
             throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS, "Invalid email or password");
         } catch (DisabledException e) {
-            throw new AuthException(AuthErrorCode.ACCOUNT_DISABLED, "Account is disabled");
+            throw new AuthException(AuthErrorCode.ACCOUNT_DISABLED, "PaymentAccount is disabled");
         }
     }
 
