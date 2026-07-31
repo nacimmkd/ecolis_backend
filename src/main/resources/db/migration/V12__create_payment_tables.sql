@@ -23,13 +23,14 @@ CREATE TABLE payments (
                           application_fee_amount      BIGINT NOT NULL CHECK (application_fee_amount >= 0),
                           currency                    VARCHAR(3) NOT NULL DEFAULT 'eur',
                           status                      VARCHAR(20) NOT NULL DEFAULT 'PENDING'
-                              CHECK (status IN ('PENDING', 'AUTHORIZED', 'SUCCEEDED', 'FAILED', 'CANCELED')),
+                              CHECK (status IN ('PENDING', 'AUTHORIZED', 'SUCCEEDED', 'FAILED', 'CANCELED', 'REFUNDED')),
                           created_at                  TIMESTAMPTZ NOT NULL DEFAULT now(),
                           authorized_at               TIMESTAMPTZ,
                           succeeded_at                TIMESTAMPTZ,
                           canceled_at                 TIMESTAMPTZ,
+                          refunded_at                 TIMESTAMPTZ,
                           version                     BIGINT NOT NULL DEFAULT 0,
-                          CONSTRAINT fk_payments_request FOREIGN KEY (request_id) REFERENCES booking_requests(id) ON DELETE RESTRICT,
+                          CONSTRAINT fk_payments_request FOREIGN KEY (request_id) REFERENCES booking_requests(id)         ON DELETE RESTRICT,
                           CONSTRAINT fk_payments_payer   FOREIGN KEY (payer_id)   REFERENCES users(id)            ON DELETE RESTRICT,
                           CONSTRAINT chk_payments_fee    CHECK (application_fee_amount <= amount)
 );

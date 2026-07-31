@@ -1,9 +1,8 @@
 package com.deliveryplatform.payments;
 
 import com.deliveryplatform.payments.dto.PaymentResponse;
-import com.deliveryplatform.users.UserPrincipal;
+import com.deliveryplatform.payments.dto.WebhookRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -15,15 +14,14 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-
     @PostMapping("/requests/{requestId}/checkout")
     public PaymentResponse createCheckoutSession(@PathVariable UUID requestId) {
-        return paymentService.authorize(requestId);
+        return paymentService.checkout(requestId);
     }
 
-
-    @GetMapping("/requests/{requestId}")
-    public PaymentResponse getPaymentForRequest(@PathVariable UUID requestId) {
-        return paymentService.getPaymentForRequest(requestId);
+    @PostMapping("/webhook")
+    public void handleWebhook(@RequestBody String payload,
+                               @RequestHeader("Stripe-Signature") String signature) {
+        paymentService.handleWebHook(new WebhookRequest(signature, payload));
     }
 }

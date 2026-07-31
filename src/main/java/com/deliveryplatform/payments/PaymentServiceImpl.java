@@ -1,21 +1,22 @@
 package com.deliveryplatform.payments;
 
 import com.deliveryplatform.auth.AuthService;
-import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.payments.dto.*;
+import com.deliveryplatform.payments.events.PaymentAuthorizedEvent;
 import com.deliveryplatform.payments.exceptions.PaymentErrorCode;
 import com.deliveryplatform.payments.exceptions.PaymentException;
 import com.deliveryplatform.requests.Request;
 import com.deliveryplatform.requests.RequestRepository;
+import com.deliveryplatform.requests.exceptions.RequestErrorCode;
+import com.deliveryplatform.requests.exceptions.RequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 @Slf4j
 @Service
@@ -24,18 +25,18 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final RequestRepository requestRepository;
-    private final BookingRepository bookingRepository;
-    private final PaymentProvider paymentProvider;
+    private final PaymentGateway paymentGateway;
     private final AuthService authService;
     private final PriceCalculator priceCalculator;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Override
     @Transactional
-    public PaymentResponse authorize(UUID requestId) {
+    public PaymentResponse checkout(UUID requestId) {
 
         var request = getRequestByIdOrThrow(requestId);
-        request.assertIsSender( authService.getCurrentUserPrincipal().getId() );
+        request.assertIsSender(authService.getCurrentUserPrincipal().getId());
         request.assertIsPending();
 
         Optional<Payment> existing = paymentRepository.findByRequestId(requestId);
@@ -43,54 +44,28 @@ public class PaymentServiceImpl implements PaymentService {
             Payment payment = existing.get();
             if (payment.isPending()) {
                 return PaymentResponse.from(payment,
-                        paymentProvider.retrieveClientSecret(payment.getStripeCheckoutSessionId()));
+                        paymentGateway.retrieveClientSecret(payment.getStripeCheckoutSessionId()));
             }
             throw new PaymentException(PaymentErrorCode.PAYMENT_ALREADY_EXISTS, "Request already has a payment: " + requestId);
         }
 
-
         var price = priceCalculator.calculate(request);
-        AuthorizeResponse response = paymentProvider.authorize(
-                new AuthorizeRequest(requestId, price.amount(), price.currency(), buildLabel(request)));
+        CheckoutSession session = paymentGateway.checkout(
+                new CheckoutRequest(requestId, price.amount(), price.currency(), "Delivery request " + requestId)
+        );
 
         Payment payment = paymentRepository.save(Payment.create(
                 request,
-                response.checkoutSessionId(),
+                session.checkoutSessionId(),
                 price.amount(),
                 price.platformFees(),
                 price.currency()));
 
         log.info("checkout opened requestId={} paymentId={} amount={}", requestId, payment.getId(), price.amount());
 
-        return PaymentResponse.from(payment, response.clientSecret());
+        return PaymentResponse.from(payment, session.clientSecret());
     }
 
-    @Override
-    @Transactional
-    public PaymentResponse capture(UUID requestId) {
-
-        var request = getRequestByIdOrThrow(requestId);
-        var payment = getRequestPayment(requestId);
-
-        if (payment.isCaptured()) {
-            return PaymentResponse.from(payment);
-        }
-        if (!payment.isAuthorized()) {
-            throw new PaymentException(PaymentErrorCode.PAYMENT_INVALID_STATE,
-                    "Payment " + payment.getId() + " is " + payment.getStatus() + ", expected AUTHORIZED");
-        }
-
-        CaptureResponse response = paymentProvider.capture(payment.getStripePaymentIntentId(), null);
-        payment.markSucceeded(response.chargeId());
-
-        var booking = Booking.createFromRequest(request);
-        bookingRepository.save(booking);
-
-        log.info("funds captured requestId={} paymentId={} amount={}",
-                requestId, payment.getId(), response.amountCaptured());
-
-        return PaymentResponse.from(payment);
-    }
 
     @Override
     @Transactional
@@ -105,15 +80,34 @@ public class PaymentServiceImpl implements PaymentService {
                     "Payment " + payment.getId() + " already captured, a refund is required");
         }
 
-        // avant paiement il n'y a pas d'intent : on ferme la session
         if (payment.hasPaymentIntent()) {
-            paymentProvider.cancel(payment.getStripePaymentIntentId());
+            paymentGateway.cancel(payment.getStripePaymentIntentId());
         } else {
-            paymentProvider.expireCheckoutSession(payment.getStripeCheckoutSessionId());
+            paymentGateway.expireCheckoutSession(payment.getStripeCheckoutSessionId());
         }
 
         payment.markCanceled();
-        log.info("funds released requestId={} paymentId={}", requestId, payment.getId());
+        return PaymentResponse.from(payment);
+    }
+
+    /** Capture manuelle : preleve reellement les fonds jusque-la bloques sur la carte du payeur. */
+    @Override
+    @Transactional
+    public PaymentResponse capture(UUID requestId) {
+        Payment payment = getRequestPayment(requestId);
+
+        if (payment.isCaptured()) {
+            return PaymentResponse.from(payment);
+        }
+        if (!payment.isAuthorized()) {
+            throw new PaymentException(PaymentErrorCode.PAYMENT_INVALID_STATE,
+                    "Payment " + payment.getId() + " is not authorized, cannot capture");
+        }
+
+        String chargeId = paymentGateway.capture(payment.getStripePaymentIntentId(), null);
+        payment.markSucceeded(chargeId);
+
+        log.info("payment captured requestId={} paymentId={}", requestId, payment.getId());
 
         return PaymentResponse.from(payment);
     }
@@ -125,89 +119,53 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public PaymentResponse getPaymentForRequest(UUID requestId) {
-        Payment payment = getRequestPayment(requestId);
-        payment.getRequest().assertInvolves(authService.getCurrentUserPrincipal().getId());
-        return PaymentResponse.from(payment);
-    }
-
-    // ---- webhooks ------------------------------------------------------------
-
-    @Override
     @Transactional
-    public void handleCheckoutCompleted(String checkoutSessionId, String paymentIntentId) {
-        onPayment(paymentRepository.findByStripeCheckoutSessionId(checkoutSessionId),
-                "checkout.completed", checkoutSessionId,
-                payment -> {
-                    if (payment.isPending()) {
-                        payment.markAuthorized(paymentIntentId);
-                    }
-                });
+    public void handleWebHook(WebhookRequest webhookRequest) {
+        paymentGateway
+                .parseWebhookRequest(webhookRequest)
+                .ifPresent(this::applyWebhookEvent);
     }
 
-    @Override
-    @Transactional
-    public void handleCheckoutExpired(String checkoutSessionId) {
-        onPayment(paymentRepository.findByStripeCheckoutSessionId(checkoutSessionId),
-                "checkout.expired", checkoutSessionId,
-                payment -> {
-                    if (payment.isPending()) {
-                        payment.markCanceled();
-                    }
-                });
+
+    // private -----------------------------------------------------------------------------------------------
+
+    private void applyWebhookEvent(WebhookResponse event) {
+        Payment payment = resolvePayment(event);
+        if (payment == null) {
+            log.warn("webhook event ignored, no matching payment requestId={} paymentIntentId={}",
+                    event.requestId(), event.paymentIntentId());
+            return;
+        }
+
+        switch (event.status()) {
+            case AUTHORIZED -> {
+                boolean alreadyAuthorized = payment.isAuthorized();
+                payment.markAuthorized(event.paymentIntentId());
+                if (!alreadyAuthorized) {
+                    eventPublisher.publishEvent(new PaymentAuthorizedEvent(event.requestId()));
+                }
+            }
+            case FAILED -> payment.markFailed();
+            case CANCELED -> payment.markCanceled();
+            case SUCCEEDED -> {
+                if (!payment.isCaptured()) {
+                    payment.markSucceeded(null);
+                }
+            }
+            default -> log.debug("unhandled webhook status={} paymentId={}", event.status(), payment.getId());
+        }
+
+        paymentRepository.save(payment);
     }
 
-    @Override
-    @Transactional
-    public void handleCaptured(String paymentIntentId, String chargeId) {
-        onPayment(paymentRepository.findByStripePaymentIntentId(paymentIntentId),
-                "intent.succeeded", paymentIntentId,
-                payment -> {
-                    if (!payment.isCaptured()) {
-                        payment.markSucceeded(chargeId);
-                    }
-                });
-    }
-
-    @Override
-    @Transactional
-    public void handleFailed(String paymentIntentId) {
-        onPayment(paymentRepository.findByStripePaymentIntentId(paymentIntentId),
-                "intent.failed", paymentIntentId,
-                payment -> {
-                    if (payment.isPending()) {
-                        payment.markFailed();
-                    }
-                });
-    }
-
-    @Override
-    @Transactional
-    public void handleCanceled(String paymentIntentId) {
-        onPayment(paymentRepository.findByStripePaymentIntentId(paymentIntentId),
-                "intent.canceled", paymentIntentId,
-                payment -> {
-                    if (payment.isPending() || payment.isAuthorized()) {
-                        payment.markCanceled();
-                    }
-                });
-    }
-
-    /**
-     * Stripe rejoue ses webhooks et ne garantit pas l'ordre : on ignore
-     * silencieusement ce qui est deja traite, et on ne leve jamais d'erreur sur
-     * une reference inconnue (l'event peut arriver avant notre commit).
-     */
-    private void onPayment(Optional<Payment> found, String event, String reference,
-                           Consumer<Payment> action) {
-        found.ifPresentOrElse(
-                payment -> {
-                    action.accept(payment);
-                    log.info("webhook {} ref={} paymentId={} status={}",
-                            event, reference, payment.getId(), payment.getStatus());
-                },
-                () -> log.warn("webhook {} for unknown ref={}", event, reference));
+    private Payment resolvePayment(WebhookResponse event) {
+        if (event.paymentIntentId() != null) {
+            Optional<Payment> byIntent = paymentRepository.findByStripePaymentIntentId(event.paymentIntentId());
+            if (byIntent.isPresent()) {
+                return byIntent.get();
+            }
+        }
+        return paymentRepository.findByRequestId(event.requestId()).orElse(null);
     }
 
     private Payment getRequestPayment(UUID requestId) {
@@ -216,14 +174,9 @@ public class PaymentServiceImpl implements PaymentService {
                         "No payment for request: " + requestId));
     }
 
-    private String buildLabel(Request request) {
-        return "Livraison colis " + request.getParcel().getId();
-    }
-
     private Request getRequestByIdOrThrow(UUID requestId) {
-        return requestRepository.findById(requestId)
-                .orElseThrow(() -> new PaymentException(PaymentErrorCode.REQUEST_NOT_PAYABLE,
-                        "Request not found: " + requestId));
+        return requestRepository.findRequestById(requestId)
+                .orElseThrow(() -> new RequestException(RequestErrorCode.REQUEST_NOT_FOUND, "Request not found: " + requestId));
     }
 
 }

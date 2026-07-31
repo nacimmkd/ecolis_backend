@@ -2,7 +2,7 @@ package com.deliveryplatform.payments.dto;
 
 import java.util.UUID;
 
-public record AuthorizeRequest(
+public record CheckoutRequest(
         UUID requestId,
         long amount,
         String currency,

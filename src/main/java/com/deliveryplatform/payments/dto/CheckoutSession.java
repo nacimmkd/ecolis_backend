@@ -1,7 +1,7 @@
 package com.deliveryplatform.payments.dto;
 
 
-public record AuthorizeResponse(
+public record CheckoutSession(
         String checkoutSessionId,
         String clientSecret
 ) {}

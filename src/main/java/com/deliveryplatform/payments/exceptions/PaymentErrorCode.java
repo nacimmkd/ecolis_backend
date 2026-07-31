@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 public enum PaymentErrorCode implements ErrorCode {
 
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND),
-    REQUEST_NOT_PAYABLE(HttpStatus.CONFLICT),
     PAYMENT_ALREADY_EXISTS(HttpStatus.CONFLICT),
     PAYMENT_INVALID_STATE(HttpStatus.CONFLICT),
     NOT_PAYER(HttpStatus.FORBIDDEN),

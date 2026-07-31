@@ -21,7 +21,7 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id", nullable = false, unique = true)
     private Request request;
 
@@ -65,6 +65,9 @@ public class Payment {
     @Column(name = "canceled_at")
     private OffsetDateTime canceledAt;
 
+    @Column(name = "refunded_at")
+    private OffsetDateTime refundedAt;
+
     @Version
     @Column(nullable = false)
     @Builder.Default
@@ -74,7 +77,7 @@ public class Payment {
 
     public static Payment create(Request request, String stripeCheckoutSessionId,
                                  long amount, long applicationFeeAmount, String currency) {
-        return Payment.builder()
+        var payment = Payment.builder()
                 .request(request)
                 .payer(request.getSender())
                 .stripeCheckoutSessionId(stripeCheckoutSessionId)
@@ -82,6 +85,8 @@ public class Payment {
                 .applicationFeeAmount(applicationFeeAmount)
                 .currency(currency)
                 .build();
+        request.setPayment(payment);
+        return payment;
     }
 
     // ---- lifecycle ------------------------------------------------------------
@@ -105,6 +110,11 @@ public class Payment {
     public void markCanceled() {
         this.status = PaymentStatus.CANCELED;
         this.canceledAt = OffsetDateTime.now();
+    }
+
+    public void markRefunded() {
+        this.status = PaymentStatus.REFUNDED;
+        this.refundedAt = OffsetDateTime.now();
     }
 
     // ---- queries ------------------------------------------------------------

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public record RequestCreatedEvent(
+public record NewRequestEvent(
         UUID requestId,
         User receiver,
         String departureCity,

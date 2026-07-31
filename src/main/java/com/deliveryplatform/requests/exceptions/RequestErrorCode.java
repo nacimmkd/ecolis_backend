@@ -12,7 +12,8 @@ public enum RequestErrorCode implements ErrorCode {
     NOT_CARRIER(HttpStatus.FORBIDDEN),
     USER_NOT_INVOLVED(HttpStatus.FORBIDDEN),
 
-    MISSING_REQUIRED_DATA(HttpStatus.BAD_REQUEST);
+    MISSING_REQUIRED_DATA(HttpStatus.BAD_REQUEST),
+    PAYMENT_REQUIRED(HttpStatus.PAYMENT_REQUIRED);
 
     private final HttpStatus status;
 

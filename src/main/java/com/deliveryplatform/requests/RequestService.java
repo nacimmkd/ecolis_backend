@@ -16,6 +16,8 @@ public interface RequestService {
 
     RequestDto createRequest(CreateRequest dto, UUID senderId);
 
+    void send(UUID requestId);
+
     void acceptRequest(UUID requestId, UUID carrierId);
 
     void rejectRequest(UUID requestId, UUID carrierId, String reason);

@@ -2,6 +2,7 @@ package com.deliveryplatform.requests;
 
 import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.parcels.Parcel;
+import com.deliveryplatform.payments.Payment;
 import com.deliveryplatform.requests.exceptions.RequestErrorCode;
 import com.deliveryplatform.requests.exceptions.RequestException;
 import com.deliveryplatform.trips.Trip;
@@ -35,6 +36,10 @@ public class Request {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parcel_id", nullable = false)
     private Parcel parcel;
+
+    @OneToOne(mappedBy = "request")
+    @Setter
+    private Payment payment;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -106,6 +111,13 @@ public class Request {
     public void assertInvolves(UUID userId) {
         if (!involves(userId))
             throw new RequestException(RequestErrorCode.USER_NOT_INVOLVED, "User is not allowed to perform this action");
+    }
+
+    public void assertPaymentAuthorized(){
+        if (payment == null || !payment.isAuthorized()) {
+            throw new RequestException(RequestErrorCode.PAYMENT_REQUIRED,
+                    "Request " + id + " must be paid before it can be sent to the carrier");
+        }
     }
 
     // ---- lifecycle ------------------------------------------------------------

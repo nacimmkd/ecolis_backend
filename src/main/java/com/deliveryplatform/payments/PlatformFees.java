@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "platform")
 public class PlatformFees {
-
     private long constFee;
     private long feeRate;
     private String currency;

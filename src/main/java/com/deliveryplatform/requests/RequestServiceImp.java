@@ -4,19 +4,20 @@ import com.deliveryplatform.matching.DetourCalculatorService;
 import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
 import com.deliveryplatform.parcels.exceptions.ParcelException;
+import com.deliveryplatform.payments.PaymentService;
 import com.deliveryplatform.requests.dto.CreateRequest;
 import com.deliveryplatform.requests.dto.RequestDto;
 import com.deliveryplatform.requests.events.RequestAcceptedEvent;
-import com.deliveryplatform.requests.events.RequestCreatedEvent;
+import com.deliveryplatform.requests.events.NewRequestEvent;
 import com.deliveryplatform.requests.exceptions.RequestErrorCode;
 import com.deliveryplatform.requests.exceptions.RequestException;
 import com.deliveryplatform.trips.TripRepository;
 import com.deliveryplatform.trips.exceptions.TripErrorCode;
 import com.deliveryplatform.trips.exceptions.TripException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class RequestServiceImp implements RequestService {
     private final DetourCalculatorService  detourCalculator;
     private final ApplicationEventPublisher eventPublisher;
     private final RequestMapper            requestMapper;
+    private final PaymentService           paymentService;
 
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -70,24 +72,30 @@ public class RequestServiceImp implements RequestService {
         var request = Request.create(trip, parcel, detour);
         requestRepository.save(request);
 
+        return requestMapper.toRequestDto(request);
+    }
+
+    @Override
+    @Transactional
+    public void send(UUID requestId) {
+        var request = getRequestByIdOrThrow(requestId);
+        request.assertIsPending();
+        request.assertPaymentAuthorized();
+
+        var trip = request.getTrip();
+
         if (trip.isInstantBooking()) {
+            paymentService.capture(requestId);
             request.accept();
             eventPublisher.publishEvent(new RequestAcceptedEvent(request.getId()));
         }
 
-        eventPublisher.publishEvent(new RequestCreatedEvent(
+        eventPublisher.publishEvent(new NewRequestEvent(
                 request.getId(),
                 request.getCarrier(),
                 trip.getDepartureAddress().getCity(),
                 trip.getArrivalAddress().getCity()
         ));
-
-        return requestMapper.toRequestDto(request);
-    }
-
-    private void assertRequestUniqueness(UUID parcelId, UUID tripId) {
-        if (requestRepository.existsByParcelIdAndTripId(parcelId, tripId))
-            throw new RequestException(RequestErrorCode.REQUEST_ALREADY_EXISTS, "Request for this trip and parcel already exists");
     }
 
     @Override
@@ -97,7 +105,9 @@ public class RequestServiceImp implements RequestService {
 
         request.assertIsCarrier(currentUserId);
         request.assertIsPending();
+        request.assertPaymentAuthorized();
 
+        paymentService.capture(requestId);
         request.accept();
         requestRepository.save(request);
         eventPublisher.publishEvent(new RequestAcceptedEvent(request.getId()));
@@ -109,7 +119,10 @@ public class RequestServiceImp implements RequestService {
         var request = getRequestByIdOrThrow(requestId);
         request.assertIsCarrier(carrierId);
         request.assertIsPending();
+
+        paymentService.cancel(requestId);
         request.reject(reason);
+
         requestRepository.save(request);
     }
 
@@ -128,5 +141,10 @@ public class RequestServiceImp implements RequestService {
     private Request getRequestByIdOrThrow(UUID id) {
         return requestRepository.findRequestById(id)
                 .orElseThrow(() -> new RequestException(RequestErrorCode.REQUEST_NOT_FOUND, "Booking request not found"));
+    }
+
+    private void assertRequestUniqueness(UUID parcelId, UUID tripId) {
+        if (requestRepository.existsByParcelIdAndTripId(parcelId, tripId))
+            throw new RequestException(RequestErrorCode.REQUEST_ALREADY_EXISTS, "Request for this trip and parcel already exists");
     }
 }
