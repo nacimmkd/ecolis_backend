@@ -1,8 +1,7 @@
 package com.deliveryplatform.matching;
 
+import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.trips.Trip;
-
-import java.math.BigDecimal;
 
 
 /**
@@ -12,7 +11,7 @@ import java.math.BigDecimal;
  */
 public record MatchResult(
         Trip trip,
-        BigDecimal price,
+        Price price,
         double score, // plus bas = meilleur match
         boolean viable
 ) {}

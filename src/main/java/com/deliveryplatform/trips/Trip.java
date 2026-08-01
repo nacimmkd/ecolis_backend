@@ -2,6 +2,7 @@ package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.bookings.Booking;
+import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.trips.dto.TripCreateRequest;
 import com.deliveryplatform.trips.exceptions.TripErrorCode;
@@ -67,8 +68,10 @@ public class Trip {
     @Column(name = "remaining_weight_kg", precision = 8, scale = 2)
     private BigDecimal remainingWeightKg;
 
-    @Column(name = "price_per_kg", precision = 10, scale = 2)
-    private BigDecimal pricePerKg;
+    @Embedded
+    @AttributeOverride(name = "amountInCents", column = @Column(name = "price_per_kg_amount_in_cents", nullable = false))
+    @AttributeOverride(name = "currency", column = @Column(name = "price_per_kg_currency", nullable = false, length = 3))
+    private Price pricePerKg;
 
     @Column(name = "instant_booking")
     private boolean instantBooking;
@@ -160,7 +163,7 @@ public class Trip {
 
     public void update(UUID userId, Address departureAddress, Address arrivalAddress,
                        LocalDate departureDate, LocalDate arrivalDate,
-                       BigDecimal availableWeightKg, BigDecimal pricePerKg,
+                       BigDecimal availableWeightKg, Price pricePerKg,
                        BigDecimal maxDetourKm, String notes, boolean instantBooking) {
         this.assertOwnedBy(userId);
         this.assertIsPublished();

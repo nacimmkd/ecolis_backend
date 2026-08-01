@@ -1,6 +1,6 @@
 package com.deliveryplatform.payments;
 
-import com.deliveryplatform.requests.Request;
+import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,8 +22,8 @@ public class Payment {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id", nullable = false, unique = true)
-    private Request request;
+    @JoinColumn(name = "booking_id", nullable = false, unique = true)
+    private Booking booking;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payer_id", nullable = false)
@@ -38,14 +38,16 @@ public class Payment {
     @Column(name = "stripe_charge_id")
     private String stripeChargeId;
 
-    @Column(nullable = false)
-    private long amount;
+    @Column(name = "stripe_refund_id")
+    private String stripeRefundId;
+
+    @Embedded
+    @AttributeOverride(name = "amountInCents", column = @Column(name = "amount", nullable = false))
+    @AttributeOverride(name = "currency", column = @Column(name = "currency", nullable = false, length = 3))
+    private Price price;
 
     @Column(name = "application_fee_amount", nullable = false)
     private long applicationFeeAmount;
-
-    @Column(nullable = false)
-    private String currency;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -75,17 +77,16 @@ public class Payment {
 
     // ---- factory ------------------------------------------------------------
 
-    public static Payment create(Request request, String stripeCheckoutSessionId,
-                                 long amount, long applicationFeeAmount, String currency) {
+    public static Payment create(Booking booking, String stripeCheckoutSessionId,
+                                 Price price, long applicationFeeAmount) {
         var payment = Payment.builder()
-                .request(request)
-                .payer(request.getSender())
+                .booking(booking)
+                .payer(booking.getSender())
                 .stripeCheckoutSessionId(stripeCheckoutSessionId)
-                .amount(amount)
+                .price(price)
                 .applicationFeeAmount(applicationFeeAmount)
-                .currency(currency)
                 .build();
-        request.setPayment(payment);
+        booking.setPayment(payment);
         return payment;
     }
 
@@ -112,8 +113,9 @@ public class Payment {
         this.canceledAt = OffsetDateTime.now();
     }
 
-    public void markRefunded() {
+    public void markRefunded(String stripeRefundId) {
         this.status = PaymentStatus.REFUNDED;
+        this.stripeRefundId = stripeRefundId;
         this.refundedAt = OffsetDateTime.now();
     }
 
@@ -131,11 +133,15 @@ public class Payment {
         return PaymentStatus.SUCCEEDED.equals(this.status);
     }
 
+    public boolean isRefunded() {
+        return PaymentStatus.REFUNDED.equals(this.status);
+    }
+
     public boolean hasPaymentIntent() {
         return this.stripePaymentIntentId != null;
     }
 
     public long getPayoutAmount() {
-        return this.amount - this.applicationFeeAmount;
+        return this.price.getAmountInCents() - this.applicationFeeAmount;
     }
 }

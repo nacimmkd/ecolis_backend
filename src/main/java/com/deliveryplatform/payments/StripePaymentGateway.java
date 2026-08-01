@@ -9,12 +9,14 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.Refund;
 import com.stripe.model.StripeObject;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import com.stripe.net.Webhook;
 import com.stripe.param.PaymentIntentCancelParams;
 import com.stripe.param.PaymentIntentCaptureParams;
+import com.stripe.param.RefundCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,8 +49,8 @@ public class StripePaymentGateway implements PaymentGateway {
                 .addLineItem(SessionCreateParams.LineItem.builder()
                         .setQuantity(1L)
                         .setPriceData(SessionCreateParams.LineItem.PriceData.builder()
-                                .setCurrency(request.currency())
-                                .setUnitAmount(request.amount())
+                                .setCurrency(request.amount().getCurrency())
+                                .setUnitAmount(request.amount().getAmountInCents())
                                 .setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                         .setName(request.label())
                                         .build())
@@ -56,23 +58,23 @@ public class StripePaymentGateway implements PaymentGateway {
                         .build())
                 .setPaymentIntentData(SessionCreateParams.PaymentIntentData.builder()
                         .setCaptureMethod(SessionCreateParams.PaymentIntentData.CaptureMethod.MANUAL)
-                        .setTransferGroup("request_" + request.requestId())
-                        .putMetadata("requestId", request.requestId().toString())
+                        .setTransferGroup("booking_" + request.bookingId())
+                        .putMetadata("bookingId", request.bookingId().toString())
                         .build())
                 .setExpiresAt((System.currentTimeMillis() / 1000) + (sessionValidityMinutes * 60))
-                .putMetadata("requestId", request.requestId().toString())
+                .putMetadata("bookingId", request.bookingId().toString())
                 .build();
 
         try {
             Session session = stripe.checkout().sessions().create(params);
 
-            log.info("checkout session created requestId={} session={}",
-                    request.requestId(), session.getId());
+            log.info("checkout session created bookingId={} session={}",
+                    request.bookingId(), session.getId());
 
             return new CheckoutSession(session.getId(), session.getClientSecret());
 
         } catch (StripeException e) {
-            throw fail("checkout request=" + request.requestId(), e);
+            throw fail("checkout booking=" + request.bookingId(), e);
         }
     }
 
@@ -151,7 +153,7 @@ public class StripePaymentGateway implements PaymentGateway {
             case "checkout.session.completed" -> {
                 Session session = payload(event, Session.class);
                 yield Optional.of(new WebhookResponse(
-                        extractRequestId(session.getMetadata()),
+                        extractBookingId(session.getMetadata()),
                         PaymentStatus.AUTHORIZED,
                         session.getPaymentIntent()));
             }
@@ -159,7 +161,7 @@ public class StripePaymentGateway implements PaymentGateway {
             case "checkout.session.expired" -> {
                 Session session = payload(event, Session.class);
                 yield Optional.of(new WebhookResponse(
-                        extractRequestId(session.getMetadata()),
+                        extractBookingId(session.getMetadata()),
                         PaymentStatus.CANCELED,
                         session.getPaymentIntent()));
             }
@@ -167,7 +169,7 @@ public class StripePaymentGateway implements PaymentGateway {
             case "payment_intent.succeeded" -> {
                 PaymentIntent paymentIntent = payload(event, PaymentIntent.class);
                 yield Optional.of(new WebhookResponse(
-                        extractRequestId(paymentIntent.getMetadata()),
+                        extractBookingId(paymentIntent.getMetadata()),
                         PaymentStatus.SUCCEEDED,
                         paymentIntent.getId()));
             }
@@ -175,7 +177,7 @@ public class StripePaymentGateway implements PaymentGateway {
             case "payment_intent.payment_failed" -> {
                 PaymentIntent paymentIntent = payload(event, PaymentIntent.class);
                 yield Optional.of(new WebhookResponse(
-                        extractRequestId(paymentIntent.getMetadata()),
+                        extractBookingId(paymentIntent.getMetadata()),
                         PaymentStatus.FAILED,
                         paymentIntent.getId()));
             }
@@ -183,7 +185,7 @@ public class StripePaymentGateway implements PaymentGateway {
             case "payment_intent.canceled" -> {
                 PaymentIntent paymentIntent = payload(event, PaymentIntent.class);
                 yield Optional.of(new WebhookResponse(
-                        extractRequestId(paymentIntent.getMetadata()),
+                        extractBookingId(paymentIntent.getMetadata()),
                         PaymentStatus.CANCELED,
                         paymentIntent.getId()));
             }
@@ -195,20 +197,44 @@ public class StripePaymentGateway implements PaymentGateway {
         };
     }
 
+    @Override
+    public String refund(String paymentIntentId, Long amountToRefundInCents) {
+        RefundCreateParams.Builder params = RefundCreateParams.builder()
+                .setPaymentIntent(paymentIntentId);
+        if (amountToRefundInCents != null) {
+            params.setAmount(amountToRefundInCents);
+        }
+
+        try {
+            Refund refund = stripe.refunds().create(params.build(), key("refund-" + paymentIntentId));
+
+            log.info("payment intent refunded intent={} status={} refund={}",
+                    paymentIntentId, refund.getStatus(), refund.getId());
+
+            return refund.getId();
+
+        } catch (StripeException e) {
+            throw fail("refund intent=" + paymentIntentId, e);
+        }
+    }
+
     // ---- infrastructure ---------------------------------------------------
 
 
     private Event verifySignature(WebhookRequest request) {
+
+        var payload = request.payload();
+        var signature = request.headers().get("stripe-signature");
         try {
-            return Webhook.constructEvent(request.payload(), request.signature(), webhookSecret);
+            return Webhook.constructEvent(payload, signature, webhookSecret);
         } catch (SignatureVerificationException e) {
             throw new PaymentException(PaymentErrorCode.INVALID_WEBHOOK_SIGNATURE,
                     "Stripe invalid signature");
         }
     }
 
-    private UUID extractRequestId(Map<String, String> metadata) {
-        return UUID.fromString(metadata.get("requestId"));
+    private UUID extractBookingId(Map<String, String> metadata) {
+        return UUID.fromString(metadata.get("bookingId"));
     }
 
     private <T extends StripeObject> T payload(Event event, Class<T> type) {

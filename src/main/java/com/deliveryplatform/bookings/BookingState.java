@@ -2,7 +2,9 @@ package com.deliveryplatform.bookings;
 
 public enum BookingState {
     PENDING,
-    PAID,
+    WAITING_FOR_ANSWER,
+    ACCEPTED,
+    REJECTED,
     CANCELLED,
     COMPLETED
 }

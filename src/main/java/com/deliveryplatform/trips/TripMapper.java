@@ -21,9 +21,8 @@ public interface TripMapper {
     @Mapping(target = "tripId", source = "trip.id")
     @Mapping(target = "stops", source = "trip.stops")
     @Mapping(target = "publishedAt", source = "trip.createdAt")
-    @Mapping(target = "requestsCount", source = "requestsCount")
     @Mapping(target = "bookingsCount", source = "bookingsCount")
-    TripDetails toTripDetailsDto(Trip trip, long requestsCount, long bookingsCount);
+    TripDetails toTripDetailsDto(Trip trip, long bookingsCount);
 
     TripStopDto toTripStopDto(TripStop stop);
 

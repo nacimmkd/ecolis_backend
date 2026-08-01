@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -55,6 +56,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // c -> c.disable()
                 .authorizeHttpRequests(c -> c
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-resources/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
@@ -63,7 +65,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification/verify").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification/send").permitAll()
-                        .requestMatchers("/api/v1/webhooks/stripe").permitAll()
+                        .requestMatchers("/api/v1/payments/webhook/stripe").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated() // to be changed later
                 )
@@ -128,7 +130,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
 
         var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/api/**", config);
         return source;
     }
 

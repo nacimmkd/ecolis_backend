@@ -24,7 +24,8 @@ CREATE TABLE "trips" (
                          available_weight_kg   NUMERIC(8,2)  NOT NULL,
                          remaining_weight_kg   NUMERIC(8,2)  NOT NULL,
 
-                         price_per_kg          NUMERIC(8,2)  NOT NULL DEFAULT 0.00,
+                         price_per_kg_amount_in_cents  BIGINT       NOT NULL DEFAULT 0 CHECK (price_per_kg_amount_in_cents >= 0),
+                         price_per_kg_currency         VARCHAR(3)   NOT NULL DEFAULT 'eur',
                          max_detour_km         NUMERIC(6,2)  NOT NULL DEFAULT 1,
                          state                VARCHAR(20)   NOT NULL DEFAULT 'PUBLISHED'
                              CHECK (state IN ('PUBLISHED', 'FULL', 'IN_TRANSIT', 'COMPLETED', 'CANCELLED')),

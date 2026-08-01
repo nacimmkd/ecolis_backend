@@ -10,9 +10,6 @@ import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.*;
 import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
 import com.deliveryplatform.parcels.exceptions.ParcelException;
-import com.deliveryplatform.requests.RequestMapper;
-import com.deliveryplatform.requests.RequestRepository;
-import com.deliveryplatform.requests.dto.ParcelRequestDto;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import com.deliveryplatform.users.exceptions.UserErrorCode;
@@ -33,9 +30,7 @@ public class ParcelServiceImp implements ParcelService {
     private final AddressService        addressService;
     private final ImageService          imageService;
     private final BookingRepository     bookingRepository;
-    private final RequestRepository     requestRepository;
     private final BookingMapper         bookingMapper;
-    private final RequestMapper         requestMapper;
     private final ParcelMapper          parcelMapper;
 
     @Override
@@ -60,16 +55,6 @@ public class ParcelServiceImp implements ParcelService {
 
         List<Booking> bookings = bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId);
         return bookingMapper.toParcelBookingDto(bookings);
-    }
-
-    @Override
-    public List<ParcelRequestDto> getParcelRequests(UUID parcelId, UUID currentUserId) {
-        var parcel = parcelRepository.findById(parcelId)
-                .orElseThrow(() -> new ParcelException(ParcelErrorCode.PARCEL_NOT_FOUND, "Parcel not found"));
-
-        parcel.assertOwnedBy(currentUserId);
-        var requests = requestRepository.findByParcelId(parcelId);
-        return requestMapper.toParcelRequestDto(requests);
     }
 
     @Override

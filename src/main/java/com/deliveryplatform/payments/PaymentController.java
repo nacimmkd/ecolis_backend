@@ -5,6 +5,7 @@ import com.deliveryplatform.payments.dto.WebhookRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -14,14 +15,15 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping("/requests/{requestId}/checkout")
-    public PaymentResponse createCheckoutSession(@PathVariable UUID requestId) {
-        return paymentService.checkout(requestId);
+    @PostMapping("/bookings/{bookingId}/checkout")
+    public PaymentResponse createCheckoutSession(@PathVariable UUID bookingId) {
+        return paymentService.checkout(bookingId);
     }
 
-    @PostMapping("/webhook")
+
+    @PostMapping("/webhook/stripe")
     public void handleWebhook(@RequestBody String payload,
-                               @RequestHeader("Stripe-Signature") String signature) {
-        paymentService.handleWebHook(new WebhookRequest(signature, payload));
+                              @RequestHeader Map<String, String> headers) {
+        paymentService.handleWebHook(new WebhookRequest(headers, payload));
     }
 }

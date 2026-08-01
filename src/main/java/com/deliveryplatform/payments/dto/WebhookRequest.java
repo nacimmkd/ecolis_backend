@@ -1,6 +1,8 @@
 package com.deliveryplatform.payments.dto;
 
+import java.util.Map;
+
 public record WebhookRequest(
-        String signature,
+        Map<String, String> headers,
         String payload
 ) {}

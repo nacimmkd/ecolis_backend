@@ -17,6 +17,7 @@ public enum NotificationType {
     BOOKING_CREATED(true),
     BOOKING_CANCELED(true),
     BOOKING_COMPLETED(true),
+    BOOKING_PAID(true),
 
     TRIP_CANCELLED(true),
 

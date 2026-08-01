@@ -2,44 +2,25 @@ CREATE TABLE bookings (
                           id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                           trip_id         UUID NOT NULL,
                           parcel_id       UUID NOT NULL,
-                          state             VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
-                              CHECK (state IN ('PENDING', 'PAID', 'COMPLETED', 'CANCELLED')),
-                          price           NUMERIC(10, 2),
+                          state             VARCHAR(20)    NOT NULL,
+                          price_amount_in_cents  BIGINT NOT NULL CHECK (price_amount_in_cents >= 0),
+                          price_currency          VARCHAR(3) NOT NULL DEFAULT 'eur',
+
+                          pickup_detour_km    NUMERIC(10,2) NOT NULL,
+                          dropoff_detour_km   NUMERIC(10,2) NOT NULL,
+                          rejection_reason TEXT,
 
                           pickup_code      VARCHAR(20),
                           dropoff_code     VARCHAR(20),
 
                           created_at     TIMESTAMPTZ DEFAULT NOW(),
-                          paid_at          TIMESTAMPTZ,
+                          responded_at     TIMESTAMPTZ,
                           completed_at    TIMESTAMPTZ,
 
                           cancelled_at    TIMESTAMPTZ,
-                          cancelled_by    VARCHAR(10)
-                              CHECK (cancelled_by IN ('SENDER', 'CARRIER', 'ADMIN')),
+                          cancelled_by    VARCHAR(10),
                           cancel_reason TEXT,
-
-
-                          UNIQUE (trip_id, parcel_id),
 
                           CONSTRAINT fk_booking_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE RESTRICT,
                           CONSTRAINT fk_booking_parcel FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE RESTRICT
-);
-
-
-CREATE TABLE booking_requests (
-                                  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                                  trip_id          UUID NOT NULL,
-                                  parcel_id        UUID NOT NULL,
-                                  state            VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
-                                      CHECK (state IN ('PENDING', 'ACCEPTED', 'REJECTED')),
-                                  pickup_detour_km    NUMERIC(10,2) NOT NULL,
-                                  dropoff_detour_km   NUMERIC(10,2) NOT NULL,
-                                  rejection_reason TEXT,
-                                  responded_at     TIMESTAMPTZ,
-                                  requested_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
-                                  deleted             BOOLEAN         NOT NULL DEFAULT FALSE,
-                                  deleted_At          TIMESTAMPTZ,
-
-                                  CONSTRAINT fk_booking_request_trip   FOREIGN KEY (trip_id)   REFERENCES trips(id)   ON DELETE RESTRICT,
-                                  CONSTRAINT fk_booking_request_parcel FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE RESTRICT
 );

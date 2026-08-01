@@ -5,7 +5,7 @@ import com.deliveryplatform.payments.PaymentStatus;
 import java.util.UUID;
 
 public record WebhookResponse(
-        UUID requestId,
+        UUID bookingId,
         PaymentStatus status,
         String paymentIntentId
 ) {

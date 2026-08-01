@@ -3,17 +3,22 @@ package com.deliveryplatform.payments;
 import com.deliveryplatform.payments.dto.PaymentResponse;
 import com.deliveryplatform.payments.dto.WebhookRequest;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface PaymentService {
 
-    PaymentResponse checkout(UUID requestId);
+    PaymentResponse checkout(UUID bookingId);
 
-    PaymentResponse cancel(UUID requestId);
+    PaymentResponse cancel(UUID bookingId);
 
-    PaymentResponse capture(UUID requestId);
+    void cancelAll(List<UUID> bookingIds);
 
-    boolean isAuthorized(UUID requestId);
+    PaymentResponse capture(UUID bookingId);
+
+    PaymentResponse refund(UUID bookingId);
+
+    boolean isAuthorized(UUID bookingId);
 
     void handleWebHook(WebhookRequest webhookRequest);
 

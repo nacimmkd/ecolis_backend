@@ -1,5 +1,6 @@
 package com.deliveryplatform.trips.dto;
 
+import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.trips.TripState;
 import lombok.Builder;
 
@@ -18,7 +19,7 @@ public record TripSummary(
         LocalDate arrivalDate,
         BigDecimal availableWeightKg,
         BigDecimal remainingWeightKg,
-        BigDecimal pricePerKg,
+        Price pricePerKg,
         boolean instantBooking,
         TripState state,
         int stopCount,

@@ -3,10 +3,11 @@ package com.deliveryplatform.bookings;
 import com.deliveryplatform.bookings.exceptions.BookingErrorCode;
 import com.deliveryplatform.bookings.exceptions.BookingException;
 import com.deliveryplatform.common.CodeGeneratorUtil;
+import com.deliveryplatform.payments.Price;
+import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelState;
-import com.deliveryplatform.requests.Request;
-import com.deliveryplatform.requests.RequestState;
+import com.deliveryplatform.payments.Payment;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -14,6 +15,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -38,13 +40,28 @@ public class Booking {
     @Setter
     private Parcel parcel;
 
+    @OneToOne(mappedBy = "booking")
+    @Setter
+    private Payment payment;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
     private BookingState state = BookingState.PENDING;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal price;
+    @Embedded
+    @AttributeOverride(name = "amountInCents", column = @Column(name = "price_amount_in_cents", nullable = false))
+    @AttributeOverride(name = "currency", column = @Column(name = "price_currency", nullable = false, length = 3))
+    private Price price;
+
+    @Column(name = "pickup_detour_km", nullable = false)
+    private BigDecimal pickupDetourKm;
+
+    @Column(name = "dropoff_detour_km", nullable = false)
+    private BigDecimal dropOffDetourKm;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
 
     @Column(name = "pickup_code")
     private String pickupCode;
@@ -57,9 +74,8 @@ public class Booking {
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
-    @Column(name = "paid_at")
-    @Builder.Default
-    private OffsetDateTime paidAt = null;
+    @Column(name = "responded_at")
+    private OffsetDateTime respondedAt;
 
     @Column(name = "completed_at")
     @Builder.Default
@@ -80,25 +96,26 @@ public class Booking {
 
     // ---- factory ------------------------------------------------------------
 
-    public static Booking createFromRequest(Request request) {
-        var parcel = request.getParcel();
-        var trip = request.getTrip();
+    public static Booking create(Trip trip, Parcel parcel, Detour detour, Price price) {
+        if (Objects.isNull(trip) || Objects.isNull(parcel) || Objects.isNull(detour) || Objects.isNull(price))
+            throw new BookingException(BookingErrorCode.MISSING_REQUIRED_DATA,
+                    "Required trip & parcel & detour & price to create a booking");
 
-        assertValidRequestStatusOrThrow(request);
+        trip.assertMaxTripDetourRequirement(detour);
+        trip.assertNotFull();
+        parcel.assertIsAvailable();
 
-        var booking = Booking.builder()
-                .parcel(parcel)
+        return Booking.builder()
                 .trip(trip)
-                .price(BookingPriceCalculator.calculate(parcel, trip))
+                .parcel(parcel)
+                .price(price)
+                .pickupDetourKm(BigDecimal.valueOf(detour.pickupDetourKm()))
+                .dropOffDetourKm(BigDecimal.valueOf(detour.dropoffDetourKm()))
                 .pickupCode(CodeGeneratorUtil.generateBookingCode())
                 .build();
-
-        parcel.updateState(ParcelState.BOOKED);
-        trip.reserveBooking(booking);
-        return booking;
     }
 
-    // ---- invariants / guards ------------------------------------------------
+    // ---- guards ------------------------------------------------
 
     public void assertUserInvolved(UUID userId) {
         if (!involves(userId))
@@ -115,49 +132,93 @@ public class Booking {
             throw new BookingException(BookingErrorCode.INVALID_STATE, errorMessage);
     }
 
-    private static void assertValidRequestStatusOrThrow(Request request) {
-        if (!RequestState.ACCEPTED.equals(request.getState()))
-            throw new BookingException(BookingErrorCode.REQUEST_NOT_ACCEPTED, "Cannot create booking: request is not accepted");
+    public void assertIsCarrier(UUID userId) {
+        if (!userId.equals(getCarrier().getId()))
+            throw new BookingException(BookingErrorCode.NOT_CARRIER, "User is not allowed to perform this action");
+    }
+
+    public void assertIsSender(UUID userId) {
+        if (!userId.equals(getSender().getId()))
+            throw new BookingException(BookingErrorCode.NOT_CARRIER, "User is not allowed to perform this action");
+    }
+
+    public void assertPaymentAuthorized() {
+        if (payment == null || !payment.isAuthorized())
+            throw new BookingException(BookingErrorCode.PAYMENT_REQUIRED,
+                    "Booking " + id + " must be paid before it can be sent to the carrier");
+    }
+
+    public void assertIsValidPickUpCode(String pickupCode) {
+        if (!this.pickupCode.equals(pickupCode))
+            throw new BookingException(BookingErrorCode.INVALID_PICKUP_CODE, "Pickup code is invalid");
+    }
+
+    public void assertIsValidDropOffCode(String dropOffCode) {
+        if (!this.dropOffCode.equals(dropOffCode))
+            throw new BookingException(BookingErrorCode.INVALID_DROPOFF_CODE, "DropOff code is invalid");
     }
 
     // ---- lifecycle ------------------------------------------------------------
 
-    public void pay() {
-        this.state = BookingState.PAID;
-        this.paidAt = OffsetDateTime.now();
+    public void accept(UUID userId) {
+        assertIsInState(BookingState.WAITING_FOR_ANSWER, "Booking is not waiting for answer");
+        assertIsCarrier(userId);
+
+        this.state = BookingState.ACCEPTED;
+        this.respondedAt = OffsetDateTime.now();
+        this.parcel.updateState(ParcelState.BOOKED);
+        this.trip.reserveBooking(this);
+    }
+
+    public void reject(UUID userId, String reason) {
+        assertIsInState(BookingState.WAITING_FOR_ANSWER, "Booking is not waiting for answer");
+        assertIsCarrier(userId);
+
+        this.state = BookingState.REJECTED;
+        this.rejectionReason = reason;
+        this.respondedAt = OffsetDateTime.now();
+    }
+
+    public void expire() {
+        this.state = BookingState.REJECTED;
+        this.rejectionReason = "Timed out";
+    }
+
+    public void sendRequest(){
+        assertIsInState(BookingState.PENDING, "Can not request driver");
+        assertPaymentAuthorized();
+        this.state = BookingState.WAITING_FOR_ANSWER;
     }
 
     public void confirmPickUp(String pickupCode) {
-        if (!this.pickupCode.equals(pickupCode))
-            throw new BookingException(BookingErrorCode.INVALID_PICKUP_CODE, "Pickup code is invalid");
+        assertIsValidPickUpCode(pickupCode);
+
         this.parcel.updateState(ParcelState.IN_TRANSIT);
         this.pickupCode = null;
         this.dropOffCode = CodeGeneratorUtil.generateBookingCode();
     }
 
     public void complete(String dropOffCode) {
-        confirmDropOff(dropOffCode);
+        assertIsValidDropOffCode(dropOffCode);
         this.state = BookingState.COMPLETED;
         this.completedAt = OffsetDateTime.now();
     }
 
-    public void cancel(String reason, CancelledBy cancelledBy) {
-        this.state = BookingState.CANCELLED;
+    public void cancel(UUID userId, String reason, CancelledBy cancelledBy) {
+
+        assertUserInvolved(userId);
+
         this.parcel.updateState(ParcelState.PUBLISHED);
         this.trip.removeBooking(this);
+
+        this.state = BookingState.CANCELLED;
         this.cancelledAt = OffsetDateTime.now();
         this.cancelledBy = cancelledBy;
         this.cancelReason = reason;
     }
 
-    private void confirmDropOff(String dropOffCode) {
-        if (!this.dropOffCode.equals(dropOffCode))
-            throw new BookingException(BookingErrorCode.INVALID_DROPOFF_CODE, "Dropoff code is invalid");
-        this.parcel.updateState(ParcelState.DELIVERED);
-        this.dropOffCode = null;
-    }
-
     // ---- queries ------------------------------------------------------------
+
 
     public boolean involves(UUID userId) {
         return this.trip.getOwner().getId().equals(userId)
@@ -166,6 +227,10 @@ public class Booking {
 
     public User getSender() {
         return this.parcel.getOwner();
+    }
+
+    public User getCarrier() {
+        return this.trip.getOwner();
     }
 
     public User resolveParticipant(UUID userId) {

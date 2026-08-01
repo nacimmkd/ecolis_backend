@@ -1,12 +1,15 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
+import com.deliveryplatform.bookings.dto.CreateBookingRequest;
 import com.deliveryplatform.users.UserPrincipal;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.UUID;
 
@@ -24,21 +27,16 @@ public class BookingController {
         return bookingService.getBooking(bookingId, user.getId());
     }
 
-    @PatchMapping("/{bookingId}/pay")
-    public ResponseEntity<Void> pay(
-            @PathVariable UUID bookingId,
-            @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.pay(bookingId, user.getId());
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("/{bookingId}/confirm-pickup")
-    public ResponseEntity<Void> confirmPickUp(
-            @PathVariable UUID bookingId,
-            @RequestParam @NotNull String code,
-            @AuthenticationPrincipal UserPrincipal user) {
-        bookingService.confirmPickUp(bookingId, code, user.getId());
-        return ResponseEntity.noContent().build();
+    @PostMapping
+    public ResponseEntity<BookingDto> create(
+            @RequestBody @Valid CreateBookingRequest dto,
+            @AuthenticationPrincipal UserPrincipal user,
+            UriComponentsBuilder uriBuilder) {
+        var booking = bookingService.createBooking(dto, user.getId());
+        var uri = uriBuilder
+                .path("/api/v1/bookings/{id}")
+                .build(booking.bookingId());
+        return ResponseEntity.created(uri).body(booking);
     }
 
     @PatchMapping("/{bookingId}/cancel")
@@ -47,6 +45,33 @@ public class BookingController {
             @RequestParam(required = false) String reason,
             @AuthenticationPrincipal UserPrincipal user) {
         bookingService.cancel(bookingId, reason, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{bookingId}/accept")
+    public ResponseEntity<Void> acceptBooking(
+            @PathVariable UUID bookingId,
+            @AuthenticationPrincipal UserPrincipal user) {
+        bookingService.acceptBooking(bookingId, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{bookingId}/reject")
+    public ResponseEntity<Void> rejectBooking(
+            @PathVariable UUID bookingId,
+            @RequestParam String reason,
+            @AuthenticationPrincipal UserPrincipal user) {
+        bookingService.rejectBooking(bookingId, user.getId(), reason);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @PatchMapping("/{bookingId}/confirm-pickup")
+    public ResponseEntity<Void> confirmPickUp(
+            @PathVariable UUID bookingId,
+            @RequestParam @NotNull String code,
+            @AuthenticationPrincipal UserPrincipal user) {
+        bookingService.confirmPickUp(bookingId, code, user.getId());
         return ResponseEntity.noContent().build();
     }
 

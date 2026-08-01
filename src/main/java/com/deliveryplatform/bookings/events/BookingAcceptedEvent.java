@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public record BookingCreatedEvent(
+public record BookingAcceptedEvent(
         UUID bookingId,
         User sender
 ) implements NotificationEvent {

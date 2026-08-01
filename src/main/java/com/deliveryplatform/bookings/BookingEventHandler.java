@@ -1,6 +1,6 @@
 package com.deliveryplatform.bookings;
 
-import com.deliveryplatform.requests.events.RequestAcceptedEvent;
+import com.deliveryplatform.payments.events.PaymentAuthorizedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ public class BookingEventHandler {
     private final BookingService bookingService;
 
     @EventListener
-    public void onRequestAccepted(RequestAcceptedEvent event) {
-        bookingService.create(event.requestId());
+    public void onPaymentAuthorized(PaymentAuthorizedEvent event) {
+        bookingService.requestDriver(event.bookingId(), event.payer().getId());
     }
 }

@@ -1,4 +1,4 @@
-package com.deliveryplatform.requests.events;
+package com.deliveryplatform.bookings.events;
 
 import com.deliveryplatform.notifications.NotificationEvent;
 import com.deliveryplatform.notifications.NotificationType;
@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public record NewRequestEvent(
-        UUID requestId,
+public record BookingRequestEvent(
+        UUID bookingId,
         User receiver,
         String departureCity,
         String arrivalCity
@@ -34,7 +34,7 @@ public record NewRequestEvent(
 
     @Override
     public UUID getReferenceId() {
-        return requestId;
+        return bookingId;
     }
 
     @Override

@@ -1,22 +1,27 @@
 package com.deliveryplatform.payments;
 
 import com.deliveryplatform.auth.AuthService;
+import com.deliveryplatform.bookings.Booking;
+import com.deliveryplatform.bookings.BookingRepository;
+import com.deliveryplatform.bookings.BookingState;
+import com.deliveryplatform.bookings.exceptions.BookingErrorCode;
+import com.deliveryplatform.bookings.exceptions.BookingException;
 import com.deliveryplatform.payments.dto.*;
 import com.deliveryplatform.payments.events.PaymentAuthorizedEvent;
 import com.deliveryplatform.payments.exceptions.PaymentErrorCode;
 import com.deliveryplatform.payments.exceptions.PaymentException;
-import com.deliveryplatform.requests.Request;
-import com.deliveryplatform.requests.RequestRepository;
-import com.deliveryplatform.requests.exceptions.RequestErrorCode;
-import com.deliveryplatform.requests.exceptions.RequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,7 +29,7 @@ import java.util.UUID;
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final RequestRepository requestRepository;
+    private final BookingRepository bookingRepository;
     private final PaymentGateway paymentGateway;
     private final AuthService authService;
     private final PriceCalculator priceCalculator;
@@ -33,35 +38,34 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentResponse checkout(UUID requestId) {
+    public PaymentResponse checkout(UUID bookingId) {
 
-        var request = getRequestByIdOrThrow(requestId);
-        request.assertIsSender(authService.getCurrentUserPrincipal().getId());
-        request.assertIsPending();
+        var booking = getBookingByIdOrThrow(bookingId);
+        booking.assertIsSender(authService.getCurrentUserPrincipal().getId());
+        booking.assertIsInState(BookingState.PENDING, "Booking is not pending");
 
-        Optional<Payment> existing = paymentRepository.findByRequestId(requestId);
+        Optional<Payment> existing = paymentRepository.findByBookingId(bookingId);
         if (existing.isPresent()) {
             Payment payment = existing.get();
             if (payment.isPending()) {
                 return PaymentResponse.from(payment,
                         paymentGateway.retrieveClientSecret(payment.getStripeCheckoutSessionId()));
             }
-            throw new PaymentException(PaymentErrorCode.PAYMENT_ALREADY_EXISTS, "Request already has a payment: " + requestId);
+            throw new PaymentException(PaymentErrorCode.PAYMENT_ALREADY_EXISTS, "Booking already has a payment: " + bookingId);
         }
 
-        var price = priceCalculator.calculate(request);
+        var quote = priceCalculator.calculate(booking);
         CheckoutSession session = paymentGateway.checkout(
-                new CheckoutRequest(requestId, price.amount(), price.currency(), "Delivery request " + requestId)
+                new CheckoutRequest(bookingId, quote.total(), "Delivery booking " + bookingId)
         );
 
         Payment payment = paymentRepository.save(Payment.create(
-                request,
+                booking,
                 session.checkoutSessionId(),
-                price.amount(),
-                price.platformFees(),
-                price.currency()));
+                quote.total(),
+                quote.applicationFeeInCents()));
 
-        log.info("checkout opened requestId={} paymentId={} amount={}", requestId, payment.getId(), price.amount());
+        log.info("checkout opened bookingId={} paymentId={} amount={}", bookingId, payment.getId(), quote.total().getAmountInCents());
 
         return PaymentResponse.from(payment, session.clientSecret());
     }
@@ -69,9 +73,29 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentResponse cancel(UUID requestId) {
-        Payment payment = getRequestPayment(requestId);
+    public PaymentResponse cancel(UUID bookingId) {
+        return doCancel(getBookingPayment(bookingId));
+    }
 
+    @Override
+    @Transactional
+    public void cancelAll(List<UUID> bookingIds) {
+        if (bookingIds.isEmpty()) {
+            return;
+        }
+
+        Map<UUID, Payment> paymentsByBookingId = paymentRepository.findByBookingIdIn(bookingIds).stream()
+                .collect(Collectors.toMap(payment -> payment.getBooking().getId(), Function.identity()));
+
+        for (UUID bookingId : bookingIds) {
+            Payment payment = paymentsByBookingId.get(bookingId);
+            if (payment != null) {
+                doCancel(payment);
+            }
+        }
+    }
+
+    private PaymentResponse doCancel(Payment payment) {
         if (payment.getStatus() == PaymentStatus.CANCELED || payment.getStatus() == PaymentStatus.FAILED) {
             return PaymentResponse.from(payment);
         }
@@ -93,8 +117,8 @@ public class PaymentServiceImpl implements PaymentService {
     /** Capture manuelle : preleve reellement les fonds jusque-la bloques sur la carte du payeur. */
     @Override
     @Transactional
-    public PaymentResponse capture(UUID requestId) {
-        Payment payment = getRequestPayment(requestId);
+    public PaymentResponse capture(UUID bookingId) {
+        Payment payment = getBookingPayment(bookingId);
 
         if (payment.isCaptured()) {
             return PaymentResponse.from(payment);
@@ -107,15 +131,40 @@ public class PaymentServiceImpl implements PaymentService {
         String chargeId = paymentGateway.capture(payment.getStripePaymentIntentId(), null);
         payment.markSucceeded(chargeId);
 
-        log.info("payment captured requestId={} paymentId={}", requestId, payment.getId());
+        log.info("payment captured bookingId={} paymentId={}", bookingId, payment.getId());
+
+        return PaymentResponse.from(payment);
+    }
+
+    @Override
+    @Transactional
+    public PaymentResponse refund(UUID bookingId) {
+        Payment payment = getBookingPayment(bookingId);
+
+        if (payment.isRefunded()) {
+            return PaymentResponse.from(payment);
+        }
+        if (!payment.isCaptured()) {
+            throw new PaymentException(PaymentErrorCode.PAYMENT_INVALID_STATE,
+                    "Payment " + payment.getId() + " is not captured, cannot refund");
+        }
+        if (payment.getStripePaymentIntentId() == null) {
+            throw new PaymentException(PaymentErrorCode.PAYMENT_INVALID_STATE,
+                    "Payment " + payment.getId() + " has no payment intent recorded, cannot refund");
+        }
+
+        String refundId = paymentGateway.refund(payment.getStripePaymentIntentId(), payment.getPrice().getAmountInCents());
+        payment.markRefunded(refundId);
+
+        log.info("payment refunded bookingId={} paymentId={}", bookingId, payment.getId());
 
         return PaymentResponse.from(payment);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isAuthorized(UUID requestId) {
-        return paymentRepository.existsByRequestIdAndStatus(requestId, PaymentStatus.AUTHORIZED);
+    public boolean isAuthorized(UUID bookingId) {
+        return paymentRepository.existsByBookingIdAndStatus(bookingId, PaymentStatus.AUTHORIZED);
     }
 
     @Override
@@ -132,8 +181,8 @@ public class PaymentServiceImpl implements PaymentService {
     private void applyWebhookEvent(WebhookResponse event) {
         Payment payment = resolvePayment(event);
         if (payment == null) {
-            log.warn("webhook event ignored, no matching payment requestId={} paymentIntentId={}",
-                    event.requestId(), event.paymentIntentId());
+            log.warn("webhook event ignored, no matching payment bookingId={} paymentIntentId={}",
+                    event.bookingId(), event.paymentIntentId());
             return;
         }
 
@@ -142,14 +191,14 @@ public class PaymentServiceImpl implements PaymentService {
                 boolean alreadyAuthorized = payment.isAuthorized();
                 payment.markAuthorized(event.paymentIntentId());
                 if (!alreadyAuthorized) {
-                    eventPublisher.publishEvent(new PaymentAuthorizedEvent(event.requestId()));
+                    eventPublisher.publishEvent(new PaymentAuthorizedEvent(payment.getBooking().getId(), payment.getPayer()));
                 }
             }
             case FAILED -> payment.markFailed();
             case CANCELED -> payment.markCanceled();
             case SUCCEEDED -> {
                 if (!payment.isCaptured()) {
-                    payment.markSucceeded(null);
+                    payment.markSucceeded(event.paymentIntentId());
                 }
             }
             default -> log.debug("unhandled webhook status={} paymentId={}", event.status(), payment.getId());
@@ -165,18 +214,18 @@ public class PaymentServiceImpl implements PaymentService {
                 return byIntent.get();
             }
         }
-        return paymentRepository.findByRequestId(event.requestId()).orElse(null);
+        return paymentRepository.findByBookingId(event.bookingId()).orElse(null);
     }
 
-    private Payment getRequestPayment(UUID requestId) {
-        return paymentRepository.findByRequestId(requestId)
+    private Payment getBookingPayment(UUID bookingId) {
+        return paymentRepository.findByBookingId(bookingId)
                 .orElseThrow(() -> new PaymentException(PaymentErrorCode.PAYMENT_NOT_FOUND,
-                        "No payment for request: " + requestId));
+                        "No payment for booking: " + bookingId));
     }
 
-    private Request getRequestByIdOrThrow(UUID requestId) {
-        return requestRepository.findRequestById(requestId)
-                .orElseThrow(() -> new RequestException(RequestErrorCode.REQUEST_NOT_FOUND, "Request not found: " + requestId));
+    private Booking getBookingByIdOrThrow(UUID bookingId) {
+        return bookingRepository.findBookingById(bookingId)
+                .orElseThrow(() -> new BookingException(BookingErrorCode.BOOKING_NOT_FOUND, "Booking not found: " + bookingId));
     }
 
 }

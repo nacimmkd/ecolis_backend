@@ -17,5 +17,7 @@ public interface PaymentGateway {
 
     String capture(String paymentIntentId, Long amountToCaptureInCents);
 
+    String refund(String paymentIntentId, Long amountToRefundInCents);
+
     Optional<WebhookResponse> parseWebhookRequest(WebhookRequest request);
 }

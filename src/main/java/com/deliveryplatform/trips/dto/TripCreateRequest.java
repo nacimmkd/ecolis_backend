@@ -1,6 +1,7 @@
 package com.deliveryplatform.trips.dto;
 
 import com.deliveryplatform.addresses.AddressRequest;
+import com.deliveryplatform.payments.Price;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Future;
@@ -26,8 +27,8 @@ public record TripCreateRequest(
         @DecimalMin("1")
         BigDecimal availableWeightKg,
 
-        @NotNull @DecimalMin("0.1")
-        BigDecimal pricePerKg,
+        @Valid @NotNull
+        Price pricePerKg,
 
         @NotNull boolean instantBooking,
 

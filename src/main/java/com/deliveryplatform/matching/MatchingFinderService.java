@@ -1,8 +1,8 @@
 package com.deliveryplatform.matching;
 
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.bookings.BookingPriceCalculator;
 import com.deliveryplatform.parcels.Parcel;
+import com.deliveryplatform.payments.PriceCalculator;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.trips.TripRepository;
 import com.deliveryplatform.trips.TripState;
@@ -24,6 +24,7 @@ public class MatchingFinderService {
     private final DetourCalculatorService detourCalculatorService;
     private final MatchingScoreService scoreCalculator;
     private final TripViabilityService viabilityCalculator;
+    private final PriceCalculator priceCalculator;
 
     @Transactional(readOnly = true)
     public List<MatchResult> findMatchingTrips(Parcel parcel, LocalDate date) {
@@ -51,7 +52,7 @@ public class MatchingFinderService {
         var detour = detourCalculatorService.calculate(trip,parcel);
 
         var viable = viabilityCalculator.isViable(trip, detour);
-        var price = BookingPriceCalculator.calculate(parcel, trip);
+        var price = priceCalculator.calculateBookingPrice(trip, parcel);
         var score = scoreCalculator.calculate(detour);
 
         return new MatchResult(trip, price, score, viable);
