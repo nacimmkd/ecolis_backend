@@ -47,7 +47,7 @@ class UserServiceImp implements UserService {
     public UserDetails register(UserCreateRequest request) {
         assertEmailUniqueness(request.email());
 
-        var profile = Profile.createFromRequest(request.profile());
+        var profile = Profile.create(request.firstName(), request.lastName());
         var user = User.create(
                 request.email(),
                 passwordEncoder.encode(request.password()),
