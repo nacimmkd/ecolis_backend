@@ -18,6 +18,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmail(String email);
 
     @EntityGraph(attributePaths = {"profile"})
-    @Query("SELECT u FROM User u WHERE u.id = :id")
-    Optional<User> findUserWithProfileById(@Param("id") UUID id);
+    Optional<User> findUserById(UUID id);
+
+    @EntityGraph(attributePaths = {"profile"})
+    Optional<User> findUserByEmail(String email);
 }

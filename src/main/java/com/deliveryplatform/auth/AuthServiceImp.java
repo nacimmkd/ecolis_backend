@@ -71,7 +71,7 @@ public class AuthServiceImp implements AuthService {
     public User getCurrentUser() {
         var principal = this.getCurrentUserPrincipal();
         var userId = principal.getId();
-        return userRepository.findUserWithProfileById(userId).orElse(null);
+        return userRepository.findUserById(userId).orElse(null);
     }
 
     // ---------------------------------------------------------------------
@@ -84,7 +84,7 @@ public class AuthServiceImp implements AuthService {
         } catch (BadCredentialsException e) {
             throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS, "Invalid email or password");
         } catch (DisabledException e) {
-            throw new AuthException(AuthErrorCode.ACCOUNT_DISABLED, "PaymentAccount is disabled");
+            throw new AuthException(AuthErrorCode.USER_NOT_VERIFIED, "account is not verified");
         }
     }
 

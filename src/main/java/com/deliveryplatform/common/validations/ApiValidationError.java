@@ -1,12 +1,14 @@
 package com.deliveryplatform.common.validations;
 
 import com.deliveryplatform.common.exceptions.ApiError;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
+@Schema(description = "Standard API validation error")
 @Getter
 public class ApiValidationError extends ApiError {
 

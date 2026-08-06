@@ -130,7 +130,7 @@ public class ParcelServiceImp implements ParcelService {
     }
 
     private User getUserByIdOrThrow(UUID id) {
-        return userRepository.findUserWithProfileById(id)
+        return userRepository.findUserById(id)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "User not found"));
     }
 

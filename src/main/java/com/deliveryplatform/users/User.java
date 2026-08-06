@@ -1,5 +1,6 @@
 package com.deliveryplatform.users;
 
+import com.deliveryplatform.auth.AuthProvider;
 import com.deliveryplatform.profiles.Profile;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +33,12 @@ public class User {
     @Builder.Default
     private boolean verified = false;
 
+    @Column(name = "provider")
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Setter(AccessLevel.PRIVATE)
+    private AuthProvider provider = AuthProvider.LOCAL;
+
     @Column(name = "registered_at")
     @Builder.Default
     private OffsetDateTime registeredAt = OffsetDateTime.now();
@@ -47,14 +54,21 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = false)
     private Profile profile;
 
-    public static User create(String email, String hashedPassword, Profile profile) {
+    public static User create(String email, String hashedPassword, boolean verified, Profile profile) {
         var user = User.builder()
                 .email(email)
                 .password(hashedPassword)
                 .role(Role.USER)
-                .verified(false)
+                .provider(AuthProvider.LOCAL)
+                .verified(verified)
                 .build();
         user.setProfile(profile);
+        return user;
+    }
+
+    public static User create(String email, String hashedPassword, boolean verified, AuthProvider provider, Profile profile) {
+        var user = User.create(email, hashedPassword, verified, profile);
+        user.setProvider(provider);
         return user;
     }
 

@@ -45,12 +45,19 @@ class UserServiceImp implements UserService {
     @Override
     @Transactional
     public UserDetails register(UserCreateRequest request) {
+
+        var existingUser = userRepository.findUserByEmail(request.email()).orElse(null);
+
+        if (existingUser != null && !existingUser.isVerified() )
+            throw new UserException(UserErrorCode.USER_NOT_VERIFIED, "user exists but not verified");
+
         assertEmailUniqueness(request.email());
 
         var profile = Profile.create(request.firstName(), request.lastName());
         var user = User.create(
                 request.email(),
                 passwordEncoder.encode(request.password()),
+                false,
                 profile
         );
         userRepository.save(user);
@@ -59,8 +66,8 @@ class UserServiceImp implements UserService {
     }
 
     @Override
-    public void sendVerificationCode(UUID id) {
-        var user = getUserByIdOrThrow(id);
+    public void sendVerificationCode(String email) {
+        var user = getUserByEmailOrThrow(email);
         if (user.isVerified()) {
             throw new UserException(UserErrorCode.USER_ALREADY_VERIFIED, "User is already verified");
         }
@@ -69,8 +76,8 @@ class UserServiceImp implements UserService {
 
     @Override
     @Transactional
-    public void verify(UUID userId, String code) {
-        var user = getUserByIdOrThrow(userId);
+    public void verify(String email, String code) {
+        var user = getUserByEmailOrThrow(email);
         emailVerificationService.verifyCode(user, code);
         user.verify();
         userRepository.save(user);
@@ -99,7 +106,12 @@ class UserServiceImp implements UserService {
     // ----------------------------------------------------------------
 
     public User getUserByIdOrThrow(UUID id) {
-        return userRepository.findUserWithProfileById(id)
+        return userRepository.findUserById(id)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "User not found"));
+    }
+
+    public User getUserByEmailOrThrow(String email) {
+        return userRepository.findUserByEmail(email)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "User not found"));
     }
 

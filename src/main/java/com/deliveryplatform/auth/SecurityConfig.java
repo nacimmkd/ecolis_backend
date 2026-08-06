@@ -1,6 +1,8 @@
 package com.deliveryplatform.auth;
 
 import com.deliveryplatform.auth.jwt.JwtAuthenticationFilter;
+import com.deliveryplatform.auth.oauth2.OAuth2LoginFailureHandler;
+import com.deliveryplatform.auth.oauth2.OAuth2LoginSuccessHandler;
 import com.deliveryplatform.common.exceptions.ApiError;
 import com.deliveryplatform.users.UserPrincipal;
 import com.deliveryplatform.users.UserRepository;
@@ -43,6 +45,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CorsProperties corsProperties;
 
+    private final OAuth2LoginSuccessHandler oauth2SuccessHandler;
+    private final OAuth2LoginFailureHandler oauth2FailureHandler;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -63,11 +68,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification/verify").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/verification/send").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/verification/verify").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/verification/send").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/oauth2/**", "/login/**").permitAll()
                         .requestMatchers("/api/v1/payments/webhook/stripe").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated() // to be changed later
+                )
+
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oauth2SuccessHandler)
+                        .failureHandler(oauth2FailureHandler)
                 )
 
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

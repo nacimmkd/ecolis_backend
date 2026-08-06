@@ -42,6 +42,11 @@ public class AuthController {
             @AuthenticationPrincipal UserPrincipal principal,
             HttpServletResponse response
     ) {
+
+        if (principal == null) {
+            cookieService.clearAuthCookies(response);
+            return ResponseEntity.noContent().build();
+        }
         authService.logout(principal.getId());
         cookieService.clearAuthCookies(response);
         return ResponseEntity.noContent().build();

@@ -15,9 +15,9 @@ public interface UserService {
 
     UserDetails register(UserCreateRequest request);
 
-    void sendVerificationCode(UUID id);
+    void sendVerificationCode(String email);
 
-    void verify(UUID userId, String code);
+    void verify(String email, String code);
 
     void updatePassword(UUID id, UpdatePasswordRequest request);
 

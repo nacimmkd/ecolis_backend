@@ -9,7 +9,8 @@ public enum UserErrorCode implements ErrorCode {
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED),
     INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST),
-    USER_ALREADY_VERIFIED(HttpStatus.CONFLICT);
+    USER_ALREADY_VERIFIED(HttpStatus.CONFLICT),
+    USER_NOT_VERIFIED(HttpStatus.CONFLICT);
 
     private final HttpStatus status;
 

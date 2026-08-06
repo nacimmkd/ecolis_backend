@@ -141,6 +141,12 @@
             <version>0.12.6</version>
         </dependency>
 
+        <!-- OAUTH2 GOOGLE -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
         <!-- REDIS -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

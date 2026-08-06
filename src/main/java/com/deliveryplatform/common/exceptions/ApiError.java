@@ -1,5 +1,6 @@
 package com.deliveryplatform.common.exceptions;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,6 +8,7 @@ import org.springframework.http.HttpStatus;
 
 import java.time.OffsetDateTime;
 
+@Schema(description = "Standard api error")
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class ApiError {

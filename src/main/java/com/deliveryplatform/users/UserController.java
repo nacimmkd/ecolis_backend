@@ -44,19 +44,19 @@ public class UserController {
     }
 
 
-    @PostMapping("/{userId}/verification/send")
+    @PostMapping("/verification/send")
     public ResponseEntity<Void> sendVerificationCode(
-            @PathVariable UUID userId) {
-        userService.sendVerificationCode(userId);
+            @RequestBody VerifyEmailRequest request
+    ) {
+        userService.sendVerificationCode(request.email());
         return ResponseEntity.noContent().build();
     }
 
 
-    @PostMapping("/{userId}/verification/verify")
+    @PostMapping("/verification/verify")
     public ResponseEntity<Void> verify(
-            @PathVariable UUID userId,
-            @RequestBody @Valid VerificationCodeRequest codeRequest) {
-        userService.verify(userId, codeRequest.code());
+            @RequestBody @Valid VerificationCodeRequest request) {
+        userService.verify(request.email(), request.code());
         return ResponseEntity.noContent().build();
     }
 
