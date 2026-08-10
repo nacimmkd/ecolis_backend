@@ -9,7 +9,6 @@ import com.deliveryplatform.users.UserMapper;
 import com.deliveryplatform.users.UserPrincipal;
 import com.deliveryplatform.users.UserRepository;
 import com.deliveryplatform.users.dto.UserDetails;
-import com.deliveryplatform.users.exceptions.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -64,6 +63,7 @@ public class AuthServiceImp implements AuthService {
     @Override
     public void logout(UUID userId) {
         cachingService.remove(refreshTokenCacheKey(userId));
+        SecurityContextHolder.clearContext();
     }
 
     @Override

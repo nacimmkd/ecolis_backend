@@ -1,8 +1,8 @@
 package com.deliveryplatform.auth;
 
 import com.deliveryplatform.users.UserPrincipal;
-import com.deliveryplatform.users.UserService;
 import com.deliveryplatform.users.dto.UserDetails;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final CookieService cookieService;
-    private final UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<UserDetails> login(
@@ -43,16 +42,17 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @AuthenticationPrincipal UserPrincipal principal,
+            HttpServletRequest request,
             HttpServletResponse response
     ) {
-
-        if (principal == null) {
-            cookieService.clearAuthCookies(response);
-            return ResponseEntity.noContent().build();
-        }
         authService.logout(principal.getId());
         cookieService.clearAuthCookies(response);
-        System.out.println("log out");
+
+        var session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
         return ResponseEntity.noContent().build();
     }
 

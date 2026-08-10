@@ -1,6 +1,5 @@
 package com.deliveryplatform.users;
 
-
 import com.deliveryplatform.users.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +19,6 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-
-    @GetMapping("/me")
-    public ResponseEntity<UserDetails> getMe(
-            @AuthenticationPrincipal UserPrincipal principal
-    ) {
-        var userDto = userService.findById(principal.getId());
-        return ResponseEntity.ok(userDto);
-    }
 
     @PostMapping("/register")
     public ResponseEntity<UserDetails> register(
