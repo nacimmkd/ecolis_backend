@@ -12,7 +12,8 @@ public enum AuthErrorCode implements ErrorCode {
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED),
     ACCOUNT_DISABLED(HttpStatus.UNAUTHORIZED),
     MISSING_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED),
-    USER_NOT_VERIFIED(HttpStatus.UNAUTHORIZED);
+    USER_NOT_VERIFIED(HttpStatus.UNAUTHORIZED),
+    USER_NOT_AUTHENTICATED(HttpStatus.UNAUTHORIZED);
 
     private final HttpStatus status;
 

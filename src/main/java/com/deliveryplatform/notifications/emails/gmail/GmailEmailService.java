@@ -24,7 +24,7 @@ public class GmailEmailService implements EmailService {
     @Value("${mail.username}")
     private String from;
 
-    @Value("${app.frontend-url}")
+    @Value("${front-end.base-url}")
     private String frontUrl;
 
     @Override

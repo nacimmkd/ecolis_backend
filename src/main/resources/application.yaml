@@ -31,6 +31,13 @@ stripe:
     validity-minutes: 60
 
 platform:
-  const-fee: 50
-  fee-rate: 25
-  currency: eur
+  fees:
+    const-fee: 50
+    fee-rate: 25
+    currency: eur
+
+front-end:
+  base-url: ${BASE_URL:http://localhost:5173}
+  login-url: ${front-end.base-url}/login
+  verify-email-url: ${front-end.base-url}/verify-email
+  reset-password-url: ${front-end.base-url}/reset-password

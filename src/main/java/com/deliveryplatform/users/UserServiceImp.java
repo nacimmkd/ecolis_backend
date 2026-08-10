@@ -6,11 +6,13 @@ import com.deliveryplatform.users.dto.UpdatePasswordRequest;
 import com.deliveryplatform.users.dto.UserCreateRequest;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserSummary;
+import com.deliveryplatform.users.events.EmailVerificationEvent;
 import com.deliveryplatform.users.events.UserCreatedEvent;
 import com.deliveryplatform.users.exceptions.UserErrorCode;
 import com.deliveryplatform.users.exceptions.UserException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,8 +28,17 @@ class UserServiceImp implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final AuthService authService;
-    private final UserEmailVerificationService emailVerificationService;
+    private final TokenService emailTokenService;
     private final ApplicationEventPublisher eventPublisher;
+
+    @Value("${front-end.login-url}")
+    private String loginUrl;
+
+    @Value("${front-end.reset-password-url}")
+    private String resetPasswordUrl;
+
+    @Value("${front-end.verify-email-url}")
+    private String verifyEmailUrl;
 
     @Override
     public UserDetails findById(UUID id) {
@@ -48,7 +59,7 @@ class UserServiceImp implements UserService {
 
         var existingUser = userRepository.findUserByEmail(request.email()).orElse(null);
 
-        if (existingUser != null && !existingUser.isVerified() )
+        if (existingUser != null && !existingUser.isVerified())
             throw new UserException(UserErrorCode.USER_NOT_VERIFIED, "user exists but not verified");
 
         assertEmailUniqueness(request.email());
@@ -61,27 +72,50 @@ class UserServiceImp implements UserService {
                 profile
         );
         userRepository.save(user);
-        emailVerificationService.sendCode(user);
+        send(user, loginUrl);
         return userMapper.toDetailsDto(user);
     }
 
     @Override
-    public void sendVerificationCode(String email) {
+    @Transactional
+    public void requestEmailVerification(String email) {
         var user = getUserByEmailOrThrow(email);
         if (user.isVerified()) {
             throw new UserException(UserErrorCode.USER_ALREADY_VERIFIED, "User is already verified");
         }
-        emailVerificationService.sendCode(user);
+        send(user, verifyEmailUrl);
     }
 
     @Override
     @Transactional
-    public void verify(String email, String code) {
-        var user = getUserByEmailOrThrow(email);
-        emailVerificationService.verifyCode(user, code);
+    public void verifyEmail(String token) {
+        var userId = emailTokenService.verifyToken(token);
+        var user = getUserByIdOrThrow(userId);
         user.verify();
         userRepository.save(user);
         eventPublisher.publishEvent(new UserCreatedEvent(user));
+    }
+
+    @Override
+    @Transactional
+    public void requestPasswordReset(String email) {
+        var user = userRepository.findUserByEmail(email).orElse(null);
+        if (user == null) {
+            return;
+        }
+        send(user, resetPasswordUrl);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        var userId = emailTokenService.verifyToken(token);
+        var user = getUserByIdOrThrow(userId);
+
+        user.updatePassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        authService.logout(user.getId()); // desconnect all sessions
     }
 
     @Override
@@ -104,6 +138,12 @@ class UserServiceImp implements UserService {
     }
 
     // ----------------------------------------------------------------
+
+    private void send(User user, String prefixUrl) {
+        var token = emailTokenService.generateAndSave(user);
+        var url = prefixUrl + "?token=" + token;
+        eventPublisher.publishEvent(new EmailVerificationEvent(user, url));
+    }
 
     public User getUserByIdOrThrow(UUID id) {
         return userRepository.findUserById(id)

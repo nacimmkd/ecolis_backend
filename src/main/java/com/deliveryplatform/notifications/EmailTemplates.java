@@ -10,6 +10,7 @@ public final class EmailTemplates {
         return switch (event.getNotificationType()) {
             case USER_CREATED -> welcomeTemplate();
             case VERIFY_USER -> confirmEmailTemplate(event);
+            case RESET_PASSWORD -> resetPasswordTemplate(event);
             case BOOKING_CREATED -> bookingCreatedTemplate(event);
             case BOOKING_CANCELED -> bookingCanceledTemplate(event);
             case BOOKING_COMPLETED -> bookingCompletedTemplate(event);
@@ -87,16 +88,36 @@ public final class EmailTemplates {
                 """
                 Merci d'avoir inscrit sur ecolis.
 
-                Votre code de confirmation est :
+                Veuillez clicker sur le lien pour valider votre compte :
 
                 %s
 
-                Ce code est valable 5 minutes.
+                Ce code est valable 30 minutes.
                 Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
 
                 À bientôt,
                 L'équipe ecolis
-                """.formatted(event.getPayload().get("code"))
+                """.formatted(event.getPayload().get("url"))
+        );
+    }
+
+
+    private static EmailTemplate resetPasswordTemplate(NotificationEvent event) {
+        return new EmailTemplate(
+                "ecolis - réinitialiser votre mot de passe",
+                """
+                Merci d'avoir inscrit sur ecolis.
+
+                Veuillez clicker sur le lien réinitialiser votre mot de passe :
+
+                %s
+
+                Ce code est valable 30 minutes.
+                Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
+
+                À bientôt,
+                L'équipe ecolis
+                """.formatted(event.getPayload().get("url"))
         );
     }
 

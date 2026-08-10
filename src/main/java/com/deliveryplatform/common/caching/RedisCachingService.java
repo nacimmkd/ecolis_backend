@@ -22,6 +22,11 @@ public class RedisCachingService implements CachingService {
     }
 
     @Override
+    public String get(String key) {
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    @Override
     public boolean isValid(String key, String value) {
         String stored = redisTemplate.opsForValue().get(key);
         return stored != null && stored.equals(value);

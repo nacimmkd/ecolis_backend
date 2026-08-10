@@ -21,7 +21,7 @@ public class ResendEmailService implements EmailService {
     @Value("${resend.from-email}")
     private String from;
 
-    @Value("${app.frontend-url}")
+    @Value("${front-end.base-url}")
     private String frontUrl;
 
     @Override

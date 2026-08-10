@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "platform")
+@ConfigurationProperties(prefix = "platform.fees")
 public class PlatformFees {
     private long constFee;
     private long feeRate;

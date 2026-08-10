@@ -1,6 +1,8 @@
 package com.deliveryplatform.auth;
 
 import com.deliveryplatform.users.UserPrincipal;
+import com.deliveryplatform.users.UserService;
+import com.deliveryplatform.users.dto.UserDetails;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,25 +18,26 @@ public class AuthController {
 
     private final AuthService authService;
     private final CookieService cookieService;
+    private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(
+    public ResponseEntity<UserDetails> login(
             @Valid @RequestBody AuthRequest request,
             HttpServletResponse response
     ) {
         var authResponse = authService.login(request);
         cookieService.setAuthCookies(response, authResponse);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(authResponse.user());
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Void> refresh(
+    public ResponseEntity<UserDetails> refresh(
             @CookieValue(name = CookieService.REFRESH_COOKIE_NAME, required = false) String refreshToken,
             HttpServletResponse response
     ) {
         var authResponse = authService.refresh(refreshToken);
         cookieService.setAuthCookies(response, authResponse);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(authResponse.user());
     }
 
     @PostMapping("/logout")
@@ -49,6 +52,12 @@ public class AuthController {
         }
         authService.logout(principal.getId());
         cookieService.clearAuthCookies(response);
+        System.out.println("log out");
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDetails> getMe(){
+        return ResponseEntity.ok(authService.getMe());
     }
 }

@@ -44,19 +44,35 @@ public class UserController {
     }
 
 
-    @PostMapping("/verification/send")
-    public ResponseEntity<Void> sendVerificationCode(
-            @RequestBody VerifyEmailRequest request
+    @PostMapping("/verification/request")
+    public ResponseEntity<Void> requestVerification(
+            @RequestBody RequestEmailVerification request
     ) {
-        userService.sendVerificationCode(request.email());
+        userService.requestEmailVerification(request.email());
         return ResponseEntity.noContent().build();
     }
 
 
     @PostMapping("/verification/verify")
-    public ResponseEntity<Void> verify(
-            @RequestBody @Valid VerificationCodeRequest request) {
-        userService.verify(request.email(), request.code());
+    public ResponseEntity<Void> verify(@RequestBody @Valid VerifyEmailRequest request) {
+        userService.verifyEmail(request.token());
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @PostMapping("/password/reset/request")
+    public ResponseEntity<Void> requestPasswordReset(
+            @Valid @RequestBody RequestPasswordReset request
+    ) {
+        userService.requestPasswordReset(request.email());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/password/reset")
+    public ResponseEntity<Void> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request
+    ) {
+        userService.resetPassword(request.token(), request.newPassword());
         return ResponseEntity.noContent().build();
     }
 

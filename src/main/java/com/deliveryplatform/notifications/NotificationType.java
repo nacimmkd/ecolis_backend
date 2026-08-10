@@ -7,7 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum NotificationType {
 
-    VERIFY_USER(false),
+    VERIFY_USER(true),
+    RESET_PASSWORD(true),
     USER_CREATED(false),
 
     MESSAGE_RECEIVED(true),

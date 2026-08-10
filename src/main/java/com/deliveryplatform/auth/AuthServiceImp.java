@@ -5,9 +5,11 @@ import com.deliveryplatform.auth.exceptions.AuthException;
 import com.deliveryplatform.auth.jwt.JwtConfig;
 import com.deliveryplatform.auth.jwt.JwtService;
 import com.deliveryplatform.common.caching.CachingService;
-import com.deliveryplatform.users.User;
+import com.deliveryplatform.users.UserMapper;
 import com.deliveryplatform.users.UserPrincipal;
 import com.deliveryplatform.users.UserRepository;
+import com.deliveryplatform.users.dto.UserDetails;
+import com.deliveryplatform.users.exceptions.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -29,6 +31,7 @@ public class AuthServiceImp implements AuthService {
     private final CachingService cachingService;
     private final JwtConfig jwtConfig;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Override
     public AuthResponse login(AuthRequest request) {
@@ -36,10 +39,11 @@ public class AuthServiceImp implements AuthService {
 
         var accessToken = jwtService.generateAccessToken(principal);
         var refreshToken = jwtService.generateRefreshToken(principal);
+        var user = userMapper.toDetailsDto(userRepository.findUserById(principal.getId()).orElse(null));
 
         storeRefreshToken(principal.getId(), refreshToken.token());
 
-        return new AuthResponse(accessToken, refreshToken);
+        return new AuthResponse(accessToken, refreshToken, user);
     }
 
     @Override
@@ -53,7 +57,8 @@ public class AuthServiceImp implements AuthService {
 
         var newAccessToken = jwtService.generateAccessToken(principal);
 
-        return new AuthResponse(newAccessToken, newRefreshToken);
+        var user = userMapper.toDetailsDto(userRepository.findUserById(principal.getId()).orElse(null));
+        return new AuthResponse(newAccessToken, newRefreshToken,user);
     }
 
     @Override
@@ -64,14 +69,22 @@ public class AuthServiceImp implements AuthService {
     @Override
     public UserPrincipal getCurrentUserPrincipal() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (UserPrincipal) authentication.getPrincipal();
+
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
+            throw new AuthException(AuthErrorCode.USER_NOT_AUTHENTICATED, "not authenticated");
+        }
+
+        return principal;
     }
 
     @Override
-    public User getCurrentUser() {
+    public UserDetails getMe() {
         var principal = this.getCurrentUserPrincipal();
         var userId = principal.getId();
-        return userRepository.findUserById(userId).orElse(null);
+        var user = userRepository.findUserById(userId).orElse(null);
+        return userMapper.toDetailsDto(user);
     }
 
     // ---------------------------------------------------------------------

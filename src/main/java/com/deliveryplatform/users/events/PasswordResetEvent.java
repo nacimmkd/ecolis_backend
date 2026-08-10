@@ -5,17 +5,16 @@ import com.deliveryplatform.notifications.NotificationType;
 import com.deliveryplatform.notifications.channels.ChannelType;
 import com.deliveryplatform.users.User;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public record EmailVerificationEvent(
+public record PasswordResetEvent(
         User user,
         String url
-) implements NotificationEvent
 
-{
+) implements NotificationEvent {
+
     @Override
     public User getReceiver() {
         return user;
@@ -23,7 +22,7 @@ public record EmailVerificationEvent(
 
     @Override
     public NotificationType getNotificationType() {
-        return NotificationType.VERIFY_USER;
+        return NotificationType.RESET_PASSWORD;
     }
 
     @Override
@@ -40,5 +39,4 @@ public record EmailVerificationEvent(
     public Map<String, Object> getPayload() {
         return Map.of("url", url);
     }
-
 }

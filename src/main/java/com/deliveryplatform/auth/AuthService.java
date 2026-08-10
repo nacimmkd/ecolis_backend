@@ -1,7 +1,7 @@
 package com.deliveryplatform.auth;
 
-import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserPrincipal;
+import com.deliveryplatform.users.dto.UserDetails;
 
 import java.util.UUID;
 
@@ -15,5 +15,5 @@ public interface AuthService {
 
     UserPrincipal getCurrentUserPrincipal();
 
-    User getCurrentUser();
+    UserDetails getMe();
 }

@@ -16,8 +16,8 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
 
-    @Value("${app.frontend-url}")
-    private String frontendUrl;
+    @Value("${front-end.login-url}")
+    private String frontLoginUrl;
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,
@@ -25,6 +25,6 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
                                         AuthenticationException exception) throws IOException {
         log.warn("OAuth2 authentication failed: {}", exception.getMessage());
         String reason = URLEncoder.encode("oauth_cancelled_or_failed", StandardCharsets.UTF_8);
-        response.sendRedirect(frontendUrl + "/oauth/popup-callback?status=error&reason=" + reason);
+        response.sendRedirect(frontLoginUrl + "?status=error&reason=" + reason);
     }
 }

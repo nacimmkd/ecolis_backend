@@ -15,9 +15,13 @@ public interface UserService {
 
     UserDetails register(UserCreateRequest request);
 
-    void sendVerificationCode(String email);
+    void requestEmailVerification(String email);
 
-    void verify(String email, String code);
+    void verifyEmail(String token);
+
+    void requestPasswordReset(String email);
+
+    void resetPassword(String token, String newPassword);
 
     void updatePassword(UUID id, UpdatePasswordRequest request);
 
