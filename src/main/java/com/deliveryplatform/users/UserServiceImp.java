@@ -31,9 +31,6 @@ class UserServiceImp implements UserService {
     private final TokenService emailTokenService;
     private final ApplicationEventPublisher eventPublisher;
 
-    @Value("${front-end.login-url}")
-    private String loginUrl;
-
     @Value("${front-end.reset-password-url}")
     private String resetPasswordUrl;
 
@@ -72,7 +69,6 @@ class UserServiceImp implements UserService {
                 profile
         );
         userRepository.save(user);
-        send(user, loginUrl);
         return userMapper.toDetailsDto(user);
     }
 
@@ -115,7 +111,7 @@ class UserServiceImp implements UserService {
         user.updatePassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        authService.logout(user.getId()); // desconnect all sessions
+        authService.logout(user.getId());
     }
 
     @Override
