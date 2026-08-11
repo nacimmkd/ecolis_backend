@@ -29,9 +29,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final CachingService cachingService;
     private final JwtConfig jwtConfig;
-    private final UserRepository userRepository;
     private final CookieService cookieService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final GoogleUserResolver googleUserResolver;
 
     @Value("${front-end.base-url}")
     private String frontHomeUrl;
@@ -52,18 +51,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             return;
         }
 
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    User created = userRepository.save(User.create(
-                            email,
-                            null,
-                            true,
-                            AuthProvider.GOOGLE,
-                            Profile.create(firstName, lastName)
-                    ));
-                    eventPublisher.publishEvent(new UserCreatedEvent(created));
-                    return created;
-                });
+        var user = googleUserResolver.resolve(
+                email,
+                firstName,
+                lastName
+        );
 
         var principal = UserPrincipal.from(user);
 
