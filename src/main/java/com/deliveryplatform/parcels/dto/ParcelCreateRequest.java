@@ -13,8 +13,7 @@ import java.util.UUID;
 
 public record ParcelCreateRequest(
 
-        @Size(max = 500)
-        String description,
+        String title,
 
         @NotNull @DecimalMin("0.01")
         BigDecimal weightKg,
@@ -29,8 +28,6 @@ public record ParcelCreateRequest(
         @NotNull @Valid
         AddressRequest dropoffAddress,
 
-        @NotNull List<UUID> imageIds,
-
-        UUID thumbnailId
+        @NotNull List<UUID> imageIds
 ) {
 }

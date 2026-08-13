@@ -1,8 +1,3 @@
-ALTER TABLE parcels
-    ADD COLUMN thumbnail_image_id UUID,
-    ADD CONSTRAINT fk_parcels_thumbnail
-        FOREIGN KEY (thumbnail_image_id) REFERENCES images(id) ON DELETE RESTRICT;
-
 
 CREATE TABLE parcel_images (
                                parcel_id   UUID NOT NULL,

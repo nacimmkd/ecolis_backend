@@ -14,15 +14,13 @@ import java.util.UUID;
 @Builder
 public record ParcelDetails(
         UUID parcelId,
-        String description,
+        String title,
         BigDecimal weightKg,
         ParcelSize size,
         boolean fragile,
         Address pickupAddress,
         Address dropoffAddress,
         ParcelState state,
-        ImageDto thumbnail,
         List<ImageDto> images,
-        long bookingsCount,
         OffsetDateTime publishedAt
 ){}

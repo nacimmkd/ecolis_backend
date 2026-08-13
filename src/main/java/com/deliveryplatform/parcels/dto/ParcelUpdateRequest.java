@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.UUID;
 
 public record ParcelUpdateRequest(
-        @NotNull @Size(max = 500)
-        String description,
+
+        String title,
 
         @NotNull @DecimalMin("0.01")
         BigDecimal weightKg,
@@ -26,8 +26,6 @@ public record ParcelUpdateRequest(
 
         @Valid AddressRequest dropoffAddress,
 
-        @NotNull List<UUID> imageIds,
-
-        UUID thumbnailId
+        @NotNull List<UUID> imageIds
 ) {
 }

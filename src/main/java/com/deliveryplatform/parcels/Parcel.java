@@ -36,7 +36,7 @@ public class Parcel {
     @JoinColumn(name = "user_id")
     private User owner;
 
-    private String description;
+    private String title;
 
     @Column(name = "weight_kg", nullable = false, precision = 8, scale = 2)
     private BigDecimal weightKg;
@@ -71,10 +71,6 @@ public class Parcel {
     @AttributeOverride(name = "longitude", column = @Column(name = "dropoff_lng"))
     private Address dropoffAddress;
 
-    @OneToOne
-    @JoinColumn(name = "thumbnail_image_id")
-    private Image thumbnail;
-
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "parcel_images",
@@ -100,18 +96,17 @@ public class Parcel {
 
 
     public static Parcel createFromRequest(
-            ParcelCreateRequest request,User owner, Address pickupAddress, Address dropoffAddress,
-            Image thumbnail, List<Image> images
+            ParcelCreateRequest request,User owner, Address pickupAddress,
+            Address dropoffAddress, List<Image> images
     ) {
         Parcel parcel = Parcel.builder()
                 .owner(owner)
-                .description(request.description())
+                .title(request.title())
                 .weightKg(request.weightKg())
                 .size(request.size())
                 .fragile(request.fragile())
                 .pickupAddress(pickupAddress)
                 .dropoffAddress(dropoffAddress)
-                .thumbnail(thumbnail)
                 .images(images != null ? images : new ArrayList<>())
                 .build();
 
@@ -131,7 +126,6 @@ public class Parcel {
     public void softDelete() {
         this.deleted = true;
         this.deletedAt = OffsetDateTime.now();
-        this.thumbnail = null;
         this.images.clear();
     }
 

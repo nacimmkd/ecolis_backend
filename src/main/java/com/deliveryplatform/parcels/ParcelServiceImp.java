@@ -35,9 +35,8 @@ public class ParcelServiceImp implements ParcelService {
 
     @Override
     public ParcelDetails getParcel(UUID parcelId) {
-        var bookingsCount = bookingRepository.countByParcelId(parcelId);
         var parcel = getParcelByIdOrThrow(parcelId);
-        return parcelMapper.toDetailedDto(parcel, bookingsCount);
+        return parcelMapper.toDetailedDto(parcel);
     }
 
     @Override
@@ -73,10 +72,9 @@ public class ParcelServiceImp implements ParcelService {
                 owner,
                 addressService.geocode(request.pickupAddress()),
                 addressService.geocode(request.dropoffAddress()),
-                imageService.getImage(request.thumbnailId(),owner),
                 imageService.getImages(request.imageIds())
         );
-        return parcelMapper.toDetailedDto(parcelRepository.save(parcel), 0);
+        return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
     }
 
     @Override
@@ -87,18 +85,16 @@ public class ParcelServiceImp implements ParcelService {
         parcel.assertOwnedBy(userId);
         parcel.assertIsInState(List.of(ParcelState.PUBLISHED));
 
-        parcel.setDescription(request.description());
+        parcel.setTitle(request.title());
         parcel.setWeightKg(request.weightKg());
         parcel.setSize(request.size());
         parcel.setFragile(request.fragile());
         parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
         parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
 
-        updateThumbnail(parcel, request.thumbnailId());
         updateParcelImages(parcel, request.imageIds());
 
-        var bookingsCount = bookingRepository.countByParcelId(parcelId);
-        return parcelMapper.toDetailedDto(parcelRepository.save(parcel), bookingsCount);
+        return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
     }
 
     @Override
@@ -148,15 +144,5 @@ public class ParcelServiceImp implements ParcelService {
             parcel.removeImages(toDelete);
             parcel.addImages(imageService.getImages(imageIds));
         }
-    }
-
-    private void updateThumbnail(Parcel parcel, UUID thumbnailId) {
-        if (thumbnailId == null) {
-            parcel.setThumbnail(null);
-            return;
-        }
-        // if thumbnailId in not null, we update thumbnail with new one
-        var image = imageService.getImage(thumbnailId, parcel.getOwner());
-        parcel.setThumbnail(image);
     }
 }

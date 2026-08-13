@@ -10,6 +10,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 
 @Validated
 @RestController
@@ -35,5 +37,13 @@ public class ImageController {
 
         var response =imageService.confirmUpload(key, user.getId());
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> confirmUpload(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        imageService.remove(id, user.getId());
+        return ResponseEntity.noContent().build();
     }
 }

@@ -14,17 +14,17 @@ import java.util.UUID;
 @Repository
 public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
 
-    @EntityGraph(attributePaths = {"owner", "owner.profile", "thumbnail", "images"})
+    @EntityGraph(attributePaths = {"owner", "owner.profile", "images"})
     @Query("SELECT p FROM Parcel p WHERE p.owner.id = :userId ORDER BY p.createdAt DESC")
     List<Parcel> findByOwnerId(@Param("userId") UUID userId);
 
-    @EntityGraph(attributePaths = {"owner", "owner.profile", "thumbnail", "trackEvents"})
+    @EntityGraph(attributePaths = {"owner", "owner.profile", "trackEvents"})
     Optional<Parcel> findParcelWithTrackingById(UUID id);
 
-    @EntityGraph(attributePaths = {"owner", "owner.profile", "thumbnail", "images"})
+    @EntityGraph(attributePaths = {"owner", "owner.profile", "images"})
     Optional<Parcel> findParcelDetailsById(UUID id);
 
-    @EntityGraph(attributePaths = {"owner", "thumbnail"})
+    @EntityGraph(attributePaths = {"owner", "images"})
     Optional<Parcel> findParcelSummaryById(UUID id);
 
 }

@@ -51,6 +51,14 @@ public class ImageServiceImp implements ImageService {
         imageRepository.delete(image);
     }
 
+    @Override
+    public void remove(UUID imageId, UUID userId) {
+        var image = getByIdOrThrow(imageId);
+        image.assertOwnedBy(userId);
+        s3StorageService.delete(image.getKey());
+        imageRepository.delete(image);
+    }
+
 
     @Override
     public void remove(List<Image> images) {

@@ -1,7 +1,7 @@
 CREATE TABLE parcels (
                          id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                          user_id         UUID NOT NULL,
-                         description     TEXT,
+                         title           VARCHAR(255),
                          weight_kg       NUMERIC(8,2)  NOT NULL,
                          size            VARCHAR(10) NOT NULL
                             CHECK ( size IN ('S','M','L','XL','XXL')),

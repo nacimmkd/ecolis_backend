@@ -19,5 +19,7 @@ public interface ImageService {
 
     void remove(Image image);
 
+    void remove(UUID imageId, UUID userId);
+
     void remove(List<Image> images);
 }
