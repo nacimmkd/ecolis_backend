@@ -2,9 +2,8 @@ package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.addresses.AddressService;
 import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.bookings.BookingMapper;
 import com.deliveryplatform.bookings.BookingRepository;
-import com.deliveryplatform.bookings.dto.ParcelBookingDto;
+import com.deliveryplatform.parcels.dto.ParcelBookingDto;
 import com.deliveryplatform.images.Image;
 import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.*;
@@ -16,6 +15,8 @@ import com.deliveryplatform.users.exceptions.UserErrorCode;
 import com.deliveryplatform.users.exceptions.UserException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,37 +31,36 @@ public class ParcelServiceImp implements ParcelService {
     private final AddressService        addressService;
     private final ImageService          imageService;
     private final BookingRepository     bookingRepository;
-    private final BookingMapper         bookingMapper;
+    private final ParcelBookingMapper   parcelBookingsMapper;
     private final ParcelMapper          parcelMapper;
 
     @Override
     public ParcelDetails getParcel(UUID parcelId) {
         var parcel = getParcelByIdOrThrow(parcelId);
-        return parcelMapper.toDetailedDto(parcel);
+        return parcelMapper.toDetailedDto(parcel, getParcelBookings(parcelId));
     }
 
     @Override
-    public List<ParcelSummary> getUserParcels(UUID userId) {
-        return parcelMapper.toSummaryDto(
-                parcelRepository.findByOwnerId(userId)
-        );
+    public Page<ParcelSummary> getUserParcels(UUID userId, ParcelState state, Pageable pageable) {
+        Page<Parcel> parcels = (state == null)
+                ? parcelRepository.findByOwnerId(userId, pageable)
+                : parcelRepository.findByOwnerIdAndState(userId, state, pageable);
+
+        return parcels.map(parcelMapper::toSummaryDto);
     }
 
     @Override
     public List<ParcelBookingDto> getParcelBookings(UUID parcelId, UUID currentUserId) {
         Parcel parcel = getParcelByIdOrThrow(parcelId);
-
+        var bookings = bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId);
         parcel.assertOwnedBy(currentUserId);
-
-        List<Booking> bookings = bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId);
-        return bookingMapper.toParcelBookingDto(bookings);
+        return parcelBookingsMapper.toParcelBookingDto(bookings);
     }
 
     @Override
-    public List<ParcelSummary> getParcels() {
-        return parcelMapper.toSummaryDto(
-                parcelRepository.findAll()
-        );
+    public Page<ParcelSummary> getParcels(Pageable pageable) {
+        return parcelRepository.findAll(pageable)
+                .map(parcelMapper::toSummaryDto);
     }
 
     @Override
@@ -74,7 +74,8 @@ public class ParcelServiceImp implements ParcelService {
                 addressService.geocode(request.dropoffAddress()),
                 imageService.getImages(request.imageIds())
         );
-        return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
+        parcelRepository.save(parcel);
+        return parcelMapper.toDetailedDto(parcel, List.of());
     }
 
     @Override
@@ -94,7 +95,8 @@ public class ParcelServiceImp implements ParcelService {
 
         updateParcelImages(parcel, request.imageIds());
 
-        return parcelMapper.toDetailedDto(parcelRepository.save(parcel));
+        parcelRepository.save(parcel);
+        return parcelMapper.toDetailedDto(parcel, getParcelBookings(parcelId));
     }
 
     @Override
@@ -128,6 +130,10 @@ public class ParcelServiceImp implements ParcelService {
     private User getUserByIdOrThrow(UUID id) {
         return userRepository.findUserById(id)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "User not found"));
+    }
+
+    private List<Booking> getParcelBookings(UUID parcelId) {
+        return bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId);
     }
 
     private void updateParcelImages(Parcel parcel, List<UUID> imageIds) {

@@ -1,4 +1,4 @@
-package com.deliveryplatform.bookings.dto;
+package com.deliveryplatform.parcels.dto;
 
 import com.deliveryplatform.bookings.BookingState;
 import com.deliveryplatform.payments.Price;

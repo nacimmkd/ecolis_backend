@@ -1,5 +1,6 @@
 package com.deliveryplatform.parcels;
 
+import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.parcels.dto.*;
 import org.mapstruct.Mapper;
@@ -10,7 +11,7 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = {ImageMapper.class},
+        uses = {ImageMapper.class, ParcelBookingMapper.class},
         unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface ParcelMapper {
@@ -23,10 +24,9 @@ public interface ParcelMapper {
 
     List<ParcelSummary> toSummaryDto(List<Parcel> parcels);
 
-    @Mapping(target = "parcelId", source = "parcel.id")
-    @Mapping(target = "fragile", source = "parcel.fragile")
-    @Mapping(target = "publishedAt", source = "parcel.createdAt")
-    ParcelDetails toDetailedDto(Parcel parcel);
+    @Mapping(target = "parcel", source = "parcel")
+    @Mapping(target = "bookings", source = "bookings")
+    ParcelDetails toDetailedDto(Parcel parcel, List<Booking> bookings);
 
     @Mapping(target = "note", source = "message")
     TrackEventDto toTrackingEventDto(TrackEvent trackEvent);

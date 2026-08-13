@@ -1,7 +1,9 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.bookings.dto.ParcelBookingDto;
+import com.deliveryplatform.parcels.dto.ParcelBookingDto;
 import com.deliveryplatform.parcels.dto.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,11 +12,11 @@ public interface ParcelService {
 
     ParcelDetails getParcel(UUID id);
 
-    List<ParcelSummary> getUserParcels(UUID currentUserId);
+    Page<ParcelSummary> getUserParcels(UUID currentUserId, ParcelState state, Pageable pageable);
 
     List<ParcelBookingDto> getParcelBookings(UUID parcelId, UUID currentUserId);
 
-    List<ParcelSummary> getParcels();
+    Page<ParcelSummary> getParcels(Pageable pageable);
 
     ParcelDetails createParcel(UUID userId, ParcelCreateRequest request);
 

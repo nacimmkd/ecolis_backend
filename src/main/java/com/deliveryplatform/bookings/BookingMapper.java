@@ -1,7 +1,6 @@
 package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
-import com.deliveryplatform.bookings.dto.ParcelBookingDto;
 import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.parcels.ParcelMapper;
 import com.deliveryplatform.trips.TripMapper;
@@ -29,16 +28,9 @@ public interface BookingMapper {
     List<BookingDto> toDto(List<Booking> bookings);
 
     @Mapping(target = "bookingId", source = "id")
-    @Mapping(target = "trip", source = "trip")
-    @Mapping(target = "carrier", source = "trip.owner")
-    ParcelBookingDto toParcelBookingDto(Booking booking);
-
-    @Mapping(target = "bookingId", source = "id")
     @Mapping(target = "parcel", source = "parcel")
     @Mapping(target = "sender", source = "parcel.owner")
     TripBookingDto toTripBookingDto(Booking booking);
-
-    List<ParcelBookingDto> toParcelBookingDto(List<Booking> bookings);
 
     List<TripBookingDto> toTripBookingDto(List<Booking> bookings);
 }

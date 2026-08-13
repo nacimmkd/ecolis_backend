@@ -1,10 +1,14 @@
 package com.deliveryplatform.parcels;
 
-import com.deliveryplatform.bookings.dto.ParcelBookingDto;
+import com.deliveryplatform.parcels.dto.ParcelBookingDto;
 import com.deliveryplatform.parcels.dto.*;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,9 +31,11 @@ public class ParcelController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<ParcelSummary>> getMyParcels(
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId()));
+    public ResponseEntity<Page<ParcelSummary>> getMyParcels(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(required = false) ParcelState state,
+            @PageableDefault(size = 3, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId(), state, pageable));
     }
 
     @GetMapping("/{parcelId}/bookings")
@@ -50,7 +56,7 @@ public class ParcelController {
                 userPrincipal.getId(),
                 request
         );
-        var uri = uriBuilder.path("/api/v1/parcels/{id}").build(parcelDto.parcelId());
+        var uri = uriBuilder.path("/api/v1/parcels/{id}").build(parcelDto.parcel().parcelId());
         return ResponseEntity.created(uri).body(parcelDto);
     }
 
@@ -83,8 +89,9 @@ public class ParcelController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<ParcelSummary>> getParcels() {
-        return ResponseEntity.ok(parcelService.getParcels());
+    public ResponseEntity<Page<ParcelSummary>> getParcels(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(parcelService.getParcels(pageable));
     }
 
 }
