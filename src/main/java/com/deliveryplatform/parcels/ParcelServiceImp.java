@@ -142,13 +142,20 @@ public class ParcelServiceImp implements ParcelService {
         if (imageIds.isEmpty()) {
             imageService.remove(parcel.getImages());
             parcel.removeAllImages();
-        } else {
-            List<Image> toDelete = parcel.getImages().stream()
-                    .filter(img -> !imageIds.contains(img.getId()))
-                    .toList();
-            imageService.remove(toDelete);
-            parcel.removeImages(toDelete);
-            parcel.addImages(imageService.getImages(imageIds));
+            return;
         }
+
+        List<Image> toDelete = parcel.getImages().stream()
+                .filter(img -> !imageIds.contains(img.getId()))
+                .toList();
+        imageService.remove(toDelete);
+        parcel.removeImages(toDelete);
+
+        List<UUID> existingIds = parcel.getImages().stream().map(Image::getId).toList();
+        List<UUID> toAddIds = imageIds.stream().filter(id -> !existingIds.contains(id)).toList();
+        if (!toAddIds.isEmpty()) {
+            parcel.addImages(imageService.getImages(toAddIds));
+        }
+
     }
 }
