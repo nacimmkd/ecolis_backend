@@ -1,6 +1,5 @@
 package com.deliveryplatform.users;
 
-import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.profiles.ProfileMapper;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserSummary;
@@ -10,7 +9,7 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(
         componentModel = "spring",
-        uses = {ProfileMapper.class, ImageMapper.class},
+        uses = {ProfileMapper.class},
         unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface UserMapper {

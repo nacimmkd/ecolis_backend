@@ -1,7 +1,6 @@
 package com.deliveryplatform.messages;
 
 
-import com.deliveryplatform.images.Image;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,14 +33,9 @@ public class Message {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @ManyToMany
-    @JoinTable(
-            name = "message_images",
-            joinColumns = @JoinColumn(name = "message_id"),
-            inverseJoinColumns = @JoinColumn(name = "image_id")
-    )
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Image> images = new ArrayList<>();
+    private List<MessageImage> images = new ArrayList<>();
 
     @Column(name = "sent_at")
     @Builder.Default
@@ -64,14 +58,22 @@ public class Message {
             Conversation conversation,
             User sender,
             String content,
-            List<Image> images
+            List<MessageImage> images
     ) {
-        return Message.builder()
+        Message message = Message.builder()
                 .conversation(conversation)
                 .sender(sender)
                 .content(content)
-                .images(images)
                 .build();
+
+        images.forEach(message::addImage);
+
+        return message;
+    }
+
+    private void addImage(MessageImage image) {
+        image.setMessage(this);
+        this.images.add(image);
     }
 
 

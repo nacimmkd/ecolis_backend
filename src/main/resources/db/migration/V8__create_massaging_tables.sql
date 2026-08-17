@@ -30,10 +30,11 @@ CREATE TABLE messages (
 
 
 CREATE TABLE message_images (
-                                message_id  UUID NOT NULL,
-                                image_id    UUID NOT NULL,
+                                id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                key          VARCHAR(500) UNIQUE NOT NULL,
+                                content_type VARCHAR(50) NOT NULL,
+                                message_id   UUID NOT NULL,
+                                created_at   TIMESTAMPTZ DEFAULT now(),
 
-                                CONSTRAINT pk_message_images        PRIMARY KEY (message_id, image_id),
-                                CONSTRAINT fk_message_images_msg    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
-                                CONSTRAINT fk_message_images_img    FOREIGN KEY (image_id)   REFERENCES images(id)   ON DELETE CASCADE
+                                CONSTRAINT fk_message_images_message FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
 );

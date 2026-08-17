@@ -1,7 +1,6 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.images.Image;
 import com.deliveryplatform.parcels.dto.ParcelCreateRequest;
 import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
 import com.deliveryplatform.parcels.exceptions.ParcelException;
@@ -15,8 +14,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static java.util.stream.Collectors.toSet;
 
 @Entity
 @Table(name = "parcels")
@@ -71,13 +68,9 @@ public class Parcel {
     @AttributeOverride(name = "longitude", column = @Column(name = "dropoff_lng"))
     private Address dropoffAddress;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(
-            name = "parcel_images",
-            joinColumns = @JoinColumn(name = "parcel_id"),
-            inverseJoinColumns = @JoinColumn(name = "image_id")
-    )
-    private List<Image> images = new ArrayList<>();
+    @OneToMany(mappedBy = "parcel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ParcelImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "parcel", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -96,8 +89,8 @@ public class Parcel {
 
 
     public static Parcel createFromRequest(
-            ParcelCreateRequest request,User owner, Address pickupAddress,
-            Address dropoffAddress, List<Image> images
+            ParcelCreateRequest request, User owner, Address pickupAddress,
+            Address dropoffAddress
     ) {
         Parcel parcel = Parcel.builder()
                 .owner(owner)
@@ -107,7 +100,6 @@ public class Parcel {
                 .fragile(request.fragile())
                 .pickupAddress(pickupAddress)
                 .dropoffAddress(dropoffAddress)
-                .images(images != null ? images : new ArrayList<>())
                 .build();
 
         parcel.addTrackingEvent(TrackEvent.of(parcel.getState(), parcel.getState().getMessage()));
@@ -137,19 +129,13 @@ public class Parcel {
 
     // ── Images ───────────────────────────────────────────────────────────────
 
-    public void addImage(Image image) {
-        if (image.isConfirmed() && image.isOwnedBy(this.owner)) {
-            this.images.add(image);
-        }
+    public void addImage(ParcelImage image) {
+        image.setParcel(this);
+        this.images.add(image);
     }
 
-    public void addImages(List<Image> images) {
-        images.forEach(this::addImage);
-    }
-
-    public void removeImages(List<Image> toRemove) {
-        var idsToRemove = toRemove.stream().map(Image::getId).collect(toSet());
-        this.images.removeIf(img -> idsToRemove.contains(img.getId()));
+    public void removeImage(ParcelImage image) {
+        this.images.remove(image);
     }
 
     public void removeAllImages() {

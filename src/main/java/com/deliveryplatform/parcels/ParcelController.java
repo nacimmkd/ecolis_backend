@@ -84,6 +84,25 @@ public class ParcelController {
         return ResponseEntity.ok().body(parcelService.getTrackingEvents(parcelId));
     }
 
+    @PostMapping("/{parcelId}/images")
+    public ResponseEntity<ParcelImageDto> addParcelImage(
+            @PathVariable UUID parcelId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestBody @Valid ParcelImageRequest request) {
+
+        return ResponseEntity.ok(parcelService.addParcelImage(parcelId, userPrincipal.getId(), request));
+    }
+
+    @DeleteMapping("/{parcelId}/images/{imageId}")
+    public ResponseEntity<Void> removeParcelImage(
+            @PathVariable UUID parcelId,
+            @PathVariable UUID imageId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+        parcelService.removeParcelImage(parcelId, imageId, userPrincipal.getId());
+        return ResponseEntity.noContent().build();
+    }
+
 
     // ---------------ADMIN--------------------------
 

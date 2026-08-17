@@ -1,6 +1,5 @@
 package com.deliveryplatform.messages;
 
-import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.messages.dto.*;
 import com.deliveryplatform.users.UserBriefMapper;
 import org.mapstruct.Mapper;
@@ -12,7 +11,7 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = {UserBriefMapper.class, ImageMapper.class},
+        uses = {UserBriefMapper.class, MessageImageMapper.class},
         unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface MessageMapper {

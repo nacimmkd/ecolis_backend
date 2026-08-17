@@ -1,13 +1,12 @@
-package com.deliveryplatform.images.dto;
+package com.deliveryplatform.parcels.dto;
 
-import com.deliveryplatform.storage.MediaType;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Builder
-public record ImageDto(
+public record ParcelImageDto(
         UUID id,
         String url,
         String content,

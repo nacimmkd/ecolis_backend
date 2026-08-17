@@ -4,11 +4,13 @@ import com.deliveryplatform.addresses.AddressService;
 import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.parcels.dto.ParcelBookingDto;
-import com.deliveryplatform.images.Image;
-import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.parcels.dto.*;
 import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
 import com.deliveryplatform.parcels.exceptions.ParcelException;
+import com.deliveryplatform.storage.MediaType;
+import com.deliveryplatform.storage.StorageService;
+import com.deliveryplatform.storage.exceptions.StorageErrorCode;
+import com.deliveryplatform.storage.exceptions.StorageException;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import com.deliveryplatform.users.exceptions.UserErrorCode;
@@ -29,10 +31,11 @@ public class ParcelServiceImp implements ParcelService {
     private final ParcelRepository      parcelRepository;
     private final UserRepository        userRepository;
     private final AddressService        addressService;
-    private final ImageService          imageService;
+    private final StorageService        storageService;
     private final BookingRepository     bookingRepository;
     private final ParcelBookingMapper   parcelBookingsMapper;
     private final ParcelMapper          parcelMapper;
+    private final ParcelImageMapper     parcelImageMapper;
 
     @Override
     public ParcelDetails getParcel(UUID parcelId) {
@@ -71,8 +74,7 @@ public class ParcelServiceImp implements ParcelService {
                 request,
                 owner,
                 addressService.geocode(request.pickupAddress()),
-                addressService.geocode(request.dropoffAddress()),
-                imageService.getImages(request.imageIds())
+                addressService.geocode(request.dropoffAddress())
         );
         parcelRepository.save(parcel);
         return parcelMapper.toDetailedDto(parcel, List.of());
@@ -93,8 +95,6 @@ public class ParcelServiceImp implements ParcelService {
         parcel.setPickupAddress(addressService.geocode(request.pickupAddress()));
         parcel.setDropoffAddress(addressService.geocode(request.dropoffAddress()));
 
-        updateParcelImages(parcel, request.imageIds());
-
         parcelRepository.save(parcel);
         return parcelMapper.toDetailedDto(parcel, getParcelBookings(parcelId));
     }
@@ -106,7 +106,7 @@ public class ParcelServiceImp implements ParcelService {
         parcel.assertOwnedBy(userId);
         parcel.assertIsInState(List.of(ParcelState.PUBLISHED));
 
-        imageService.remove(parcel.getImages());
+        parcel.getImages().forEach(image -> storageService.delete(image.getKey()));
         parcel.removeAllImages();
 
         parcel.softDelete();
@@ -118,6 +118,38 @@ public class ParcelServiceImp implements ParcelService {
         var parcel = parcelRepository.findParcelWithTrackingById(parcelId)
                 .orElseThrow(() -> new ParcelException(ParcelErrorCode.PARCEL_NOT_FOUND, "Parcel not found"));
         return parcelMapper.toListTrackingEventDto(parcel.getTrackEvents());
+    }
+
+    @Override
+    @Transactional
+    public ParcelImageDto addParcelImage(UUID parcelId, UUID userId, ParcelImageRequest request) {
+        var parcel = getParcelByIdOrThrow(parcelId);
+        parcel.assertOwnedBy(userId);
+
+        var mediaType = resolveMediaType(request.contentType());
+        assertExistsInStorage(request.key());
+
+        var image = ParcelImage.create(mediaType, request.key());
+        parcel.addImage(image);
+        parcelRepository.save(parcel);
+
+        return parcelImageMapper.toDto(image);
+    }
+
+    @Override
+    @Transactional
+    public void removeParcelImage(UUID parcelId, UUID imageId, UUID userId) {
+        var parcel = getParcelByIdOrThrow(parcelId);
+        parcel.assertOwnedBy(userId);
+
+        var image = parcel.getImages().stream()
+                .filter(img -> img.getId().equals(imageId))
+                .findFirst()
+                .orElseThrow(() -> new ParcelException(ParcelErrorCode.PARCEL_IMAGE_NOT_FOUND, "Parcel image not found"));
+
+        storageService.delete(image.getKey());
+        parcel.removeImage(image);
+        parcelRepository.save(parcel);
     }
 
     // ----------------------------------------------------------------
@@ -136,26 +168,14 @@ public class ParcelServiceImp implements ParcelService {
         return bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId);
     }
 
-    private void updateParcelImages(Parcel parcel, List<UUID> imageIds) {
-        if (imageIds == null || parcel == null) return;
+    private MediaType resolveMediaType(String content) {
+        return MediaType.of(content)
+                .orElseThrow(() -> new StorageException(StorageErrorCode.INVALID_MEDIA_TYPE, "Content type not supported"));
+    }
 
-        if (imageIds.isEmpty()) {
-            imageService.remove(parcel.getImages());
-            parcel.removeAllImages();
-            return;
+    private void assertExistsInStorage(String key) {
+        if (!storageService.exists(key)) {
+            throw new StorageException(StorageErrorCode.FILE_NOT_FOUND, "Image not found : " + key);
         }
-
-        List<Image> toDelete = parcel.getImages().stream()
-                .filter(img -> !imageIds.contains(img.getId()))
-                .toList();
-        imageService.remove(toDelete);
-        parcel.removeImages(toDelete);
-
-        List<UUID> existingIds = parcel.getImages().stream().map(Image::getId).toList();
-        List<UUID> toAddIds = imageIds.stream().filter(id -> !existingIds.contains(id)).toList();
-        if (!toAddIds.isEmpty()) {
-            parcel.addImages(imageService.getImages(toAddIds));
-        }
-
     }
 }

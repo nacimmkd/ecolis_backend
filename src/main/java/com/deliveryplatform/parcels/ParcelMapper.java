@@ -1,7 +1,6 @@
 package com.deliveryplatform.parcels;
 
 import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.images.ImageMapper;
 import com.deliveryplatform.parcels.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,7 +10,7 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = {ImageMapper.class, ParcelBookingMapper.class},
+        uses = {ParcelImageMapper.class, ParcelBookingMapper.class},
         unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface ParcelMapper {

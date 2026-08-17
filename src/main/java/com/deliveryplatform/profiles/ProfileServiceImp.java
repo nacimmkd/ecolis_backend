@@ -1,12 +1,14 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.profiles.dto.ProfileSummary;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
 import com.deliveryplatform.profiles.dto.ProfileDetails;
 import com.deliveryplatform.profiles.exceptions.ProfileErrorCode;
 import com.deliveryplatform.profiles.exceptions.ProfileException;
 import com.deliveryplatform.reviews.ReviewRepository;
+import com.deliveryplatform.storage.StorageService;
+import com.deliveryplatform.storage.exceptions.StorageErrorCode;
+import com.deliveryplatform.storage.exceptions.StorageException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,7 @@ public class ProfileServiceImp implements ProfileService {
     private final ProfileRepository profileRepository;
     private final ReviewRepository  reviewRepository;
     private final ProfileMapper     profileMapper;
-    private final ImageService      imageService;
+    private final StorageService    storageService;
 
     @Override
     public ProfileDetails getUserProfile(UUID userId) {
@@ -38,7 +40,7 @@ public class ProfileServiceImp implements ProfileService {
         profile.setLastName(request.lastName());
         profile.setPhone(request.phone());
         profile.setCountry(request.country());
-        updateAvatar(profile, request.avatarId());
+        updateAvatar(profile, request.avatarKey());
 
         return profileMapper.toSummaryDto(profileRepository.save(profile));
     }
@@ -50,12 +52,14 @@ public class ProfileServiceImp implements ProfileService {
                 .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND, "Profile not found"));
     }
 
-    private void updateAvatar(Profile profile, UUID avatarId) {
-        if (avatarId == null) {
-            profile.setAvatar(null);
+    private void updateAvatar(Profile profile, String avatarKey) {
+        if (avatarKey == null) {
+            profile.setAvatarKey(null);
             return;
         }
-        var image = imageService.getImage(avatarId, profile.getUser());
-        profile.setAvatar(image);
+        if (!storageService.exists(avatarKey)) {
+            throw new StorageException(StorageErrorCode.FILE_NOT_FOUND, "Image not found : " + avatarKey);
+        }
+        profile.setAvatarKey(avatarKey);
     }
 }

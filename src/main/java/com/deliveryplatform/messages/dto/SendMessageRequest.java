@@ -13,6 +13,6 @@ public record SendMessageRequest(
         @NotBlank
         String content,
 
-        List<UUID> imageIds
+        List<MessageImageRequest> images
 ) {
 }

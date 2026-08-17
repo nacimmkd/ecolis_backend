@@ -1,6 +1,5 @@
 package com.deliveryplatform.users.dto;
 
-import com.deliveryplatform.images.dto.ImageDto;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -13,7 +12,7 @@ public record UserBrief(
         String lastName,
         BigDecimal avgRating,
         int reviewCount,
-        ImageDto avatar,
+        String avatarUrl,
         boolean verified
 ) {
 }

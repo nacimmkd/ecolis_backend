@@ -4,8 +4,6 @@ import com.deliveryplatform.common.validations.Phone;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.util.UUID;
-
 public record ProfileUpdateRequest(
         @NotNull @Size(max = 100)
         String firstName,
@@ -19,5 +17,5 @@ public record ProfileUpdateRequest(
         @NotNull
         String country,
 
-        UUID avatarId
+        String avatarKey
 ) {}

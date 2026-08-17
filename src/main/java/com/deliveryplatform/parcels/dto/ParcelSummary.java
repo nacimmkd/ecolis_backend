@@ -1,7 +1,6 @@
 package com.deliveryplatform.parcels.dto;
 
 import com.deliveryplatform.addresses.Address;
-import com.deliveryplatform.images.dto.ImageDto;
 import com.deliveryplatform.parcels.ParcelSize;
 import com.deliveryplatform.parcels.ParcelState;
 import lombok.Builder;
@@ -21,6 +20,6 @@ public record ParcelSummary(
         Address pickup,
         Address dropoff,
         ParcelState state,
-        List<ImageDto> images,
+        List<ParcelImageDto> images,
         OffsetDateTime publishedAt
 ) {}

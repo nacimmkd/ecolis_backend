@@ -25,5 +25,9 @@ public interface ParcelService {
     void deleteParcel(UUID parcelId, UUID userId);
 
     List<TrackEventDto> getTrackingEvents(UUID parcelId);
+
+    ParcelImageDto addParcelImage(UUID parcelId, UUID userId, ParcelImageRequest request);
+
+    void removeParcelImage(UUID parcelId, UUID imageId, UUID userId);
 }
 

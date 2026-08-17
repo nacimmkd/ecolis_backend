@@ -1,6 +1,5 @@
 package com.deliveryplatform.profiles.dto;
 
-import com.deliveryplatform.images.dto.ImageDto;
 import com.deliveryplatform.reviews.dto.ReviewDto;
 import lombok.Builder;
 
@@ -20,5 +19,5 @@ public record ProfileDetails(
         int completedTrips,
         int deliveredParcels,
         List<ReviewDto> reviews,
-        ImageDto avatar
+        String avatarUrl
 ) {}

@@ -8,8 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
 
 public record ParcelCreateRequest(
 
@@ -26,8 +24,6 @@ public record ParcelCreateRequest(
         AddressRequest pickupAddress,
 
         @NotNull @Valid
-        AddressRequest dropoffAddress,
-
-        @NotNull List<UUID> imageIds
+        AddressRequest dropoffAddress
 ) {
 }

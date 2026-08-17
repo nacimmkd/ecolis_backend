@@ -1,9 +1,12 @@
 package com.deliveryplatform.messages;
 
-import com.deliveryplatform.images.ImageService;
 import com.deliveryplatform.messages.dto.*;
 import com.deliveryplatform.messages.exceptions.MessageErrorCode;
 import com.deliveryplatform.messages.exceptions.MessageException;
+import com.deliveryplatform.storage.MediaType;
+import com.deliveryplatform.storage.StorageService;
+import com.deliveryplatform.storage.exceptions.StorageErrorCode;
+import com.deliveryplatform.storage.exceptions.StorageException;
 import com.deliveryplatform.users.User;
 import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -21,7 +24,7 @@ public class MessagingServiceImp implements MessagingService {
 
     private final ConversationRepository conversationRepository;
     private final UserRepository         userRepository;
-    private final ImageService           imageService;
+    private final StorageService         storageService;
     private final SimpMessagingTemplate  messagingTemplate;
     private final MessageMapper          messageMapper;
 
@@ -60,7 +63,7 @@ public class MessagingServiceImp implements MessagingService {
         conversation.assertIsParticipant(currentUserId);
 
         var sender = conversation.resolveParticipant(currentUserId);
-        var images = imageService.getImages(request.imageIds());
+        var images = resolveImages(request.images());
 
         var message = Message.create(conversation, sender, request.content(), images);
         conversation.addMessage(message);
@@ -107,5 +110,28 @@ public class MessagingServiceImp implements MessagingService {
     private User getUserOrThrow(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new MessageException(MessageErrorCode.PARTICIPANT_NOT_FOUND, "Conversation participant not found"));
+    }
+
+    private List<MessageImage> resolveImages(List<MessageImageRequest> requests) {
+        if (requests == null || requests.isEmpty()) return List.of();
+
+        return requests.stream()
+                .map(req -> {
+                    var mediaType = resolveMediaType(req.contentType());
+                    assertExistsInStorage(req.key());
+                    return MessageImage.create(mediaType, req.key());
+                })
+                .toList();
+    }
+
+    private MediaType resolveMediaType(String content) {
+        return MediaType.of(content)
+                .orElseThrow(() -> new StorageException(StorageErrorCode.INVALID_MEDIA_TYPE, "Content type not supported"));
+    }
+
+    private void assertExistsInStorage(String key) {
+        if (!storageService.exists(key)) {
+            throw new StorageException(StorageErrorCode.FILE_NOT_FOUND, "Image not found : " + key);
+        }
     }
 }

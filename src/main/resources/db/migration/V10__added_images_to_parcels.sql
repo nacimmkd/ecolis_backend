@@ -1,12 +1,10 @@
-
 CREATE TABLE parcel_images (
-                               parcel_id   UUID NOT NULL,
-                               image_id    UUID NOT NULL,
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    key          VARCHAR(500) UNIQUE NOT NULL,
+    content_type VARCHAR(50) NOT NULL,
+    parcel_id    UUID NOT NULL,
+    created_at   TIMESTAMPTZ DEFAULT now(),
 
-                               CONSTRAINT pk_parcel_images
-                                   PRIMARY KEY (parcel_id, image_id),
-                               CONSTRAINT fk_parcel_images_parcel
-                                   FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE CASCADE,
-                               CONSTRAINT fk_parcel_images_image
-                                   FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
+    CONSTRAINT fk_parcel_images_parcel
+        FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE CASCADE
 );

@@ -1,6 +1,5 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.images.Image;
 import com.deliveryplatform.users.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -34,10 +33,9 @@ public class Profile {
     @Setter(AccessLevel.PACKAGE)
     private String country;
 
-    @OneToOne
-    @JoinColumn(name = "avatar_image_id")
+    @Column(name = "avatar_key")
     @Setter(AccessLevel.PACKAGE)
-    private Image avatar;
+    private String avatarKey;
 
     @Column(name = "avg_rating", precision = 2, scale = 1)
     private BigDecimal avgRating;
