@@ -5,10 +5,12 @@ import com.deliveryplatform.parcels.ParcelRepository;
 import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
 import com.deliveryplatform.parcels.exceptions.ParcelException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -19,14 +21,20 @@ public class MatchingQueryService {
     private final ParcelRepository parcelRepository;
     private final MatchingMapper mapper;
 
-    public List<MatchResultDto> findMatchingTrips(UUID parcelId, LocalDate date, UUID actualUserId) {
+    public Page<MatchResultDto> findMatchingTrips(UUID parcelId, LocalDate date, UUID actualUserId, Pageable pageable) {
 
         var parcel = getParcelByIdOrThrow(parcelId);
         assertOwnership(parcel, actualUserId);
 
-        return matchingFinderService.findMatchingTrips(parcel, date).stream()
+        var results = matchingFinderService.findMatchingTrips(parcel, date, pageable.getSort());
+
+        var content = results.stream()
+                .skip(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .map(mapper::toDto)
                 .toList();
+
+        return new PageImpl<>(content, pageable, results.size());
     }
 
     private Parcel getParcelByIdOrThrow(UUID parcelId) {

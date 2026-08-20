@@ -7,9 +7,11 @@ import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.trips.TripRepository;
 import com.deliveryplatform.trips.TripState;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -27,7 +29,7 @@ public class MatchingFinderService {
     private final PriceCalculator priceCalculator;
 
     @Transactional(readOnly = true)
-    public List<MatchResult> findMatchingTrips(Parcel parcel, LocalDate date) {
+    public List<MatchResult> findMatchingTrips(Parcel parcel, LocalDate date, Sort sort) {
         Address pickup = parcel.getPickupAddress();
         var box = GeoUtils.boundingBox(pickup.getLatitude(), pickup.getLongitude(), SEARCH_RADIUS_KM);
 
@@ -42,7 +44,7 @@ public class MatchingFinderService {
         return preMatchingTrips.stream()
                 .map(trip -> computeResult(trip, parcel))
                 .filter(MatchResult::viable)
-                .sorted(Comparator.comparingDouble(MatchResult::score))
+                .sorted(sort(sort))
                 .toList();
     }
 
@@ -56,5 +58,23 @@ public class MatchingFinderService {
         var score = scoreCalculator.calculate(detour);
 
         return new MatchResult(trip, price, score, viable);
+    }
+
+    private Comparator<MatchResult> sort(Sort sort) {
+        var order = sort.stream()
+                .findFirst()
+                .orElse(Sort.Order.asc(MatchSortBy.SCORE));
+
+        Comparator<MatchResult> comparator = switch (order.getProperty()) {
+            case MatchSortBy.PRICE -> Comparator.comparingLong(result -> result.price().getAmountInCents());
+            case MatchSortBy.DRIVER_RATING -> Comparator.comparing(this::driverRating, Comparator.nullsLast(Comparator.naturalOrder()));
+            default -> Comparator.comparingDouble(MatchResult::score);
+        };
+
+        return order.isDescending() ? comparator.reversed() : comparator;
+    }
+
+    private BigDecimal driverRating(MatchResult result) {
+        return result.trip().getOwner().getProfile().getAvgRating();
     }
 }

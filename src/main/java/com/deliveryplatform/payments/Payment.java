@@ -79,15 +79,13 @@ public class Payment {
 
     public static Payment create(Booking booking, String stripeCheckoutSessionId,
                                  Price price, long applicationFeeAmount) {
-        var payment = Payment.builder()
+        return Payment.builder()
                 .booking(booking)
                 .payer(booking.getSender())
                 .stripeCheckoutSessionId(stripeCheckoutSessionId)
                 .price(price)
                 .applicationFeeAmount(applicationFeeAmount)
                 .build();
-        booking.setPayment(payment);
-        return payment;
     }
 
     // ---- lifecycle ------------------------------------------------------------

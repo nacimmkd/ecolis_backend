@@ -6,6 +6,10 @@ import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +31,26 @@ public class BookingController {
         return bookingService.getBooking(bookingId, user.getId());
     }
 
+    @GetMapping("/me/sent")
+    public ResponseEntity<Page<BookingDto>> getMySentBookings(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(bookingService.getSentBookings(user.getId(), pageable));
+    }
+
+    @GetMapping("/me/received")
+    public ResponseEntity<Page<BookingDto>> getMyReceivedBookings(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PageableDefault(size = 10, sort = "pickupDetourKm", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(bookingService.getReceivedBookings(user.getId(), pageable));
+    }
+
     @PostMapping
-    public ResponseEntity<BookingDto> create(
+    public ResponseEntity<BookingDto> getOrCreateBooking(
             @RequestBody @Valid CreateBookingRequest dto,
             @AuthenticationPrincipal UserPrincipal user,
             UriComponentsBuilder uriBuilder) {
-        var booking = bookingService.createBooking(dto, user.getId());
+        var booking = bookingService.getOrCreateBooking(dto, user.getId());
         var uri = uriBuilder
                 .path("/api/v1/bookings/{id}")
                 .build(booking.bookingId());

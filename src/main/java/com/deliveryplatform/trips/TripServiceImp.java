@@ -3,10 +3,8 @@ package com.deliveryplatform.trips;
 import com.deliveryplatform.addresses.AddressRequest;
 import com.deliveryplatform.addresses.AddressService;
 import com.deliveryplatform.bookings.Booking;
-import com.deliveryplatform.bookings.BookingMapper;
 import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.bookings.BookingState;
-import com.deliveryplatform.bookings.dto.TripBookingDto;
 import com.deliveryplatform.trips.dto.*;
 import com.deliveryplatform.trips.exceptions.TripErrorCode;
 import com.deliveryplatform.trips.exceptions.TripException;
@@ -14,6 +12,8 @@ import com.deliveryplatform.users.UserRepository;
 import com.deliveryplatform.users.exceptions.UserErrorCode;
 import com.deliveryplatform.users.exceptions.UserException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,35 +29,43 @@ public class TripServiceImp implements TripService {
     private final AddressService     addressService;
     private final BookingRepository  bookingRepository;
     private final TripMapper         tripMapper;
-    private final BookingMapper      bookingMapper;
+    private final TripBookingMapper  tripBookingMapper;
 
     @Override
     public TripDetails getTrip(UUID tripId) {
         var trip = getTripByIdOrThrow(tripId);
-        var bookingsCount = bookingRepository.countByTripId(tripId);
-        return tripMapper.toTripDetailsDto(trip, bookingsCount);
+        var newRequestCount = bookingRepository.countByTripIdAndState(tripId, BookingState.WAITING_FOR_ANSWER);
+        var acceptedBookingsCount = bookingRepository.countByTripIdAndState(tripId, BookingState.ACCEPTED);
+        return tripMapper.toTripDetailsDto(trip, newRequestCount, acceptedBookingsCount);
     }
 
     @Override
-    public List<TripSummary> getAllTrips() {
-        return tripMapper.toTripSummaryDto(tripRepository.findAll());
+    public Page<TripSummary> getAllTrips(Pageable pageable) {
+        return tripRepository.findAll(pageable).map(tripMapper::toTripSummaryDto);
     }
 
-    @Override
-    public List<TripSummary> getMyTrips(UUID currentUserId) {
-        return tripMapper.toTripSummaryDto(tripRepository.findTripByOwner_Id(currentUserId));
-    }
 
     @Override
-    public List<TripBookingDto> getTripBookings(UUID tripId, UUID userId) {
+    public Page<TripSummary> getMyTrips(UUID currentUserId, TripState state, Pageable pageable) {
+        Page<Trip> trips = (state == null)
+                ? tripRepository.findTripByOwner_Id(currentUserId, pageable)
+                : tripRepository.findTripByOwner_IdAndState(currentUserId, state, pageable);
+        return trips.map(tripMapper::toTripSummaryDto);
+    }
+
+
+    @Override
+    public Page<TripBookingDto> getTripBookings(UUID tripId, UUID userId, Pageable pageable) {
         var trip = getTripByIdOrThrow(tripId);
         trip.assertOwnedBy(userId);
 
-        List<Booking> bookings = bookingRepository.findByTripIdAndStateInOrderByCreatedAtDesc(
+        Page<Booking> bookings = bookingRepository.findByTripIdAndStateIn(
                 tripId,
-                List.of(BookingState.WAITING_FOR_ANSWER, BookingState.ACCEPTED, BookingState.REJECTED, BookingState.CANCELLED, BookingState.COMPLETED));
+                List.of(BookingState.WAITING_FOR_ANSWER, BookingState.ACCEPTED, BookingState.REJECTED, BookingState.CANCELLED, BookingState.COMPLETED),
+                pageable
+        );
 
-        return bookingMapper.toTripBookingDto(bookings);
+        return bookings.map(tripBookingMapper::toTripBookingDto);
     }
 
     @Override
@@ -72,7 +80,7 @@ public class TripServiceImp implements TripService {
                 addressService.geocode(request.arrivalAddress()),
                 owner
         );
-        return tripMapper.toTripDetailsDto(tripRepository.save(trip), 0);
+        return tripMapper.toTripDetailsDto(tripRepository.save(trip), 0, 0);
     }
 
     @Override
@@ -93,10 +101,11 @@ public class TripServiceImp implements TripService {
                 request.instantBooking()
         );
 
-        var bookingsCount = bookingRepository.countByTripId(tripId);
+        var newRequestCount = bookingRepository.countByTripIdAndState(tripId, BookingState.WAITING_FOR_ANSWER);
+        var acceptedBookingsCount = bookingRepository.countByTripIdAndState(tripId, BookingState.ACCEPTED);
 
         tripRepository.save(trip);
-        return tripMapper.toTripDetailsDto(trip, bookingsCount);
+        return tripMapper.toTripDetailsDto(trip, newRequestCount, acceptedBookingsCount);
     }
 
     @Override
@@ -113,20 +122,6 @@ public class TripServiceImp implements TripService {
         var trip = getTripByIdOrThrow(tripId);
         trip.addStop(currentUserId, addressService.geocode(address));
         tripRepository.save(trip);
-    }
-
-    @Override
-    @Transactional
-    public List<TripStopDto> updateStops(UUID tripId, UUID currentUserId, List<TripStopRequest> newStopsRequest) {
-        var trip = getTripByIdOrThrow(tripId);
-
-        var stops = newStopsRequest.stream()
-                .map(request -> TripStop.create(addressService.geocode(request.address()), request.order()))
-                .toList();
-
-        var updatedStops = trip.updateStops(currentUserId, stops);
-        tripRepository.save(trip);
-        return tripMapper.toTripStopDto(updatedStops);
     }
 
     @Override

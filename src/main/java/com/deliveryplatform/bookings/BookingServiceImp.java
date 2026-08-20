@@ -19,6 +19,8 @@ import com.deliveryplatform.trips.exceptions.TripErrorCode;
 import com.deliveryplatform.trips.exceptions.TripException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +31,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookingServiceImp implements BookingService {
 
-    private final BookingRepository        bookingRepository;
-    private final ParcelRepository         parcelRepository;
-    private final TripRepository           tripRepository;
-    private final DetourCalculatorService  detourCalculator;
-    private final BookingMapper            bookingMapper;
-    private final PaymentService           paymentService;
-    private final PriceCalculator          priceCalculator;
+    private final BookingRepository         bookingRepository;
+    private final ParcelRepository          parcelRepository;
+    private final TripRepository            tripRepository;
+    private final DetourCalculatorService   detourCalculator;
+    private final BookingMapper             bookingMapper;
+    private final PaymentService            paymentService;
+    private final PriceCalculator           priceCalculator;
     private final ApplicationEventPublisher eventPublisher;
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -48,13 +50,30 @@ public class BookingServiceImp implements BookingService {
     }
 
     @Override
+    public Page<BookingDto> getSentBookings(UUID currentUserId, Pageable pageable) {
+        return bookingRepository.findSentBookingsByUserId(currentUserId, pageable)
+                .map(bookingMapper::toDto);
+    }
+
+    @Override
+    public Page<BookingDto> getReceivedBookings(UUID currentUserId, Pageable pageable) {
+        return bookingRepository.findReceivedBookingsByUserId(currentUserId, pageable)
+                .map(bookingMapper::toDto);
+    }
+
+    @Override
     @Transactional
-    public BookingDto createBooking(CreateBookingRequest dto, UUID senderId) {
+    public BookingDto getOrCreateBooking(CreateBookingRequest dto, UUID senderId) {
         var parcel = parcelRepository.findParcelSummaryById(dto.parcelId())
                 .orElseThrow(() -> new ParcelException(ParcelErrorCode.PARCEL_NOT_FOUND, "Parcel not found"));
 
         parcel.assertOwnedBy(senderId);
-        assertBookingUniqueness(dto.parcelId(), dto.tripId());
+
+        var existingBooking = bookingRepository.findByTripIdAndParcelIdAndStateIn(
+                dto.tripId(), dto.parcelId(), List.of(BookingState.PENDING, BookingState.ACCEPTED));
+        if (existingBooking.isPresent()) {
+            return bookingMapper.toDto(existingBooking.get());
+        }
 
         var trip = tripRepository.findTripById(dto.tripId())
                 .orElseThrow(() -> new TripException(TripErrorCode.TRIP_NOT_OWNED, "Trip not found"));
@@ -72,6 +91,11 @@ public class BookingServiceImp implements BookingService {
     @Transactional
     public void requestDriver(UUID bookingId, UUID userId) {
         var booking = getBookingByIdOrThrow(bookingId);
+
+        if (!paymentService.isAuthorized(bookingId)) {
+            throw new BookingException(BookingErrorCode.PAYMENT_REQUIRED,
+                    "Booking " + bookingId + " must be paid before it can be sent to the carrier");
+        }
         booking.sendRequest();
 
         var trip = booking.getTrip();
@@ -116,15 +140,8 @@ public class BookingServiceImp implements BookingService {
     public void cancel(UUID bookingId, String reason, UUID currentUserId) {
 
         var booking = getBookingByIdOrThrow(bookingId);
-        var payment = booking.getPayment();
 
-        if (payment != null) {
-            if (payment.isCaptured()) {
-                paymentService.refund(bookingId);
-            } else if (payment.isAuthorized()) {
-                paymentService.cancel(bookingId);
-            }
-        }
+        paymentService.cancel(bookingId);
 
         var cancelledBy = booking.resolveCanceller(currentUserId);
         booking.cancel(currentUserId, reason, cancelledBy);
@@ -158,12 +175,5 @@ public class BookingServiceImp implements BookingService {
     private Booking getBookingByIdOrThrow(UUID id) {
         return bookingRepository.findBookingById(id)
                 .orElseThrow(() -> new BookingException(BookingErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
-    }
-
-    private void assertBookingUniqueness(UUID parcelId, UUID tripId) {
-        if (bookingRepository.existsByTripIdAndParcelIdAndStateIn(tripId, parcelId,
-                List.of(BookingState.PENDING, BookingState.ACCEPTED)))
-            throw new BookingException(BookingErrorCode.BOOKING_ALREADY_EXISTS,
-                    "Booking for this trip and parcel already exists");
     }
 }

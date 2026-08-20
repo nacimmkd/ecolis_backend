@@ -1,8 +1,10 @@
 package com.deliveryplatform.trips;
 
 import com.deliveryplatform.addresses.AddressRequest;
-import com.deliveryplatform.bookings.dto.TripBookingDto;
+import com.deliveryplatform.trips.dto.TripBookingDto;
 import com.deliveryplatform.trips.dto.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
@@ -11,11 +13,11 @@ public interface TripService {
 
     TripDetails getTrip(UUID id);
 
-    List<TripSummary> getAllTrips();
+    Page<TripSummary> getAllTrips(Pageable pageable);
 
-    List<TripSummary> getMyTrips(UUID currentUserId);
+    Page<TripSummary> getMyTrips(UUID currentUserId, TripState state, Pageable pageable);
 
-    List<TripBookingDto> getTripBookings(UUID tripId, UUID currentUserId);
+    Page<TripBookingDto> getTripBookings(UUID tripId, UUID currentUserId, Pageable pageable);
 
     TripDetails createTrip(UUID userId, TripCreateRequest request);
 
@@ -24,8 +26,6 @@ public interface TripService {
     void deleteTrip(UUID tripId, UUID userId);
 
     void addStop(UUID tripId, UUID userId, AddressRequest address);
-
-    List<TripStopDto>  updateStops(UUID tripId, UUID userId, List<TripStopRequest> newStops);
 
     void deleteStop(UUID stopId, UUID tripId, UUID userId);
 }

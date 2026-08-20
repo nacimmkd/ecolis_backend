@@ -10,7 +10,7 @@ public enum ParcelErrorCode implements ErrorCode {
     PARCEL_DELETED(HttpStatus.CONFLICT),
     PARCEL_NOT_AVAILABLE(HttpStatus.CONFLICT),
     PARCEL_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND),
-    INVALID_STATE(HttpStatus.CONFLICT);
+    PARCEL_INVALID_STATE(HttpStatus.CONFLICT);
 
     private final HttpStatus status;
 

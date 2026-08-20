@@ -163,7 +163,7 @@ public class Parcel {
 
     public void assertIsInState(List<ParcelState> states) {
         if (!states.contains(this.state))
-            throw new ParcelException(ParcelErrorCode.INVALID_STATE, "Parcel is not in a valid state for this operation");
+            throw new ParcelException(ParcelErrorCode.PARCEL_INVALID_STATE, "Parcel is not in a valid state for this operation");
     }
 
     public void assertIsAvailable() {

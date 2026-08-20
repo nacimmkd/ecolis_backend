@@ -3,12 +3,14 @@ package com.deliveryplatform.matching;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -19,11 +21,12 @@ public class MatchingController {
     private final MatchingQueryService matchingQueryService;
 
     @GetMapping
-    public ResponseEntity<List<MatchResultDto>> getMatchingTrips(
+    public ResponseEntity<Page<MatchResultDto>> getMatchingTrips(
             @RequestParam @NotNull UUID parcelId,
             @RequestParam @NotNull LocalDate date,
-            @AuthenticationPrincipal UserPrincipal user
+            @AuthenticationPrincipal UserPrincipal user,
+            @PageableDefault(size = 10, sort = MatchSortBy.SCORE) Pageable pageable
             ) {
-        return ResponseEntity.ok(matchingQueryService.findMatchingTrips(parcelId, date, user.getId()));
+        return ResponseEntity.ok(matchingQueryService.findMatchingTrips(parcelId, date, user.getId(), pageable));
     }
 }

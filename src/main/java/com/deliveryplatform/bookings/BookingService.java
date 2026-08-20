@@ -2,6 +2,8 @@ package com.deliveryplatform.bookings;
 
 import com.deliveryplatform.bookings.dto.BookingDto;
 import com.deliveryplatform.bookings.dto.CreateBookingRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
@@ -9,7 +11,11 @@ public interface BookingService {
 
     BookingDto getBooking(UUID bookingId, UUID currentUserId);
 
-    BookingDto createBooking(CreateBookingRequest dto, UUID senderId);
+    Page<BookingDto> getSentBookings(UUID currentUserId, Pageable pageable);
+
+    Page<BookingDto> getReceivedBookings(UUID currentUserId, Pageable pageable);
+
+    BookingDto getOrCreateBooking(CreateBookingRequest dto, UUID senderId);
 
     void requestDriver(UUID bookingId, UUID requesterId);
 

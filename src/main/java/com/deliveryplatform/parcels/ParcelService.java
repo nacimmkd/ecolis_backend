@@ -14,7 +14,7 @@ public interface ParcelService {
 
     Page<ParcelSummary> getUserParcels(UUID currentUserId, ParcelState state, Pageable pageable);
 
-    List<ParcelBookingDto> getParcelBookings(UUID parcelId, UUID currentUserId);
+    Page<ParcelBookingDto> getParcelBookings(UUID parcelId, UUID currentUserId, Pageable pageable);
 
     Page<ParcelSummary> getParcels(Pageable pageable);
 

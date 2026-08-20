@@ -10,13 +10,11 @@ public interface PaymentService {
 
     PaymentResponse checkout(UUID bookingId);
 
-    PaymentResponse cancel(UUID bookingId);
+    void cancel(UUID bookingId);
 
     void cancelAll(List<UUID> bookingIds);
 
     PaymentResponse capture(UUID bookingId);
-
-    PaymentResponse refund(UUID bookingId);
 
     boolean isAuthorized(UUID bookingId);
 

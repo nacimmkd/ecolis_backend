@@ -1,5 +1,7 @@
 package com.deliveryplatform.bookings;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,10 +23,10 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     Optional<Booking> findBookingById(UUID bookingId);
 
     @EntityGraph(attributePaths = {"parcel", "parcel.owner", "parcel.owner.profile"})
-    List<Booking> findByTripIdAndStateInOrderByCreatedAtDesc(UUID trip_id, List<BookingState> state);
+    Page<Booking> findByTripIdAndStateIn(UUID trip_id, List<BookingState> state, Pageable pageable);
 
     @EntityGraph(attributePaths = {"parcel", "trip", "trip.owner", "trip.owner.profile"})
-    List<Booking> findByParcelIdOrderByCreatedAtDesc(UUID parcelId);
+    Page<Booking> findByParcelIdOrderByCreatedAtDesc(UUID parcelId, Pageable pageable);
 
     @EntityGraph(attributePaths = {
             "trip", "trip.owner", "trip.owner.profile",
@@ -33,9 +35,8 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     @Query("""
             SELECT b FROM Booking b
             WHERE b.parcel.owner.id = :userId
-            ORDER BY b.createdAt DESC
             """)
-    List<Booking> findSentBookingsByUserId(@Param("userId") UUID userId);
+    Page<Booking> findSentBookingsByUserId(@Param("userId") UUID userId, Pageable pageable);
 
     @EntityGraph(attributePaths = {
             "trip", "trip.owner", "trip.owner.profile",
@@ -44,16 +45,19 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     @Query("""
             SELECT b FROM Booking b
             WHERE b.trip.owner.id = :userId
-            ORDER BY b.createdAt DESC
             """)
-    List<Booking> findReceivedBookingsByUserId(@Param("userId") UUID userId);
+    Page<Booking> findReceivedBookingsByUserId(@Param("userId") UUID userId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"trip", "trip.owner", "parcel", "parcel.owner"})
     List<Booking> findByStateAndCreatedAtBefore(BookingState state, OffsetDateTime cutoff);
 
-    boolean existsByTripIdAndParcelIdAndStateIn(UUID tripId, UUID parcelId, List<BookingState> states);
+    @EntityGraph(attributePaths = {
+            "trip", "trip.owner", "trip.owner.profile", "trip.stops",
+            "parcel", "parcel.owner", "parcel.owner.profile", "payment"
+    })
+    Optional<Booking> findByTripIdAndParcelIdAndStateIn(UUID tripId, UUID parcelId, List<BookingState> states);
 
-    long countByTripId(UUID tripId);
+    long countByTripIdAndState(UUID tripId, BookingState state);
 
     long countByParcelId(UUID parcelId);
 }

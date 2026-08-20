@@ -34,16 +34,17 @@ public class ParcelController {
     public ResponseEntity<Page<ParcelSummary>> getMyParcels(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(required = false) ParcelState state,
-            @PageableDefault(size = 3, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(parcelService.getUserParcels(userPrincipal.getId(), state, pageable));
     }
 
     @GetMapping("/{parcelId}/bookings")
-    public ResponseEntity<List<ParcelBookingDto>> getParcelBookings(
+    public ResponseEntity<Page<ParcelBookingDto>> getParcelBookings(
             @PathVariable UUID parcelId,
-            @AuthenticationPrincipal UserPrincipal userPrincipal)
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable)
     {
-        return ResponseEntity.ok(parcelService.getParcelBookings(parcelId,userPrincipal.getId()));
+        return ResponseEntity.ok(parcelService.getParcelBookings(parcelId, userPrincipal.getId(), pageable));
     }
 
     @PostMapping

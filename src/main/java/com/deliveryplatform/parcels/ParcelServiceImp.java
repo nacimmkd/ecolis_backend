@@ -53,11 +53,11 @@ public class ParcelServiceImp implements ParcelService {
     }
 
     @Override
-    public List<ParcelBookingDto> getParcelBookings(UUID parcelId, UUID currentUserId) {
+    public Page<ParcelBookingDto> getParcelBookings(UUID parcelId, UUID currentUserId, Pageable pageable) {
         Parcel parcel = getParcelByIdOrThrow(parcelId);
-        var bookings = bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId);
         parcel.assertOwnedBy(currentUserId);
-        return parcelBookingsMapper.toParcelBookingDto(bookings);
+        return bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId, pageable)
+                .map(parcelBookingsMapper::toParcelBookingDto);
     }
 
     @Override
@@ -165,7 +165,7 @@ public class ParcelServiceImp implements ParcelService {
     }
 
     private List<Booking> getParcelBookings(UUID parcelId) {
-        return bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId);
+        return bookingRepository.findByParcelIdOrderByCreatedAtDesc(parcelId, Pageable.unpaged()).getContent();
     }
 
     private MediaType resolveMediaType(String content) {

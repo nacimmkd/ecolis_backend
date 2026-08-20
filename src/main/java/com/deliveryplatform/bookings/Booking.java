@@ -7,7 +7,6 @@ import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.parcels.Parcel;
 import com.deliveryplatform.parcels.ParcelState;
-import com.deliveryplatform.payments.Payment;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -39,10 +38,6 @@ public class Booking {
     @JoinColumn(name = "parcel_id", nullable = false)
     @Setter
     private Parcel parcel;
-
-    @OneToOne(mappedBy = "booking")
-    @Setter
-    private Payment payment;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -142,12 +137,6 @@ public class Booking {
             throw new BookingException(BookingErrorCode.NOT_CARRIER, "User is not allowed to perform this action");
     }
 
-    public void assertPaymentAuthorized() {
-        if (payment == null || !payment.isAuthorized())
-            throw new BookingException(BookingErrorCode.PAYMENT_REQUIRED,
-                    "Booking " + id + " must be paid before it can be sent to the carrier");
-    }
-
     public void assertIsValidPickUpCode(String pickupCode) {
         if (!this.pickupCode.equals(pickupCode))
             throw new BookingException(BookingErrorCode.INVALID_PICKUP_CODE, "Pickup code is invalid");
@@ -186,7 +175,6 @@ public class Booking {
 
     public void sendRequest(){
         assertIsInState(BookingState.PENDING, "Can not request driver");
-        assertPaymentAuthorized();
         this.state = BookingState.WAITING_FOR_ANSWER;
     }
 

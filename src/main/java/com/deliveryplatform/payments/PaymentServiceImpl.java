@@ -17,11 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,11 +32,11 @@ public class PaymentServiceImpl implements PaymentService {
     private final PriceCalculator priceCalculator;
     private final ApplicationEventPublisher eventPublisher;
 
+    // ---- public API -----------------------------------------------------------------------------------------
 
     @Override
     @Transactional
     public PaymentResponse checkout(UUID bookingId) {
-
         var booking = getBookingByIdOrThrow(bookingId);
         booking.assertIsSender(authService.getCurrentUserPrincipal().getId());
         booking.assertIsInState(BookingState.PENDING, "Booking is not pending");
@@ -70,11 +67,17 @@ public class PaymentServiceImpl implements PaymentService {
         return PaymentResponse.from(payment, session.clientSecret());
     }
 
-
     @Override
     @Transactional
-    public PaymentResponse cancel(UUID bookingId) {
-        return doCancel(getBookingPayment(bookingId));
+    public void cancel(UUID bookingId) {
+        paymentRepository.findByBookingId(bookingId)
+                .ifPresent(payment -> {
+                    if (payment.isCaptured()) {
+                        doRefund(payment);
+                    } else {
+                        doCancel(payment);
+                    }
+                });
     }
 
     @Override
@@ -84,34 +87,13 @@ public class PaymentServiceImpl implements PaymentService {
             return;
         }
 
-        Map<UUID, Payment> paymentsByBookingId = paymentRepository.findByBookingIdIn(bookingIds).stream()
-                .collect(Collectors.toMap(payment -> payment.getBooking().getId(), Function.identity()));
-
-        for (UUID bookingId : bookingIds) {
-            Payment payment = paymentsByBookingId.get(bookingId);
-            if (payment != null) {
+        paymentRepository.findByBookingIdIn(bookingIds).forEach(payment -> {
+            if (payment.isCaptured()) {
+                doRefund(payment);
+            } else {
                 doCancel(payment);
             }
-        }
-    }
-
-    private PaymentResponse doCancel(Payment payment) {
-        if (payment.getStatus() == PaymentStatus.CANCELED || payment.getStatus() == PaymentStatus.FAILED) {
-            return PaymentResponse.from(payment);
-        }
-        if (payment.isCaptured()) {
-            throw new PaymentException(PaymentErrorCode.PAYMENT_INVALID_STATE,
-                    "Payment " + payment.getId() + " already captured, a refund is required");
-        }
-
-        if (payment.hasPaymentIntent()) {
-            paymentGateway.cancel(payment.getStripePaymentIntentId());
-        } else {
-            paymentGateway.expireCheckoutSession(payment.getStripeCheckoutSessionId());
-        }
-
-        payment.markCanceled();
-        return PaymentResponse.from(payment);
+        });
     }
 
     /** Capture manuelle : preleve reellement les fonds jusque-la bloques sur la carte du payeur. */
@@ -137,31 +119,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
-    public PaymentResponse refund(UUID bookingId) {
-        Payment payment = getBookingPayment(bookingId);
-
-        if (payment.isRefunded()) {
-            return PaymentResponse.from(payment);
-        }
-        if (!payment.isCaptured()) {
-            throw new PaymentException(PaymentErrorCode.PAYMENT_INVALID_STATE,
-                    "Payment " + payment.getId() + " is not captured, cannot refund");
-        }
-        if (payment.getStripePaymentIntentId() == null) {
-            throw new PaymentException(PaymentErrorCode.PAYMENT_INVALID_STATE,
-                    "Payment " + payment.getId() + " has no payment intent recorded, cannot refund");
-        }
-
-        String refundId = paymentGateway.refund(payment.getStripePaymentIntentId(), payment.getPrice().getAmountInCents());
-        payment.markRefunded(refundId);
-
-        log.info("payment refunded bookingId={} paymentId={}", bookingId, payment.getId());
-
-        return PaymentResponse.from(payment);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public boolean isAuthorized(UUID bookingId) {
         return paymentRepository.existsByBookingIdAndStatus(bookingId, PaymentStatus.AUTHORIZED);
@@ -175,8 +132,36 @@ public class PaymentServiceImpl implements PaymentService {
                 .ifPresent(this::applyWebhookEvent);
     }
 
+    // ---- private ----------------------------------------------------------------------------------------------
 
-    // private -----------------------------------------------------------------------------------------------
+    private void doCancel(Payment payment) {
+        if (payment.getStatus() == PaymentStatus.CANCELED || payment.getStatus() == PaymentStatus.FAILED) {
+            return;
+        }
+
+        if (payment.hasPaymentIntent()) {
+            paymentGateway.cancel(payment.getStripePaymentIntentId());
+        } else {
+            paymentGateway.expireCheckoutSession(payment.getStripeCheckoutSessionId());
+        }
+
+        payment.markCanceled();
+    }
+
+    private void doRefund(Payment payment) {
+        if (payment.isRefunded()) {
+            return;
+        }
+        if (payment.getStripePaymentIntentId() == null) {
+            throw new PaymentException(PaymentErrorCode.PAYMENT_INVALID_STATE,
+                    "Payment " + payment.getId() + " has no payment intent recorded, cannot refund");
+        }
+
+        String refundId = paymentGateway.refund(payment.getStripePaymentIntentId(), payment.getPrice().getAmountInCents());
+        payment.markRefunded(refundId);
+
+        log.info("payment refunded bookingId={} paymentId={}", payment.getBooking().getId(), payment.getId());
+    }
 
     private void applyWebhookEvent(WebhookResponse event) {
         Payment payment = resolvePayment(event);

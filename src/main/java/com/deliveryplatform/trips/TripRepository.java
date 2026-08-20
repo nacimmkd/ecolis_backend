@@ -1,5 +1,7 @@
 package com.deliveryplatform.trips;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,7 +21,13 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
     Optional<Trip> findTripById(UUID id);
 
     @EntityGraph(attributePaths = {"stops"})
-    List<Trip> findTripByOwner_Id(UUID id);
+    Page<Trip> findTripByOwner_Id(UUID ownerId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"stops"})
+    Page<Trip> findTripByOwner_IdAndState(UUID ownerId, TripState state, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"stops"})
+    Page<Trip> findAll(Pageable pageable);
 
     @EntityGraph(attributePaths = {"stops", "owner.profile"})
     @Query("""
