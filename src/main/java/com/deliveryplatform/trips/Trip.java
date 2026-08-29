@@ -10,7 +10,6 @@ import com.deliveryplatform.trips.exceptions.TripException;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,7 +22,6 @@ import java.util.*;
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@SQLRestriction("deleted = false")
 public class Trip {
 
     public static BigDecimal MIN_WEIGHT_KG = BigDecimal.ONE;
@@ -100,12 +98,6 @@ public class Trip {
     @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
 
-    @Builder.Default
-    private boolean deleted = false;
-
-    @Column(name = "deleted_at")
-    private OffsetDateTime deletedAt;
-
     @PrePersist
     public void prePersist() {
         if (this.remainingWeightKg == null) {
@@ -139,11 +131,6 @@ public class Trip {
             throw new TripException(TripErrorCode.TRIP_NOT_OWNED, "User is not the owner of this trip");
     }
 
-    public void assertNotDeleted() {
-        if (this.deleted)
-            throw new TripException(TripErrorCode.TRIP_DELETED, "Action cannot be performed because trip is deleted");
-    }
-
     public void assertNotFull() {
         if (TripState.FULL.equals(this.state))
             throw new TripException(TripErrorCode.TRIP_FULL, "Trip is full");
@@ -161,7 +148,6 @@ public class Trip {
     }
 
     public void assertTripCanReceiveRequests() {
-        assertNotDeleted();
         assertInState(List.of(TripState.PUBLISHED), "Trip can not receive new requests");
         if (LocalDate.now().isAfter(this.departureDate)){
             throw new TripException(TripErrorCode.TRIP_DEPARTURE_PASSED, "Departure date passed");
@@ -189,19 +175,17 @@ public class Trip {
         this.updateAvailableWeightKg(availableWeightKg);
     }
 
-    public void delete(UUID userId) {
+    public void cancel(UUID userId) {
 
         assertOwnedBy(userId);
         assertInState(List.of(TripState.PUBLISHED), "Trip already have related bookings");
-
         deleteAllStops();
-        this.deleted = true;
-        this.deletedAt = OffsetDateTime.now();
+
+        this.updateState(TripState.CANCELLED);
     }
 
     private void updateState(TripState newState) {
         if (newState.equals(this.state)) return;
-        assertNotDeleted();
         if (!isValidTransition(newState))
             throw new TripException(TripErrorCode.INVALID_STATE_TRANSITION,
                     "Cannot transition trip from %s to %s".formatted(this.state, newState));
@@ -209,8 +193,6 @@ public class Trip {
     }
 
     public void updateAvailableWeightKg(BigDecimal newAvailableWeightKg) {
-        assertNotDeleted();
-
         if (newAvailableWeightKg.compareTo(MIN_WEIGHT_KG) < 0)
             throw new TripException(TripErrorCode.WEIGHT_BELOW_MINIMUM,
                     "Available weight must not be under %s kg".formatted(MIN_WEIGHT_KG));
@@ -302,7 +284,6 @@ public class Trip {
     }
 
     private void reserveWeight(BigDecimal weight) {
-        assertNotDeleted();
         if (weight.compareTo(this.remainingWeightKg) > 0)
             throw new TripException(TripErrorCode.WEIGHT_INSUFFICIENT_REMAINING,
                     "Not enough remaining weight: requested=%s, available=%s".formatted(weight, this.remainingWeightKg));

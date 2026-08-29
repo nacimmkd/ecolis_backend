@@ -1,8 +1,7 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.profiles.dto.ProfileSummary;
+import com.deliveryplatform.profiles.dto.ProfileDto;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
-import com.deliveryplatform.profiles.dto.ProfileDetails;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,21 +19,16 @@ public class ProfileController {
 
     private final ProfileService profileService;
 
-    @GetMapping("/me")
-    public ResponseEntity<ProfileDetails> getMyProfile(
-            @AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(profileService.getUserProfile(principal.getId()));
-    }
-
     @GetMapping("/{profileId}")
-    public ResponseEntity<ProfileDetails> getProfileById(
+    public ResponseEntity<ProfileDto> getProfileById(
+            @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID profileId
     ) {
-        return ResponseEntity.ok(profileService.getUserProfile(profileId));
+        return ResponseEntity.ok(profileService.getProfile(principal.getId(), profileId));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<ProfileDetails> updateProfile(
+    public ResponseEntity<ProfileDto> updateProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody @Valid ProfileUpdateRequest request) {
         return ResponseEntity.ok(profileService.updateProfile(principal.getId(), request));

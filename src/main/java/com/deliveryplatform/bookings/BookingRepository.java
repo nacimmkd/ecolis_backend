@@ -62,4 +62,11 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     long countByTripIdAndStateIn(UUID tripId, Collection<BookingState> states);
 
     boolean existsByTripIdAndStateIn(UUID tripId, Collection<BookingState> states);
+
+    @Query(""" 
+            SELECT COUNT(b) > 0 FROM Booking b
+            WHERE ( (b.parcel.owner.id = :userIdA AND b.trip.owner.id = :userIdB)
+                    OR (b.parcel.owner.id = :userIdB AND b.trip.owner.id = :userIdA))
+        """)
+    boolean existsBookingBetweenUsers(@Param("userIdA") UUID userIdA, @Param("userIdB") UUID userIdB );
 }

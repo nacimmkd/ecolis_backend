@@ -8,7 +8,6 @@ public enum TripErrorCode implements ErrorCode {
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND),
     TRIP_NOT_OWNED(HttpStatus.FORBIDDEN),
     TRIP_NOT_PUBLISHED(HttpStatus.CONFLICT),
-    TRIP_DELETED(HttpStatus.CONFLICT),
     TRIP_FULL(HttpStatus.CONFLICT),
     MAX_DETOUR_EXCEEDED(HttpStatus.CONFLICT),
     INVALID_STATE_TRANSITION(HttpStatus.CONFLICT),

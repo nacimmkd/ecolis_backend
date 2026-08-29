@@ -1,15 +1,14 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.profiles.dto.ProfileSummary;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
-import com.deliveryplatform.profiles.dto.ProfileDetails;
+import com.deliveryplatform.profiles.dto.ProfileDto;
 
 import java.util.UUID;
 
 public interface ProfileService {
 
-    ProfileDetails getUserProfile(UUID userId);
+    ProfileDto getProfile(UUID currentUserId, UUID profileId);
 
-    ProfileDetails updateProfile(UUID profileId, ProfileUpdateRequest request);
+    ProfileDto updateProfile(UUID profileId, ProfileUpdateRequest request);
 
 }

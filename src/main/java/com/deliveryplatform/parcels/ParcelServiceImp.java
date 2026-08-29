@@ -109,7 +109,7 @@ public class ParcelServiceImp implements ParcelService {
         parcel.getImages().forEach(image -> storageService.delete(image.getKey()));
         parcel.removeAllImages();
 
-        parcel.softDelete();
+        parcel.cancel();
         parcelRepository.save(parcel);
     }
 

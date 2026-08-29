@@ -53,7 +53,7 @@ public class TripServiceImp implements TripService {
     @Override
     public Page<TripSummary> getMyTrips(UUID currentUserId, TripState state, Pageable pageable) {
         Page<Trip> trips = (state == null)
-                ? tripRepository.findTripByOwner_Id(currentUserId, pageable)
+                ? tripRepository.findTripByOwner_IdAndStateNot(currentUserId, TripState.CANCELLED, pageable)
                 : tripRepository.findTripByOwner_IdAndState(currentUserId, state, pageable);
         return trips.map(tripMapper::toTripSummaryDto);
     }
@@ -137,7 +137,7 @@ public class TripServiceImp implements TripService {
     @Transactional
     public void deleteTrip(UUID tripId, UUID currentUserId) {
         var trip = getTripByIdOrThrow(tripId);
-        trip.delete(currentUserId);
+        trip.cancel(currentUserId);
         tripRepository.save(trip);
     }
 

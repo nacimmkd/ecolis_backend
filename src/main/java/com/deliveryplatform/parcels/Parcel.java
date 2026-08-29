@@ -7,7 +7,6 @@ import com.deliveryplatform.parcels.exceptions.ParcelException;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -22,7 +21,6 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
-@SQLRestriction("deleted = false")
 public class Parcel {
 
     @Id
@@ -80,14 +78,6 @@ public class Parcel {
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
-    @Column(name = "deleted", nullable = false)
-    @Builder.Default
-    private boolean deleted = false;
-
-    @Column(name = "deleted_at")
-    private OffsetDateTime deletedAt;
-
-
     public static Parcel createFromRequest(
             ParcelCreateRequest request, User owner, Address pickupAddress,
             Address dropoffAddress
@@ -110,14 +100,12 @@ public class Parcel {
 
     // ── Lifecycle ────────────────────────────────────────────────────────────
 
-    public void softDelete() {
-        this.deleted = true;
-        this.deletedAt = OffsetDateTime.now();
+    public void cancel() {
+        this.updateState(ParcelState.CANCELLED);
         this.images.clear();
     }
 
     private void updateState(ParcelState state) {
-        assertNotDeleted();
         this.state = state;
         addTrackingEvent(TrackEvent.of(state, state.getMessage()));
     }
@@ -165,11 +153,6 @@ public class Parcel {
     public void assertOwnedBy(UUID userId) {
         if (!userId.equals(this.owner.getId()))
             throw new ParcelException(ParcelErrorCode.PARCEL_NOT_OWNED, "User with id: %s is not owner of this parcel".formatted(userId));
-    }
-
-    public void assertNotDeleted() {
-        if (this.deleted)
-            throw new ParcelException(ParcelErrorCode.PARCEL_DELETED, "Action can not be performed: parcel is deleted");
     }
 
     public void assertIsInState(List<ParcelState> states) {

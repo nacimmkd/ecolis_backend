@@ -5,12 +5,13 @@ import lombok.Builder;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Builder
-public record ProfileDetails(
+@Builder(toBuilder = true)
+public record ProfileDto(
         UUID profileId,
         String firstName,
         String lastName,
         String phone,
+        boolean phoneVisible,
         String country,
         BigDecimal avgRating,
         int reviewCount,

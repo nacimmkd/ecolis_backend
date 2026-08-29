@@ -20,7 +20,7 @@ public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
     Page<Parcel> findByOwnerIdAndState(@Param("userId") UUID userId, @Param("state") ParcelState state, Pageable pageable);
 
     @EntityGraph(attributePaths = {"owner", "owner.profile", "images"})
-    @Query("SELECT p FROM Parcel p WHERE p.owner.id = :userId")
+    @Query("SELECT p FROM Parcel p WHERE p.owner.id = :userId AND p.state <> com.deliveryplatform.parcels.ParcelState.CANCELLED")
     Page<Parcel> findByOwnerId(@Param("userId") UUID userId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"owner", "owner.profile", "trackEvents"})

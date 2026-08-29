@@ -14,6 +14,7 @@ import com.deliveryplatform.trips.events.TripCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -33,7 +34,7 @@ public class ProfileStatsListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onBookingCompleted(BookingCompletedEvent event) {
         var senderId = event.parcelSender().getId();
         var sentParcels = parcelRepository.countByOwner_IdAndState(senderId, ParcelState.DELIVERED);
@@ -42,7 +43,7 @@ public class ProfileStatsListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onTripCompleted(TripCompletedEvent event) {
         var completedTrips = tripRepository.countByOwner_IdAndState(event.ownerId(), TripState.COMPLETED);
         getProfileOrThrow(event.ownerId()).updateCompletedTrips((int) completedTrips);
@@ -50,14 +51,14 @@ public class ProfileStatsListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onReviewCreated(ReviewCreatedEvent event) {
         recomputeReviewStats(event.revieweeId());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onReviewDeleted(ReviewDeletedEvent event) {
         recomputeReviewStats(event.revieweeId());
     }

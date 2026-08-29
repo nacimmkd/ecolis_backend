@@ -21,7 +21,7 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
     Optional<Trip> findTripById(UUID id);
 
     @EntityGraph(attributePaths = {"stops"})
-    Page<Trip> findTripByOwner_Id(UUID ownerId, Pageable pageable);
+    Page<Trip> findTripByOwner_IdAndStateNot(UUID ownerId, TripState excludedState, Pageable pageable);
 
     @EntityGraph(attributePaths = {"stops"})
     Page<Trip> findTripByOwner_IdAndState(UUID ownerId, TripState state, Pageable pageable);

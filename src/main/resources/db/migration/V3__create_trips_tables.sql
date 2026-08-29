@@ -32,8 +32,6 @@ CREATE TABLE "trips" (
                          instant_booking       BOOLEAN NOT NULL DEFAULT FALSE,
                          notes                 TEXT,
                          created_at            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
-                         deleted               BOOLEAN       DEFAULT FALSE,
-                         deleted_at            TIMESTAMPTZ,
 
                          PRIMARY KEY (id),
                          FOREIGN KEY (user_id) REFERENCES "users"(id) ON DELETE RESTRICT

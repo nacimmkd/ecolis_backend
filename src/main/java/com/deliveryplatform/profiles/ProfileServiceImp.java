@@ -1,11 +1,10 @@
 package com.deliveryplatform.profiles;
 
-import com.deliveryplatform.profiles.dto.ProfileSummary;
+import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
-import com.deliveryplatform.profiles.dto.ProfileDetails;
+import com.deliveryplatform.profiles.dto.ProfileDto;
 import com.deliveryplatform.profiles.exceptions.ProfileErrorCode;
 import com.deliveryplatform.profiles.exceptions.ProfileException;
-import com.deliveryplatform.reviews.ReviewRepository;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.storage.exceptions.StorageErrorCode;
 import com.deliveryplatform.storage.exceptions.StorageException;
@@ -20,18 +19,33 @@ import java.util.UUID;
 public class ProfileServiceImp implements ProfileService {
 
     private final ProfileRepository profileRepository;
+    private final BookingRepository bookingRepository;
     private final ProfileMapper     profileMapper;
     private final StorageService    storageService;
 
     @Override
-    public ProfileDetails getUserProfile(UUID userId) {
-        var profile = getByIdOrThrow(userId);
-        return profileMapper.toDetailedDto(profile);
+    public ProfileDto getProfile(UUID currentUserId, UUID profileId) {
+        var profile = getByIdOrThrow(profileId);
+        var profileDto = profileMapper.toDetailedDto(profile);
+
+        if (currentUserId.equals(profileId)) {
+            return profileDto;
+        }
+
+        var showPhoneNumber = bookingRepository.existsBookingBetweenUsers(currentUserId, profileId);
+        if (showPhoneNumber) {
+            return profileDto;
+        }
+
+        return profileDto.toBuilder()
+                .phone(null)
+                .phoneVisible(false)
+                .build();
     }
 
     @Override
     @Transactional
-    public ProfileDetails updateProfile(UUID userId, ProfileUpdateRequest request) {
+    public ProfileDto updateProfile(UUID userId, ProfileUpdateRequest request) {
         var profile = getByIdOrThrow(userId);
 
         profile.setFirstName(request.firstName());
