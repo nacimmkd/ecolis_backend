@@ -34,7 +34,7 @@ public class MatchingFinderService {
         var box = GeoUtils.boundingBox(pickup.getLatitude(), pickup.getLongitude(), SEARCH_RADIUS_KM);
 
         List<Trip> preMatchingTrips = tripRepository.findCandidateTrips(
-                TripState.PUBLISHED,
+                List.of(TripState.PUBLISHED, TripState.ACTIVE),
                 date,
                 parcel.getWeightKg(),
                 box.minLat(), box.maxLat(),

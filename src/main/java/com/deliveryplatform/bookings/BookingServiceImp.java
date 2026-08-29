@@ -107,6 +107,7 @@ public class BookingServiceImp implements BookingService {
 
         eventPublisher.publishEvent(new BookingRequestEvent(
                 booking.getId(),
+                trip.getId(),
                 booking.getCarrier(),
                 trip.getDepartureAddress().getCity(),
                 trip.getArrivalAddress().getCity()

@@ -38,6 +38,11 @@ public class Profile {
     @Setter(AccessLevel.PACKAGE)
     private String avatarKey;
 
+    @Column(name = "verified")
+    @Builder.Default
+    @Setter(AccessLevel.PACKAGE)
+    private boolean verified = false;
+
     @Column(name = "avg_rating", precision = 2, scale = 1)
     private BigDecimal avgRating;
 
@@ -60,10 +65,13 @@ public class Profile {
     @Setter
     private User user;
 
-    public static Profile create(String firstName, String lastName) {
+    public static Profile create(String firstName, String lastName, String phone) {
+        // actualy no phone verification system so i did like this
+        boolean isVerified = phone != null;
         return Profile.builder()
                 .firstName(firstName)
                 .lastName(lastName)
+                .verified(isVerified)
                 .build();
     }
 

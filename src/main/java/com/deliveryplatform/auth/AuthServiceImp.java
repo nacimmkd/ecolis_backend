@@ -97,7 +97,7 @@ public class AuthServiceImp implements AuthService {
         } catch (BadCredentialsException e) {
             throw new AuthException(AuthErrorCode.INVALID_CREDENTIALS, "Invalid email or password");
         } catch (DisabledException e) {
-            throw new AuthException(AuthErrorCode.USER_NOT_VERIFIED, "account is not verified");
+            throw new AuthException(AuthErrorCode.USER_NOT_VERIFIED, "account is not emailVerified");
         }
     }
 

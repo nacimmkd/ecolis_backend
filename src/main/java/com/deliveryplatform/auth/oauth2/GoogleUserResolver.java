@@ -23,7 +23,7 @@ public class GoogleUserResolver {
                 .orElseGet(() -> {
                     User created = userRepository.save(User.create(
                             email, null, true, AuthProvider.GOOGLE,
-                            Profile.create(firstName, lastName)
+                            Profile.create(firstName, lastName, null)
                     ));
                     eventPublisher.publishEvent(new UserCreatedEvent(created));
                     return created;

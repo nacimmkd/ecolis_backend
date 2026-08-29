@@ -21,7 +21,9 @@ public enum TripErrorCode implements ErrorCode {
     WEIGHT_BELOW_MINIMUM(HttpStatus.CONFLICT),
     WEIGHT_BELOW_RESERVED(HttpStatus.CONFLICT),
     WEIGHT_INSUFFICIENT_REMAINING(HttpStatus.CONFLICT),
-    TRIP_DEPARTURE_PASSED(HttpStatus.CONFLICT);
+    TRIP_DEPARTURE_PASSED(HttpStatus.CONFLICT),
+    TRIP_DUPLICATE(HttpStatus.CONFLICT),
+    TRIP_HAS_BOOKINGS(HttpStatus.CONFLICT);
 
 
     private final HttpStatus status;

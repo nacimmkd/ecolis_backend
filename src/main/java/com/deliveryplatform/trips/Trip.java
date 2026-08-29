@@ -148,7 +148,7 @@ public class Trip {
     }
 
     public void assertTripCanReceiveRequests() {
-        assertInState(List.of(TripState.PUBLISHED), "Trip can not receive new requests");
+        assertInState(List.of(TripState.PUBLISHED, TripState.ACTIVE), "Trip can not receive new requests");
         if (LocalDate.now().isAfter(this.departureDate)){
             throw new TripException(TripErrorCode.TRIP_DEPARTURE_PASSED, "Departure date passed");
         }
@@ -162,12 +162,21 @@ public class Trip {
                        BigDecimal availableWeightKg, Price pricePerKg,
                        BigDecimal maxDetourKm, String notes, boolean instantBooking) {
         assertOwnedBy(userId);
-        assertInState(List.of(TripState.PUBLISHED), "Trip already have related bookings");
+        assertInState(List.of(TripState.PUBLISHED, TripState.ACTIVE, TripState.FULL), "Can not update trip");
 
-        this.departureAddress = departureAddress;
-        this.arrivalAddress = arrivalAddress;
-        this.departureDate = departureDate;
-        this.arrivalDate = arrivalDate;
+        boolean changesRoute = (departureAddress != null && !departureAddress.equals(this.departureAddress))
+                || (arrivalAddress != null && !arrivalAddress.equals(this.arrivalAddress))
+                || (departureDate != null && !departureDate.equals(this.departureDate))
+                || (arrivalDate != null && !arrivalDate.equals(this.arrivalDate));
+
+        if (changesRoute) {
+            assertInState(List.of(TripState.PUBLISHED), "Trip route and dates can only be changed while published");
+            this.departureAddress = departureAddress;
+            this.arrivalAddress = arrivalAddress;
+            this.departureDate = departureDate;
+            this.arrivalDate = arrivalDate;
+        }
+
         this.pricePerKg = pricePerKg;
         this.maxDetourKm = maxDetourKm;
         this.notes = notes;
@@ -193,6 +202,7 @@ public class Trip {
     }
 
     public void updateAvailableWeightKg(BigDecimal newAvailableWeightKg) {
+
         if (newAvailableWeightKg.compareTo(MIN_WEIGHT_KG) < 0)
             throw new TripException(TripErrorCode.WEIGHT_BELOW_MINIMUM,
                     "Available weight must not be under %s kg".formatted(MIN_WEIGHT_KG));
@@ -202,13 +212,9 @@ public class Trip {
             throw new TripException(TripErrorCode.WEIGHT_BELOW_RESERVED,
                     "Available weight must not be under already reserved weight of %s kg".formatted(alreadyReservedWeight));
 
-        BigDecimal difference = newAvailableWeightKg.subtract(this.availableWeightKg);
-        if (difference.compareTo(BigDecimal.ZERO) == 0) return;
-
-        if (difference.compareTo(BigDecimal.ZERO) > 0) releaseWeight(difference);
-        else reserveWeight(difference.abs());
-
         this.availableWeightKg = newAvailableWeightKg;
+        this.remainingWeightKg = newAvailableWeightKg.subtract(alreadyReservedWeight);
+        refreshCapacityState();
     }
 
     // ---- stops ------------------------------------------------------------
@@ -254,6 +260,10 @@ public class Trip {
         this.updateState(TripState.COMPLETED);
     }
 
+    public void expire() {
+        this.updateState(TripState.EXPIRED);
+    }
+
     // ---- queries ------------------------------------------------------------
 
     public boolean isMaxDetourAccepted(BigDecimal pickUpDetour, BigDecimal dropOffDetour) {
@@ -288,19 +298,31 @@ public class Trip {
             throw new TripException(TripErrorCode.WEIGHT_INSUFFICIENT_REMAINING,
                     "Not enough remaining weight: requested=%s, available=%s".formatted(weight, this.remainingWeightKg));
         this.remainingWeightKg = this.remainingWeightKg.subtract(weight);
-        if (this.remainingWeightKg.compareTo(BigDecimal.ZERO) == 0) updateState(TripState.FULL);
+        refreshCapacityState();
     }
 
     private void releaseWeight(BigDecimal weight) {
         this.remainingWeightKg = this.remainingWeightKg.add(weight);
-        if (this.state == TripState.FULL) updateState(TripState.PUBLISHED);
+        refreshCapacityState();
+    }
+
+    private void refreshCapacityState() {
+        if (!List.of(TripState.PUBLISHED, TripState.ACTIVE, TripState.FULL).contains(this.state)) return;
+
+        if (this.remainingWeightKg.compareTo(BigDecimal.ZERO) == 0) updateState(TripState.FULL);
+        else if (this.remainingWeightKg.compareTo(this.availableWeightKg) == 0) updateState(TripState.PUBLISHED);
+        else updateState(TripState.ACTIVE);
     }
 
     private boolean isValidTransition(TripState newState) {
         return switch (this.state) {
-            case PUBLISHED -> newState == TripState.FULL || newState == TripState.COMPLETED || newState == TripState.CANCELLED;
-            case FULL -> newState == TripState.PUBLISHED || newState == TripState.COMPLETED;
-            case COMPLETED, CANCELLED -> false;
+            case PUBLISHED -> newState == TripState.ACTIVE || newState == TripState.FULL
+                    || newState == TripState.EXPIRED || newState == TripState.COMPLETED || newState == TripState.CANCELLED;
+            case ACTIVE -> newState == TripState.PUBLISHED || newState == TripState.FULL
+                    || newState == TripState.EXPIRED || newState == TripState.COMPLETED;
+            case FULL -> newState == TripState.ACTIVE || newState == TripState.PUBLISHED
+                    || newState == TripState.EXPIRED || newState == TripState.COMPLETED;
+            case EXPIRED, COMPLETED, CANCELLED -> false;
         };
     }
 }

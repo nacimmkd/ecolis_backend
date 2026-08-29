@@ -1,7 +1,7 @@
 package com.deliveryplatform.matching;
 
 import com.deliveryplatform.trips.TripMapper;
-import com.deliveryplatform.users.UserBriefMapper;
+import com.deliveryplatform.profiles.ProfileBriefMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -10,7 +10,7 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = {TripMapper.class, UserBriefMapper.class},
+        uses = {TripMapper.class, ProfileBriefMapper.class},
         unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface MatchingMapper {

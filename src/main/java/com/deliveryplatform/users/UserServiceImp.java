@@ -56,12 +56,12 @@ class UserServiceImp implements UserService {
 
         var existingUser = userRepository.findUserByEmail(request.email()).orElse(null);
 
-        if (existingUser != null && !existingUser.isVerified())
-            throw new UserException(UserErrorCode.USER_NOT_VERIFIED, "user exists but not verified");
+        if (existingUser != null && !existingUser.isEmailVerified())
+            throw new UserException(UserErrorCode.USER_NOT_VERIFIED, "user exists but not emailVerified");
 
         assertEmailUniqueness(request.email());
 
-        var profile = Profile.create(request.firstName(), request.lastName());
+        var profile = Profile.create(request.firstName(), request.lastName(), null);
         var user = User.create(
                 request.email(),
                 passwordEncoder.encode(request.password()),
@@ -76,8 +76,8 @@ class UserServiceImp implements UserService {
     @Transactional
     public void requestEmailVerification(String email) {
         var user = getUserByEmailOrThrow(email);
-        if (user.isVerified()) {
-            throw new UserException(UserErrorCode.USER_ALREADY_VERIFIED, "User is already verified");
+        if (user.isEmailVerified()) {
+            throw new UserException(UserErrorCode.USER_ALREADY_VERIFIED, "User is already emailVerified");
         }
         send(user, verifyEmailUrl);
     }

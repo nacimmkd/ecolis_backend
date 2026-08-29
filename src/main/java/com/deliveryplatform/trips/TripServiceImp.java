@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -91,8 +92,17 @@ public class TripServiceImp implements TripService {
     @Override
     @Transactional
     public TripDetails createTrip(UUID currentUserId, TripCreateRequest request) {
+
         var owner = userRepository.findUserById(currentUserId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND, "trip owner not found"));
+
+        assertNoDuplicateTripOrThrow(
+                currentUserId,
+                request.departureAddress(),
+                request.arrivalAddress(),
+                request.departureDate(),
+                request.arrivalDate()
+        );
 
         var trip = Trip.createFromRequest(
                 request,
@@ -109,10 +119,13 @@ public class TripServiceImp implements TripService {
     public TripDetails updateTrip(UUID tripId, UUID currentUserId, TripUpdateRequest request) {
         var trip = getTripByIdOrThrow(tripId);
 
+        var departureAddress = request.departureAddress() != null ? addressService.geocode(request.departureAddress()) : null;
+        var arrivalAddress = request.arrivalAddress() != null ? addressService.geocode(request.arrivalAddress()) : null;
+
         trip.update(
                 currentUserId,
-                addressService.geocode(request.departureAddress()),
-                addressService.geocode(request.arrivalAddress()),
+                departureAddress,
+                arrivalAddress,
                 request.departureDate(),
                 request.arrivalDate(),
                 request.availableWeightKg(),
@@ -172,5 +185,25 @@ public class TripServiceImp implements TripService {
     private Trip getTripByIdOrThrow(UUID id) {
         return tripRepository.findTripById(id)
                 .orElseThrow(() -> new TripException(TripErrorCode.TRIP_NOT_FOUND, "Trip Not found"));
+    }
+
+    private void assertNoDuplicateTripOrThrow(UUID ownerId, AddressRequest departureAddress, AddressRequest arrivalAddress, LocalDate departureDate, LocalDate arrivalDate) {
+        var duplicate = tripRepository.existsDuplicatePublishedTrip(
+                ownerId,
+                List.of(TripState.PUBLISHED, TripState.ACTIVE, TripState.FULL),
+                departureDate,
+                arrivalDate,
+                departureAddress.street(),
+                departureAddress.city(),
+                departureAddress.postalCode(),
+                departureAddress.country(),
+                arrivalAddress.street(),
+                arrivalAddress.city(),
+                arrivalAddress.postalCode(),
+                arrivalAddress.country()
+        );
+        if (duplicate) {
+            throw new TripException(TripErrorCode.TRIP_DUPLICATE, "A trip with the same departure and arrival already exists");
+        }
     }
 }

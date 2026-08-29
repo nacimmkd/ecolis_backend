@@ -11,6 +11,7 @@ import java.util.UUID;
 
 public record BookingRequestEvent(
         UUID bookingId,
+        UUID tripId,
         User receiver,
         String departureCity,
         String arrivalCity
@@ -34,7 +35,7 @@ public record BookingRequestEvent(
 
     @Override
     public UUID getReferenceId() {
-        return bookingId;
+        return tripId;
     }
 
     @Override

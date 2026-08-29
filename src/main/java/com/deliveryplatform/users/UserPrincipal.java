@@ -1,9 +1,7 @@
 package com.deliveryplatform.users;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,11 +18,11 @@ public class UserPrincipal implements UserDetails {
     private String email;
     private Role role;
     private String password;
-    private boolean verified;
+    private boolean emailVerified;
 
 
     public static UserPrincipal from(User user) {
-        return new UserPrincipal(user.getId(), user.getEmail(), user.getRole(), user.getPassword(), user.isVerified());
+        return new UserPrincipal(user.getId(), user.getEmail(), user.getRole(), user.getPassword(), user.isEmailVerified());
     }
 
     @Override
@@ -44,6 +42,6 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled(){
-        return this.verified;
+        return this.emailVerified;
     }
 }

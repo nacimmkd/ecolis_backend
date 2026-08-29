@@ -1,8 +1,10 @@
 package com.deliveryplatform.payments;
 
 import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,7 +19,9 @@ import java.math.RoundingMode;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Price {
 
-    @PositiveOrZero
+    @Positive(message = "price must be positive")
+    @Min(value = 50, message = "must be more than 50 cents")
+    @Max(value = 600, message = "price must be under 600 cents")
     private long amountInCents;
 
     @NotBlank

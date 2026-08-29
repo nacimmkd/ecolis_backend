@@ -34,20 +34,53 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
     @EntityGraph(attributePaths = {"stops", "owner.profile"})
     @Query("""
         SELECT t FROM Trip t
-        WHERE t.state = :state
+        WHERE t.state IN :states
           AND t.departureDate = :departureDate
           AND t.remainingWeightKg >= :weightKg
           AND t.departureAddress.latitude  BETWEEN :minLat AND :maxLat
           AND t.departureAddress.longitude BETWEEN :minLng AND :maxLng
     """)
     List<Trip> findCandidateTrips(
-            @Param("state")         TripState  state,
+            @Param("states")        List<TripState> states,
             @Param("departureDate") LocalDate  departureDate,
             @Param("weightKg")      BigDecimal weightKg,
             @Param("minLat")        double     minLat,
             @Param("maxLat")        double     maxLat,
             @Param("minLng")        double     minLng,
             @Param("maxLng")        double     maxLng
+    );
+
+    @EntityGraph(attributePaths = {"stops"})
+    List<Trip> findByStateInAndDepartureDateBefore(List<TripState> states, LocalDate date);
+
+    @Query("""
+        SELECT COUNT(t) > 0 FROM Trip t
+        WHERE t.owner.id = :ownerId
+          AND t.state IN :states
+          AND t.departureDate = :departureDate
+          AND t.arrivalDate = :arrivalDate
+          AND t.departureAddress.street = :departureStreet
+          AND t.departureAddress.city = :departureCity
+          AND t.departureAddress.postalCode = :departurePostalCode
+          AND t.departureAddress.country = :departureCountry
+          AND t.arrivalAddress.street = :arrivalStreet
+          AND t.arrivalAddress.city = :arrivalCity
+          AND t.arrivalAddress.postalCode = :arrivalPostalCode
+          AND t.arrivalAddress.country = :arrivalCountry
+    """)
+    boolean existsDuplicatePublishedTrip(
+            @Param("ownerId")             UUID            ownerId,
+            @Param("states")              List<TripState> states,
+            @Param("departureDate")       LocalDate  departureDate,
+            @Param("arrivalDate")         LocalDate  arrivalDate,
+            @Param("departureStreet")     String     departureStreet,
+            @Param("departureCity")       String     departureCity,
+            @Param("departurePostalCode") String     departurePostalCode,
+            @Param("departureCountry")    String     departureCountry,
+            @Param("arrivalStreet")       String     arrivalStreet,
+            @Param("arrivalCity")         String     arrivalCity,
+            @Param("arrivalPostalCode")   String     arrivalPostalCode,
+            @Param("arrivalCountry")      String     arrivalCountry
     );
 
 }

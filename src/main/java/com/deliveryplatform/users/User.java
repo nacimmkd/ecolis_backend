@@ -29,9 +29,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "is_verified")
+    @Column(name = "email_verified")
     @Builder.Default
-    private boolean verified = false;
+    private boolean emailVerified = false;
 
     @Column(name = "provider")
     @Enumerated(EnumType.STRING)
@@ -60,7 +60,7 @@ public class User {
                 .password(hashedPassword)
                 .role(Role.USER)
                 .provider(AuthProvider.LOCAL)
-                .verified(verified)
+                .emailVerified(verified)
                 .build();
         user.setProfile(profile);
         return user;
@@ -86,7 +86,7 @@ public class User {
     }
 
     public void verify() {
-        this.verified = true;
+        this.emailVerified = true;
     }
 
     public void updatePassword(String newHashedPassword) {

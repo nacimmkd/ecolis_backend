@@ -3,7 +3,7 @@ package com.deliveryplatform.trips.dto;
 import com.deliveryplatform.bookings.BookingState;
 import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.parcels.dto.ParcelSummary;
-import com.deliveryplatform.users.dto.UserBrief;
+import com.deliveryplatform.profiles.dto.ProfileBrief;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -14,7 +14,7 @@ import java.util.UUID;
 public record TripBookingDto(
         UUID bookingId,
         ParcelSummary parcel,
-        UserBrief sender,
+        ProfileBrief sender,
         Price price,
         BookingState state,
         BigDecimal pickupDetourKm,

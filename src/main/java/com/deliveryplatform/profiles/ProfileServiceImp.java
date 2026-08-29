@@ -1,6 +1,7 @@
 package com.deliveryplatform.profiles;
 
 import com.deliveryplatform.bookings.BookingRepository;
+import com.deliveryplatform.bookings.BookingState;
 import com.deliveryplatform.profiles.dto.ProfileUpdateRequest;
 import com.deliveryplatform.profiles.dto.ProfileDto;
 import com.deliveryplatform.profiles.exceptions.ProfileErrorCode;
@@ -12,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,7 +34,7 @@ public class ProfileServiceImp implements ProfileService {
             return profileDto;
         }
 
-        var showPhoneNumber = bookingRepository.existsBookingBetweenUsers(currentUserId, profileId);
+        var showPhoneNumber = bookingRepository.existsBookingBetweenUsers(currentUserId, profileId, List.of(BookingState.ACCEPTED));
         if (showPhoneNumber) {
             return profileDto;
         }
@@ -48,10 +50,14 @@ public class ProfileServiceImp implements ProfileService {
     public ProfileDto updateProfile(UUID userId, ProfileUpdateRequest request) {
         var profile = getByIdOrThrow(userId);
 
+        // actualy no phone verification system so i did like this
+        boolean isVerified = request.phone() != null;
+
         profile.setFirstName(request.firstName());
         profile.setLastName(request.lastName());
         profile.setPhone(request.phone());
         profile.setCountry(request.country());
+        profile.setVerified(isVerified);
         updateAvatar(profile, request.avatarKey());
 
         return profileMapper.toDetailedDto(profileRepository.save(profile));

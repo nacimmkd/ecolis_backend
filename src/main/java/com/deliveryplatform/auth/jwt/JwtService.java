@@ -59,7 +59,7 @@ public class JwtService {
                 claims.get("email", String.class),
                 Role.valueOf(claims.get("role", String.class)),
                 null,
-                claims.get("verified", Boolean.class)
+                claims.get("emailVerified", Boolean.class)
         );
     }
 
@@ -70,7 +70,7 @@ public class JwtService {
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole().name())
-                .claim("verified", user.isVerified())
+                .claim("emailVerified", user.isEmailVerified())
                 .signWith(signingKey)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + durationInSeconds.toMillis()))

@@ -12,6 +12,6 @@ public record UserSummary(
         UUID userId,
         String email,
         Role role,
-        boolean verified,
+        boolean emailVerified,
         OffsetDateTime registeredAt
 ) {}

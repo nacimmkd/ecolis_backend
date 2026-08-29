@@ -15,6 +15,7 @@ import org.mapstruct.ReportingPolicy;
 public interface UserMapper {
 
     @Mapping(target = "userId", source = "id")
+    @Mapping(target = "profile", source = "profile")
     UserDetails toDetailsDto(User user);
 
     @Mapping(target = "userId", source = "id")
