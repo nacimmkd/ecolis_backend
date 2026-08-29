@@ -39,7 +39,7 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse checkout(UUID bookingId) {
         var booking = getBookingByIdOrThrow(bookingId);
         booking.assertIsSender(authService.getCurrentUserPrincipal().getId());
-        booking.assertIsInState(BookingState.PENDING, "Booking is not pending");
+        booking.assertIsInState(List.of(BookingState.PENDING), "Booking is not pending");
 
         Optional<Payment> existing = paymentRepository.findByBookingId(bookingId);
         if (existing.isPresent()) {

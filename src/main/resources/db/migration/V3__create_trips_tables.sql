@@ -28,7 +28,7 @@ CREATE TABLE "trips" (
                          price_per_kg_currency         VARCHAR(3)   NOT NULL DEFAULT 'eur',
                          max_detour_km         NUMERIC(6,2)  NOT NULL DEFAULT 1,
                          state                VARCHAR(20)   NOT NULL DEFAULT 'PUBLISHED'
-                             CHECK (state IN ('PUBLISHED', 'FULL', 'IN_TRANSIT', 'COMPLETED', 'CANCELLED')),
+                             CHECK (state IN ('PUBLISHED', 'FULL', 'COMPLETED', 'CANCELLED')),
                          instant_booking       BOOLEAN NOT NULL DEFAULT FALSE,
                          notes                 TEXT,
                          created_at            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),

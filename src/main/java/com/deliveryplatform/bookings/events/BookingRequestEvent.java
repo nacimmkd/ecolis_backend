@@ -40,8 +40,8 @@ public record BookingRequestEvent(
     @Override
     public Map<String, Object> getPayload() {
         return Map.of(
-                "departureCity", departureCity,
-                "arrivalCity", arrivalCity
+                "departure", departureCity,
+                "arrival", arrivalCity
         );
     }
 }

@@ -1,6 +1,6 @@
 package com.deliveryplatform.trips;
 
-import com.deliveryplatform.addresses.Address;
+import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.trips.dto.*;
 import org.mapstruct.*;
 
@@ -10,8 +10,8 @@ import java.util.List;
 public interface TripMapper {
 
     @Mapping(target = "tripId", source = "trip.id")
-    @Mapping(target = "departureCity", source = "trip.departureAddress", qualifiedByName = "toBriefAddress")
-    @Mapping(target = "arrivalCity", source = "trip.arrivalAddress", qualifiedByName = "toBriefAddress")
+    @Mapping(target = "departure", source = "trip.departureAddress")
+    @Mapping(target = "arrival", source = "trip.arrivalAddress")
     @Mapping(target = "stopCount", expression = "java(trip.getStops() == null ? 0 : trip.getStops().size())")
     @Mapping(target = "publishedAt", source = "createdAt")
     TripSummary toTripSummaryDto(Trip trip);
@@ -23,14 +23,10 @@ public interface TripMapper {
     @Mapping(target = "publishedAt", source = "trip.createdAt")
     @Mapping(target = "newRequestCount", source = "newRequestCount")
     @Mapping(target = "acceptedBookingsCount", source = "acceptedBookingsCount")
-    TripDetails toTripDetailsDto(Trip trip, long newRequestCount, long acceptedBookingsCount);
+    @Mapping(target = "estimatedEarning", source = "estimatedEarning")
+    TripDetails toTripDetailsDto(Trip trip, long newRequestCount, long acceptedBookingsCount, Price estimatedEarning);
 
     TripStopDto toTripStopDto(TripStop stop);
 
     List<TripStopDto> toTripStopDto(List<TripStop> stops);
-
-    @Named("toBriefAddress")
-    default String toBriefAddress(Address address) {
-        return address == null ? null : address.toBriefAddress();
-    }
 }

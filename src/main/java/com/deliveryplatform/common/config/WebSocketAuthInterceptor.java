@@ -1,8 +1,15 @@
 package com.deliveryplatform.common.config;
 
+import com.deliveryplatform.auth.CookieService;
 import com.deliveryplatform.auth.jwt.JwtService;
+import com.deliveryplatform.users.UserPrincipal;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -12,13 +19,39 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.server.HandshakeInterceptor;
+
+import java.util.Arrays;
+import java.util.Map;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class WebSocketAuthInterceptor implements ChannelInterceptor {
+public class WebSocketAuthInterceptor implements ChannelInterceptor, HandshakeInterceptor {
+
+    private static final String PRINCIPAL_ATTRIBUTE = "principal";
 
     private final JwtService jwtService;
+
+    @Override
+    public boolean beforeHandshake(@NonNull ServerHttpRequest request, @NonNull ServerHttpResponse response,
+                                    @NonNull WebSocketHandler wsHandler, @NonNull Map<String, Object> attributes) {
+        if (request instanceof ServletServerHttpRequest servletRequest) {
+            var token = extractTokenFromCookie(servletRequest.getServletRequest());
+            if (token != null && jwtService.isValid(token)) {
+                attributes.put(PRINCIPAL_ATTRIBUTE, jwtService.extractPrincipal(token));
+            } else {
+                log.warn("[WS] Missing or invalid access token cookie during handshake");
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void afterHandshake(@NonNull ServerHttpRequest request, @NonNull ServerHttpResponse response,
+                                @NonNull WebSocketHandler wsHandler, Exception exception) {
+    }
 
     @Override
     @NonNull
@@ -33,25 +66,29 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     }
 
     private void authenticateConnection(StompHeaderAccessor accessor) {
-        String authHeader = accessor.getFirstNativeHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.warn("[WS] Missing or invalid Authorization header");
+        var attributes = accessor.getSessionAttributes();
+        var principal = attributes != null ? attributes.get(PRINCIPAL_ATTRIBUTE) : null;
+
+        if (!(principal instanceof UserPrincipal userPrincipal)) {
+            log.warn("[WS] No authenticated principal found for connection, was the access token cookie sent?");
             return;
         }
 
-        var token = authHeader.replace("Bearer ", "");
-        if (!jwtService.isValid(token)) {
-            log.warn("[WS] Invalid token");
-            return;
-        }
-
-        var principal = jwtService.extractPrincipal(token);
-        var auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()) {
+        var auth = new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities()) {
             @Override
             public String getName() {
-                return principal.getId().toString();
+                return userPrincipal.getId().toString();
             }
         };
         accessor.setUser(auth);
+    }
+
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> CookieService.ACCESS_COOKIE_NAME.equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
     }
 }

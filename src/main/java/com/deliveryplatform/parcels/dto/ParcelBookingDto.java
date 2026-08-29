@@ -17,6 +17,8 @@ public record ParcelBookingDto(
         UserBrief carrier,
         Price price,
         BookingState state,
+        String pickupCode,
+        String dropOffCode,
         BigDecimal pickupDetourKm,
         BigDecimal dropOffDetourKm,
         String rejectionReason,

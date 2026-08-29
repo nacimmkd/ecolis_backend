@@ -6,7 +6,6 @@ import com.deliveryplatform.common.CodeGeneratorUtil;
 import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.parcels.Parcel;
-import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.trips.Trip;
 import com.deliveryplatform.users.User;
 import jakarta.persistence.*;
@@ -14,6 +13,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -122,8 +122,8 @@ public class Booking {
             throw new BookingException(BookingErrorCode.INVALID_STATE, "Booking must be completed before reviewing");
     }
 
-    public void assertIsInState(BookingState expected, String errorMessage) {
-        if (!expected.equals(this.state))
+    public void assertIsInState(List<BookingState> expected, String errorMessage) {
+        if (!expected.contains(this.state))
             throw new BookingException(BookingErrorCode.INVALID_STATE, errorMessage);
     }
 
@@ -146,21 +146,21 @@ public class Booking {
         if (!this.dropOffCode.equals(dropOffCode))
             throw new BookingException(BookingErrorCode.INVALID_DROPOFF_CODE, "DropOff code is invalid");
     }
-
     // ---- lifecycle ------------------------------------------------------------
 
     public void accept(UUID userId) {
-        assertIsInState(BookingState.WAITING_FOR_ANSWER, "Booking is not waiting for answer");
+        assertIsInState(List.of(BookingState.WAITING_FOR_ANSWER), "Booking is not waiting for answer");
         assertIsCarrier(userId);
+
+        this.parcel.book();
+        this.trip.book(this);
 
         this.state = BookingState.ACCEPTED;
         this.respondedAt = OffsetDateTime.now();
-        this.parcel.updateState(ParcelState.BOOKED);
-        this.trip.reserveBooking(this);
     }
 
     public void reject(UUID userId, String reason) {
-        assertIsInState(BookingState.WAITING_FOR_ANSWER, "Booking is not waiting for answer");
+        assertIsInState(List.of(BookingState.WAITING_FOR_ANSWER), "Booking is not waiting for answer");
         assertIsCarrier(userId);
 
         this.state = BookingState.REJECTED;
@@ -174,20 +174,23 @@ public class Booking {
     }
 
     public void sendRequest(){
-        assertIsInState(BookingState.PENDING, "Can not request driver");
+        assertIsInState(List.of(BookingState.PENDING), "Can not request driver, booking is not paid");
+        this.trip.assertTripCanReceiveRequests();
         this.state = BookingState.WAITING_FOR_ANSWER;
     }
 
     public void confirmPickUp(String pickupCode) {
         assertIsValidPickUpCode(pickupCode);
+        this.parcel.pick();
 
-        this.parcel.updateState(ParcelState.IN_TRANSIT);
         this.pickupCode = null;
         this.dropOffCode = CodeGeneratorUtil.generateBookingCode();
     }
 
     public void complete(String dropOffCode) {
         assertIsValidDropOffCode(dropOffCode);
+        this.parcel.dropOff();
+
         this.state = BookingState.COMPLETED;
         this.completedAt = OffsetDateTime.now();
     }
@@ -195,9 +198,10 @@ public class Booking {
     public void cancel(UUID userId, String reason, CancelledBy cancelledBy) {
 
         assertUserInvolved(userId);
-
-        this.parcel.updateState(ParcelState.PUBLISHED);
-        this.trip.removeBooking(this);
+        assertIsInState(List.of(BookingState.PENDING, BookingState.WAITING_FOR_ANSWER), "Booking can not be cancelled");
+        
+        this.parcel.unbook();
+        this.trip.unbook(this);
 
         this.state = BookingState.CANCELLED;
         this.cancelledAt = OffsetDateTime.now();

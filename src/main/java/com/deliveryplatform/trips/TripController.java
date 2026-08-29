@@ -49,6 +49,15 @@ public class TripController {
         return ResponseEntity.ok(tripService.getTripBookings(tripId, principal.getId(), pageable));
     }
 
+    @GetMapping("/{tripId}/requests")
+    public ResponseEntity<Page<TripBookingDto>> getTripRequests(
+            @PathVariable UUID tripId,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(tripService.getRequests(tripId, principal.getId(), pageable));
+    }
+
 
     @PostMapping
     public ResponseEntity<TripDetails> createTrip(

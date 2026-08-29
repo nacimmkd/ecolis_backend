@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -48,9 +49,9 @@ public class Profile {
     @Builder.Default
     private int completedTrips = 0;
 
-    @Column(name = "delivered_parcels")
+    @Column(name = "sent_parcels")
     @Builder.Default
-    private int deliveredParcels = 0;
+    private int sentParcels = 0;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id")
@@ -64,5 +65,20 @@ public class Profile {
                 .firstName(firstName)
                 .lastName(lastName)
                 .build();
+    }
+
+    // ---- stats ------------------------------------------------------------
+
+    void updateReviewStats(int reviewCount, BigDecimal avgRating) {
+        this.reviewCount = reviewCount;
+        this.avgRating = avgRating;
+    }
+
+    void updateCompletedTrips(int completedTrips) {
+        this.completedTrips = completedTrips;
+    }
+
+    void updateSentParcels(int sentParcels) {
+        this.sentParcels = sentParcels;
     }
 }

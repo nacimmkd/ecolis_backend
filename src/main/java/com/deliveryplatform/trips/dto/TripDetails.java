@@ -22,6 +22,7 @@ public record TripDetails(
         BigDecimal availableWeightKg,
         BigDecimal remainingWeightKg,
         Price pricePerKg,
+        Price estimatedEarning,
         boolean instantBooking,
         BigDecimal maxDetourKm,
         TripState state,

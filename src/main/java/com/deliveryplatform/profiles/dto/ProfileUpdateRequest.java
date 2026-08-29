@@ -11,7 +11,7 @@ public record ProfileUpdateRequest(
         @NotNull @Size(max = 100)
         String lastName,
 
-        @NotNull @Phone
+        @Phone
         String phone,
 
         @NotNull

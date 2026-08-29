@@ -139,11 +139,6 @@ public class Trip {
             throw new TripException(TripErrorCode.TRIP_NOT_OWNED, "User is not the owner of this trip");
     }
 
-    public void assertIsPublished() {
-        if (!TripState.PUBLISHED.equals(this.state))
-            throw new TripException(TripErrorCode.TRIP_NOT_PUBLISHED, "Trip is not published");
-    }
-
     public void assertNotDeleted() {
         if (this.deleted)
             throw new TripException(TripErrorCode.TRIP_DELETED, "Action cannot be performed because trip is deleted");
@@ -154,9 +149,24 @@ public class Trip {
             throw new TripException(TripErrorCode.TRIP_FULL, "Trip is full");
     }
 
+    public void assertInState(List<TripState> states, String message ) {
+        if (!states.contains(this.state)) {
+            throw new TripException(TripErrorCode.INVALID_STATE_TRANSITION, message);
+        }
+    }
+
     public void assertMaxTripDetourRequirement(Detour detour) {
         if (!isMaxDetourAccepted(BigDecimal.valueOf(detour.pickupDetourKm()), BigDecimal.valueOf(detour.dropoffDetourKm())))
             throw new TripException(TripErrorCode.MAX_DETOUR_EXCEEDED, "Trip max detour not satisfied");
+    }
+
+    public void assertTripCanReceiveRequests() {
+        assertNotDeleted();
+        assertInState(List.of(TripState.PUBLISHED), "Trip can not receive new requests");
+        if (LocalDate.now().isAfter(this.departureDate)){
+            throw new TripException(TripErrorCode.TRIP_DEPARTURE_PASSED, "Departure date passed");
+        }
+
     }
 
     // ---- lifecycle -------------------------------------------------------
@@ -165,8 +175,8 @@ public class Trip {
                        LocalDate departureDate, LocalDate arrivalDate,
                        BigDecimal availableWeightKg, Price pricePerKg,
                        BigDecimal maxDetourKm, String notes, boolean instantBooking) {
-        this.assertOwnedBy(userId);
-        this.assertIsPublished();
+        assertOwnedBy(userId);
+        assertInState(List.of(TripState.PUBLISHED), "Trip already have related bookings");
 
         this.departureAddress = departureAddress;
         this.arrivalAddress = arrivalAddress;
@@ -180,14 +190,16 @@ public class Trip {
     }
 
     public void delete(UUID userId) {
+
         assertOwnedBy(userId);
-        assertIsPublished();
+        assertInState(List.of(TripState.PUBLISHED), "Trip already have related bookings");
+
         deleteAllStops();
         this.deleted = true;
         this.deletedAt = OffsetDateTime.now();
     }
 
-    public void updateState(TripState newState) {
+    private void updateState(TripState newState) {
         if (newState.equals(this.state)) return;
         assertNotDeleted();
         if (!isValidTransition(newState))
@@ -227,23 +239,6 @@ public class Trip {
         this.stops.add(newStop);
     }
 
-    public List<TripStop> updateStops(UUID userId, List<TripStop> newStops) {
-        assertOwnedBy(userId);
-        if (newStops == null) return this.stops;
-
-        if (newStops.isEmpty()) {
-            this.stops.clear();
-        } else {
-            var toDelete = this.stops.stream()
-                    .filter(stop -> !newStops.contains(stop))
-                    .toList();
-            removeStops(toDelete);
-            addStops(newStops);
-            TripStop.reorderStops(this.stops);
-        }
-        return this.stops;
-    }
-
     public void removeStop(UUID userId, UUID stopId) {
         assertOwnedBy(userId);
         var stop = getStopById(stopId);
@@ -261,24 +256,23 @@ public class Trip {
 
     // ---- bookings ------------------------------------------------------------
 
-    public void reserveBooking(Booking newBooking) {
-        assertNotDeleted();
+    public void book(Booking newBooking) {
+        assertTripCanReceiveRequests();
         newBooking.setTrip(this);
         this.bookings.add(newBooking);
         reserveWeight(newBooking.getBookingWeight());
     }
 
-    public void removeBooking(Booking bookingToRemove) {
-        bookingToRemove.setTrip(null);
+    public void unbook(Booking bookingToRemove) {
         this.bookings.remove(bookingToRemove);
         releaseWeight(bookingToRemove.getBookingWeight());
     }
 
-    // ---- queries ------------------------------------------------------------
-
-    public UUID getOwnerId() {
-        return this.owner.getId();
+    public void complete() {
+        this.updateState(TripState.COMPLETED);
     }
+
+    // ---- queries ------------------------------------------------------------
 
     public boolean isMaxDetourAccepted(BigDecimal pickUpDetour, BigDecimal dropOffDetour) {
         return this.maxDetourKm.compareTo(pickUpDetour) >= 0
@@ -298,44 +292,13 @@ public class Trip {
 
     // ---- private helpers ------------------------------------------------------------
 
-    private void addStops(List<TripStop> newStops) {
-        assertStopUniquenessInTripOrThrow(newStops);
-        validateStopsSequence(newStops);
-        newStops.forEach(stop -> stop.setTrip(this));
-        this.stops.addAll(newStops);
-    }
-
-    private void removeStops(List<TripStop> stopsToRemove) {
-        stopsToRemove.forEach(TripStop::delete);
-        this.stops.removeAll(stopsToRemove);
-    }
-
     private void deleteAllStops() {
         this.stops.forEach(TripStop::delete);
-    }
-
-    private void validateStopsSequence(List<TripStop> newStops) {
-        int offset = this.stops.size();
-        for (int i = 0; i < newStops.size(); i++) {
-            int expected = offset + i + 1;
-            if (newStops.get(i).getOrder() != expected)
-                throw new TripException(TripErrorCode.STOP_SEQUENCE_INVALID,
-                        "Stop at index %s must have order %s but got %s".formatted(i, expected, newStops.get(i).getOrder()));
-        }
     }
 
     private void assertAddressUniquenessInTripOrThrow(Address addressToAdd) {
         var exists = this.getWayPoints().stream().anyMatch(address -> address.equals(addressToAdd));
         if (exists) throw new TripException(TripErrorCode.STOP_DUPLICATE_ADDRESS, "Stop address already exists in trip");
-    }
-
-    private void assertStopUniquenessInTripOrThrow(List<TripStop> stopsToAdd) {
-        var existingAddresses = new HashSet<>(this.getWayPoints());
-        for (TripStop stop : stopsToAdd) {
-            if (existingAddresses.contains(stop.getAddress()))
-                throw new TripException(TripErrorCode.STOP_DUPLICATE_ADDRESS,
-                        "Way point already in trip: " + stop.getAddress());
-        }
     }
 
     private void reserveWeight(BigDecimal weight) {
@@ -354,9 +317,8 @@ public class Trip {
 
     private boolean isValidTransition(TripState newState) {
         return switch (this.state) {
-            case PUBLISHED -> newState == TripState.IN_TRANSIT || newState == TripState.CANCELLED;
-            case FULL -> newState == TripState.PUBLISHED || newState == TripState.IN_TRANSIT;
-            case IN_TRANSIT -> newState == TripState.COMPLETED || newState == TripState.CANCELLED;
+            case PUBLISHED -> newState == TripState.FULL || newState == TripState.COMPLETED || newState == TripState.CANCELLED;
+            case FULL -> newState == TripState.PUBLISHED || newState == TripState.COMPLETED;
             case COMPLETED, CANCELLED -> false;
         };
     }

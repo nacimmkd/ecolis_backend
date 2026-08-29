@@ -19,9 +19,8 @@ import java.util.List;
 public interface ProfileMapper {
 
     @Mapping(target = "profileId", source = "profile.id")
-    @Mapping(target = "reviews", source = "reviews")
     @Mapping(target = "avatarUrl", source = "profile.avatarKey", qualifiedByName = "resolveUrl")
-    ProfileDetails toDetailedDto(Profile profile, List<Review> reviews);
+    ProfileDetails toDetailedDto(Profile profile);
 
     @Mapping(target = "profileId", source = "id")
     @Mapping(target = "avatarUrl", source = "avatarKey", qualifiedByName = "resolveUrl")

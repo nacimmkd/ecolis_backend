@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/payments")
+@RequestMapping("/api/v1/checkout")
 @RequiredArgsConstructor
 public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping("/bookings/{bookingId}/checkout")
+    @PostMapping("/bookings/{bookingId}")
     public PaymentResponse createCheckoutSession(@PathVariable UUID bookingId) {
         return paymentService.checkout(bookingId);
     }

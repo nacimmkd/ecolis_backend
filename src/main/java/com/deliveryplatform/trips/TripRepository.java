@@ -29,6 +29,8 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
     @EntityGraph(attributePaths = {"stops"})
     Page<Trip> findAll(Pageable pageable);
 
+    long countByOwner_IdAndState(UUID ownerId, TripState state);
+
     @EntityGraph(attributePaths = {"stops", "owner.profile"})
     @Query("""
         SELECT t FROM Trip t

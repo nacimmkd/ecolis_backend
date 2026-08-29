@@ -12,6 +12,7 @@ public enum TripErrorCode implements ErrorCode {
     TRIP_FULL(HttpStatus.CONFLICT),
     MAX_DETOUR_EXCEEDED(HttpStatus.CONFLICT),
     INVALID_STATE_TRANSITION(HttpStatus.CONFLICT),
+    PICKUP_PENDING(HttpStatus.CONFLICT),
 
     STOP_NOT_FOUND(HttpStatus.NOT_FOUND),
     STOP_ALREADY_DELETED(HttpStatus.CONFLICT),
@@ -20,7 +21,8 @@ public enum TripErrorCode implements ErrorCode {
 
     WEIGHT_BELOW_MINIMUM(HttpStatus.CONFLICT),
     WEIGHT_BELOW_RESERVED(HttpStatus.CONFLICT),
-    WEIGHT_INSUFFICIENT_REMAINING(HttpStatus.CONFLICT);
+    WEIGHT_INSUFFICIENT_REMAINING(HttpStatus.CONFLICT),
+    TRIP_DEPARTURE_PASSED(HttpStatus.CONFLICT);
 
 
     private final HttpStatus status;

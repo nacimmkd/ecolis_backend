@@ -5,6 +5,7 @@ import com.deliveryplatform.addresses.AddressService;
 import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.bookings.BookingState;
+import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.trips.dto.*;
 import com.deliveryplatform.trips.exceptions.TripErrorCode;
 import com.deliveryplatform.trips.exceptions.TripException;
@@ -34,9 +35,13 @@ public class TripServiceImp implements TripService {
     @Override
     public TripDetails getTrip(UUID tripId) {
         var trip = getTripByIdOrThrow(tripId);
-        var newRequestCount = bookingRepository.countByTripIdAndState(tripId, BookingState.WAITING_FOR_ANSWER);
-        var acceptedBookingsCount = bookingRepository.countByTripIdAndState(tripId, BookingState.ACCEPTED);
-        return tripMapper.toTripDetailsDto(trip, newRequestCount, acceptedBookingsCount);
+        var newRequestCount = bookingRepository.countByTripIdAndStateIn(tripId, List.of(BookingState.WAITING_FOR_ANSWER));
+        var acceptedBookingsCount = bookingRepository.countByTripIdAndStateIn(
+                tripId,
+                List.of(BookingState.ACCEPTED, BookingState.REJECTED, BookingState.CANCELLED, BookingState.COMPLETED)
+        );
+        var estimatedEarning = calculateEstimatedEarning(tripId, trip.getPricePerKg().getCurrency());
+        return tripMapper.toTripDetailsDto(trip, newRequestCount, acceptedBookingsCount, estimatedEarning);
     }
 
     @Override
@@ -61,7 +66,22 @@ public class TripServiceImp implements TripService {
 
         Page<Booking> bookings = bookingRepository.findByTripIdAndStateIn(
                 tripId,
-                List.of(BookingState.WAITING_FOR_ANSWER, BookingState.ACCEPTED, BookingState.REJECTED, BookingState.CANCELLED, BookingState.COMPLETED),
+                List.of(BookingState.ACCEPTED, BookingState.REJECTED, BookingState.CANCELLED, BookingState.COMPLETED),
+                pageable
+        );
+
+        return bookings.map(tripBookingMapper::toTripBookingDto);
+    }
+
+
+    @Override
+    public Page<TripBookingDto> getRequests(UUID tripId, UUID userId, Pageable pageable) {
+        var trip = getTripByIdOrThrow(tripId);
+        trip.assertOwnedBy(userId);
+
+        Page<Booking> bookings = bookingRepository.findByTripIdAndStateIn(
+                tripId,
+                List.of(BookingState.WAITING_FOR_ANSWER),
                 pageable
         );
 
@@ -80,7 +100,8 @@ public class TripServiceImp implements TripService {
                 addressService.geocode(request.arrivalAddress()),
                 owner
         );
-        return tripMapper.toTripDetailsDto(tripRepository.save(trip), 0, 0);
+        var savedTrip = tripRepository.save(trip);
+        return tripMapper.toTripDetailsDto(savedTrip, 0, 0, Price.zero(savedTrip.getPricePerKg().getCurrency()));
     }
 
     @Override
@@ -101,11 +122,15 @@ public class TripServiceImp implements TripService {
                 request.instantBooking()
         );
 
-        var newRequestCount = bookingRepository.countByTripIdAndState(tripId, BookingState.WAITING_FOR_ANSWER);
-        var acceptedBookingsCount = bookingRepository.countByTripIdAndState(tripId, BookingState.ACCEPTED);
+        var newRequestCount = bookingRepository.countByTripIdAndStateIn(tripId, List.of(BookingState.WAITING_FOR_ANSWER));
+        var bookingsCount = bookingRepository.countByTripIdAndStateIn(
+                tripId,
+                List.of(BookingState.ACCEPTED, BookingState.REJECTED, BookingState.CANCELLED, BookingState.COMPLETED)
+        );
+        var estimatedEarning = calculateEstimatedEarning(tripId, trip.getPricePerKg().getCurrency());
 
         tripRepository.save(trip);
-        return tripMapper.toTripDetailsDto(trip, newRequestCount, acceptedBookingsCount);
+        return tripMapper.toTripDetailsDto(trip, newRequestCount, bookingsCount, estimatedEarning);
     }
 
     @Override
@@ -133,6 +158,16 @@ public class TripServiceImp implements TripService {
     }
 
     // ----------------------------------------------------------------
+
+    private Price calculateEstimatedEarning(UUID tripId, String currency) {
+        return bookingRepository.findByTripIdAndStateIn(
+                        tripId,
+                        List.of(BookingState.ACCEPTED, BookingState.COMPLETED),
+                        Pageable.unpaged())
+                .stream()
+                .map(Booking::getPrice)
+                .reduce(Price.zero(currency), Price::add);
+    }
 
     private Trip getTripByIdOrThrow(UUID id) {
         return tripRepository.findTripById(id)

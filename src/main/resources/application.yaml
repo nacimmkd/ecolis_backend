@@ -33,7 +33,7 @@ stripe:
 platform:
   fees:
     const-fee: 50
-    fee-rate: 25
+    fee-rate: 2
     currency: eur
 
 front-end:

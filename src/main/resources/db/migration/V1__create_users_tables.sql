@@ -20,7 +20,7 @@ CREATE TABLE profiles (
                                  avg_rating          NUMERIC(2,1),
                                  review_count        INT             NOT NULL DEFAULT 0,
                                  completed_trips     INT             NOT NULL DEFAULT 0,
-                                 delivered_parcels   INT             NOT NULL DEFAULT 0,
+                                 sent_parcels        INT             NOT NULL DEFAULT 0,
 
                                  CONSTRAINT fk_profiles_user FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
 );

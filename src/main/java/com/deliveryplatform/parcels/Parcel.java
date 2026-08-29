@@ -107,11 +107,6 @@ public class Parcel {
         return parcel;
     }
 
-    // ── Ownership ────────────────────────────────────────────────────────────
-
-    public UUID getOwnerId() {
-        return this.owner.getId();
-    }
 
     // ── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -121,10 +116,26 @@ public class Parcel {
         this.images.clear();
     }
 
-    public void updateState(ParcelState state) {
+    private void updateState(ParcelState state) {
         assertNotDeleted();
         this.state = state;
         addTrackingEvent(TrackEvent.of(state, state.getMessage()));
+    }
+
+    public void book() {
+        this.updateState(ParcelState.BOOKED);
+    }
+
+    public void unbook() {
+        this.updateState(ParcelState.PUBLISHED);
+    }
+
+    public void pick() {
+        this.updateState(ParcelState.PICKED_UP);
+    }
+
+    public void dropOff() {
+        this.updateState(ParcelState.DELIVERED);
     }
 
     // ── Images ───────────────────────────────────────────────────────────────

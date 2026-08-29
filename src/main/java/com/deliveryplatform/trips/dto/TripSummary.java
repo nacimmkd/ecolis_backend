@@ -1,5 +1,6 @@
 package com.deliveryplatform.trips.dto;
 
+import com.deliveryplatform.addresses.Address;
 import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.trips.TripState;
 import lombok.Builder;
@@ -13,8 +14,8 @@ import java.util.UUID;
 @Builder
 public record TripSummary(
         UUID tripId,
-        String departureCity,
-        String arrivalCity,
+        Address departure,
+        Address arrival,
         LocalDate departureDate,
         LocalDate arrivalDate,
         BigDecimal availableWeightKg,

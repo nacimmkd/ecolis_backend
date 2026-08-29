@@ -20,20 +20,18 @@ import java.util.UUID;
 public class ProfileServiceImp implements ProfileService {
 
     private final ProfileRepository profileRepository;
-    private final ReviewRepository  reviewRepository;
     private final ProfileMapper     profileMapper;
     private final StorageService    storageService;
 
     @Override
     public ProfileDetails getUserProfile(UUID userId) {
-        var reviews = reviewRepository.findByRevieweeId(userId);
         var profile = getByIdOrThrow(userId);
-        return profileMapper.toDetailedDto(profile, reviews);
+        return profileMapper.toDetailedDto(profile);
     }
 
     @Override
     @Transactional
-    public ProfileSummary updateProfile(UUID userId, ProfileUpdateRequest request) {
+    public ProfileDetails updateProfile(UUID userId, ProfileUpdateRequest request) {
         var profile = getByIdOrThrow(userId);
 
         profile.setFirstName(request.firstName());
@@ -42,7 +40,7 @@ public class ProfileServiceImp implements ProfileService {
         profile.setCountry(request.country());
         updateAvatar(profile, request.avatarKey());
 
-        return profileMapper.toSummaryDto(profileRepository.save(profile));
+        return profileMapper.toDetailedDto(profileRepository.save(profile));
     }
 
     // ----------------------------------------------------------------
@@ -54,7 +52,6 @@ public class ProfileServiceImp implements ProfileService {
 
     private void updateAvatar(Profile profile, String avatarKey) {
         if (avatarKey == null) {
-            profile.setAvatarKey(null);
             return;
         }
         if (!storageService.exists(avatarKey)) {

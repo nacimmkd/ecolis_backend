@@ -10,6 +10,6 @@ public interface ProfileService {
 
     ProfileDetails getUserProfile(UUID userId);
 
-    ProfileSummary updateProfile(UUID profileId, ProfileUpdateRequest request);
+    ProfileDetails updateProfile(UUID profileId, ProfileUpdateRequest request);
 
 }

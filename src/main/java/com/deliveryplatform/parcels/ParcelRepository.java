@@ -35,4 +35,6 @@ public interface ParcelRepository extends JpaRepository<Parcel, UUID> {
     @EntityGraph(attributePaths = {"owner", "owner.profile", "images"})
     Page<Parcel> findAll(Pageable pageable);
 
+    long countByOwner_IdAndState(UUID ownerId, ParcelState state);
+
 }

@@ -6,7 +6,6 @@ import com.deliveryplatform.trips.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface TripService {
@@ -18,6 +17,8 @@ public interface TripService {
     Page<TripSummary> getMyTrips(UUID currentUserId, TripState state, Pageable pageable);
 
     Page<TripBookingDto> getTripBookings(UUID tripId, UUID currentUserId, Pageable pageable);
+
+    Page<TripBookingDto> getRequests(UUID tripId, UUID currentUserId, Pageable pageable);
 
     TripDetails createTrip(UUID userId, TripCreateRequest request);
 

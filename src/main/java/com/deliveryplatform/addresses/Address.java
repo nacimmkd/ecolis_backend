@@ -34,6 +34,9 @@ public class Address {
     public String toBriefAddress() {return String.format("%s, %s", city, country);}
 
     @Override
+    public String toString() {return String.format("%s, %s %s, %s",street, postalCode, city, country);}
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Address address = (Address) o;

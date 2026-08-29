@@ -15,6 +15,7 @@ import com.deliveryplatform.parcels.exceptions.ParcelException;
 import com.deliveryplatform.payments.PaymentService;
 import com.deliveryplatform.payments.PriceCalculator;
 import com.deliveryplatform.trips.TripRepository;
+import com.deliveryplatform.trips.events.TripCompletedEvent;
 import com.deliveryplatform.trips.exceptions.TripErrorCode;
 import com.deliveryplatform.trips.exceptions.TripException;
 import lombok.RequiredArgsConstructor;
@@ -141,10 +142,10 @@ public class BookingServiceImp implements BookingService {
 
         var booking = getBookingByIdOrThrow(bookingId);
 
-        paymentService.cancel(bookingId);
-
         var cancelledBy = booking.resolveCanceller(currentUserId);
         booking.cancel(currentUserId, reason, cancelledBy);
+        paymentService.cancel(bookingId);
+
         eventPublisher.publishEvent(new BookingCanceledEvent(booking.getId(), booking.getSender()));
         bookingRepository.save(booking);
     }
@@ -166,6 +167,13 @@ public class BookingServiceImp implements BookingService {
         trip.assertOwnedBy(currentUserId);
 
         booking.complete(dropOfCode);
+
+        // complete trip if all bookings are delivered
+        if (isAllTripBookingsCompleted(trip.getId())) {
+            trip.complete();
+            eventPublisher.publishEvent(new TripCompletedEvent(trip.getId(), trip.getOwner().getId()));
+        }
+
         bookingRepository.save(booking);
         eventPublisher.publishEvent(new BookingCompletedEvent(booking.getId(), booking.getSender()));
     }
@@ -175,5 +183,9 @@ public class BookingServiceImp implements BookingService {
     private Booking getBookingByIdOrThrow(UUID id) {
         return bookingRepository.findBookingById(id)
                 .orElseThrow(() -> new BookingException(BookingErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
+    }
+
+    private boolean isAllTripBookingsCompleted(UUID tripId) {
+        return !bookingRepository.existsByTripIdAndStateIn(tripId, List.of(BookingState.ACCEPTED));
     }
 }

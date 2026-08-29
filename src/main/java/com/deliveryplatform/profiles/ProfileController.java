@@ -34,7 +34,7 @@ public class ProfileController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<ProfileSummary> updateProfile(
+    public ResponseEntity<ProfileDetails> updateProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody @Valid ProfileUpdateRequest request) {
         return ResponseEntity.ok(profileService.updateProfile(principal.getId(), request));

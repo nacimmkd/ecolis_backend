@@ -70,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/password/reset/request").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/password/reset").permitAll()
                         .requestMatchers("/api/v1/auth/**", "/oauth2/**", "/login/**").permitAll()
-                        .requestMatchers("/api/v1/payments/webhook/stripe").permitAll()
+                        .requestMatchers("/api/v1/checkout/webhook/stripe").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated() // to be changed later
                 )

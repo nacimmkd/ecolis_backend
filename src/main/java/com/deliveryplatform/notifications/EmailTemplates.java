@@ -158,8 +158,8 @@ public final class EmailTemplates {
     }
 
     private static EmailTemplate requestReceivedTemplate(NotificationEvent event) {
-        var departureCity = event.getPayload().get("departureCity");
-        var arrivalCity = event.getPayload().get("arrivalCity");
+        var departureCity = event.getPayload().get("departure");
+        var arrivalCity = event.getPayload().get("arrival");
 
         return new EmailTemplate(
                 "ecolis - Nouvelle demande reçue 📩",

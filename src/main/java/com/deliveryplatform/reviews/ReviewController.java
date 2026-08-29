@@ -5,12 +5,15 @@ import com.deliveryplatform.reviews.dto.ReviewDto;
 import com.deliveryplatform.users.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,16 +24,17 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @GetMapping("/me")
-    public List<ReviewDto> getReviewsMe(
-            @AuthenticationPrincipal UserPrincipal user){
-        return reviewService.getUserReviews(user.getId());
+    public Page<ReviewDto> getReviewsMe(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
+        return reviewService.getUserReviews(user.getId(), pageable);
     }
 
     @GetMapping
-    public List<ReviewDto> getUserReviews(
-            @RequestParam UUID revieweeId
-            ){
-        return reviewService.getUserReviews(revieweeId);
+    public Page<ReviewDto> getUserReviews(
+            @RequestParam UUID revieweeId,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
+        return reviewService.getUserReviews(revieweeId, pageable);
     }
 
     @PostMapping
