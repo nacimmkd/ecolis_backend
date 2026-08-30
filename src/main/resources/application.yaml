@@ -30,6 +30,20 @@ stripe:
   checkout:
     validity-minutes: 60
 
+resend:
+  api-key: ${RESEND_API_KEY}
+  from-email: onboarding@resend.dev
+
+aws:
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID}
+    secret-key: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
+  s3:
+    bucket-name: ${AWS_BUCKET_NAME}
+    presign-duration: 5m
+    read-duration: 5m
+
 platform:
   fees:
     const-fee: 50
