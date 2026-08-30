@@ -51,7 +51,7 @@ platform:
     currency: eur
 
 front-end:
-  base-url: ${BASE_URL:http://localhost:5173}
+  base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
   login-url: ${front-end.base-url}/login
   verify-email-url: ${front-end.base-url}/verify-email
   reset-password-url: ${front-end.base-url}/reset-password
