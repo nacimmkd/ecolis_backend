@@ -37,16 +37,6 @@ public class JwtService {
         return generateToken(user, Duration.ofSeconds(jwtConfig.getRefreshTokenDuration()));
     }
 
-    public boolean isExpired(String token) {
-        try {
-            var claims = parseClaims(token);
-            return claims.getExpiration().before(new Date());
-        } catch (JwtException | IllegalArgumentException e) {
-            log.debug("Token expiration check failed: {}", e.getMessage());
-            return true;
-        }
-    }
-
     public boolean isValid(String token) {
         try {
             var claims = parseClaims(token);

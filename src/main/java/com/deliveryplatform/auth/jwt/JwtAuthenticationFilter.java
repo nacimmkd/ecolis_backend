@@ -34,10 +34,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         var token = extractTokenFromCookie(request);
 
-        if (jwtService.isExpired(token)) {
-            throw new AuthException(AuthErrorCode.ACCESS_TOKEN_EXPIRED, "Unauthorised");
-        }
-
         if (token != null && jwtService.isValid(token)) {
             try {
                 var userPrincipal = jwtService.extractPrincipal(token);
