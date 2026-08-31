@@ -7,6 +7,7 @@ import com.deliveryplatform.users.dto.UserCreateRequest;
 import com.deliveryplatform.users.dto.UserDetails;
 import com.deliveryplatform.users.dto.UserSummary;
 import com.deliveryplatform.users.events.EmailVerificationEvent;
+import com.deliveryplatform.users.events.PasswordResetEvent;
 import com.deliveryplatform.users.events.UserCreatedEvent;
 import com.deliveryplatform.users.exceptions.UserErrorCode;
 import com.deliveryplatform.users.exceptions.UserException;
@@ -79,7 +80,7 @@ class UserServiceImp implements UserService {
         if (user.isEmailVerified()) {
             throw new UserException(UserErrorCode.USER_ALREADY_VERIFIED, "User is already emailVerified");
         }
-        send(user, verifyEmailUrl);
+        sendVerificationLinkTo(user);
     }
 
     @Override
@@ -99,7 +100,7 @@ class UserServiceImp implements UserService {
         if (user == null) {
             return;
         }
-        send(user, resetPasswordUrl);
+        sendResetLinkTo(user);
     }
 
     @Override
@@ -135,10 +136,16 @@ class UserServiceImp implements UserService {
 
     // ----------------------------------------------------------------
 
-    private void send(User user, String prefixUrl) {
+    private void sendVerificationLinkTo(User user) {
         var token = emailTokenService.generateAndSave(user);
-        var url = prefixUrl + "?token=" + token;
+        var url = verifyEmailUrl + "?token=" + token;
         eventPublisher.publishEvent(new EmailVerificationEvent(user, url));
+    }
+
+    private void sendResetLinkTo(User user) {
+        var token = emailTokenService.generateAndSave(user);
+        var url = resetPasswordUrl + "?token=" + token;
+        eventPublisher.publishEvent(new PasswordResetEvent(user, url));
     }
 
     public User getUserByIdOrThrow(UUID id) {

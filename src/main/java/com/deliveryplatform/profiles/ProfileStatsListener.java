@@ -53,7 +53,7 @@ public class ProfileStatsListener {
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onReviewCreated(ReviewCreatedEvent event) {
-        recomputeReviewStats(event.revieweeId());
+        recomputeReviewStats(event.reviewee().getId());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

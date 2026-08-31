@@ -46,7 +46,7 @@ public class ReviewServiceImp implements ReviewService {
         var review = Review.create(booking, reviewer, reviewee, request.rating(), request.comment());
         var savedReview = reviewRepository.save(review);
 
-        eventPublisher.publishEvent(new ReviewCreatedEvent(reviewee.getId()));
+        eventPublisher.publishEvent(new ReviewCreatedEvent(reviewee, savedReview.getId()));
 
         return reviewMapper.toDto(savedReview);
     }

@@ -7,11 +7,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum NotificationType {
 
-    VERIFY_USER(true),
-    RESET_PASSWORD(true),
-    USER_CREATED(false),
+    VERIFY_USER(false),
+    RESET_PASSWORD(false),
+    USER_CREATED(true),
 
-    MESSAGE_RECEIVED(true),
+    MESSAGE_RECEIVED(false),
 
     REQUEST_RECEIVED(true),
 
@@ -22,7 +22,9 @@ public enum NotificationType {
 
     TRIP_CANCELLED(true),
 
-    PARCEL_DELIVERED(true);
+    PARCEL_DELIVERED(true),
+
+    REVIEW_CREATED(true);
 
     private boolean persistent;
 }

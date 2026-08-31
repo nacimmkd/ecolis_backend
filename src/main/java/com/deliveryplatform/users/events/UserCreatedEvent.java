@@ -25,12 +25,12 @@ public record UserCreatedEvent(
 
  @Override
  public Set<ChannelType> getChannels() {
-  return Set.of(ChannelType.EMAIL);
+  return Set.of(ChannelType.EMAIL, ChannelType.IN_APP);
  }
 
  @Override
  public UUID getReferenceId() {
-  return null;
+  return user.getId();
  }
 
  @Override
