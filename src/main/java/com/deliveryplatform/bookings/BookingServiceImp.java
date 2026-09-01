@@ -145,8 +145,8 @@ public class BookingServiceImp implements BookingService {
 
         var cancelledBy = booking.resolveCanceller(currentUserId);
         booking.cancel(currentUserId, reason, cancelledBy);
-        paymentService.cancel(bookingId);
 
+        paymentService.cancel(bookingId);
         eventPublisher.publishEvent(new BookingCanceledEvent(booking.getId(), booking.getSender()));
         bookingRepository.save(booking);
     }

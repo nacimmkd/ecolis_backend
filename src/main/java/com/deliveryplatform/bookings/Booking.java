@@ -3,6 +3,7 @@ package com.deliveryplatform.bookings;
 import com.deliveryplatform.bookings.exceptions.BookingErrorCode;
 import com.deliveryplatform.bookings.exceptions.BookingException;
 import com.deliveryplatform.common.CodeGeneratorUtil;
+import com.deliveryplatform.parcels.ParcelState;
 import com.deliveryplatform.payments.Price;
 import com.deliveryplatform.matching.Detour;
 import com.deliveryplatform.parcels.Parcel;
@@ -198,7 +199,7 @@ public class Booking {
     public void cancel(UUID userId, String reason, CancelledBy cancelledBy) {
 
         assertUserInvolved(userId);
-        assertIsInState(List.of(BookingState.PENDING, BookingState.WAITING_FOR_ANSWER), "Booking can not be cancelled");
+        assertIsInState(List.of(BookingState.PENDING, BookingState.WAITING_FOR_ANSWER, BookingState.ACCEPTED), "Booking can not be cancelled");
         
         this.parcel.unbook();
         this.trip.unbook(this);

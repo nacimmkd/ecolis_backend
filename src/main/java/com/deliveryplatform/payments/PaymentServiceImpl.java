@@ -45,8 +45,18 @@ public class PaymentServiceImpl implements PaymentService {
         if (existing.isPresent()) {
             Payment payment = existing.get();
             if (payment.isPending()) {
-                return PaymentResponse.from(payment,
-                        paymentGateway.retrieveClientSecret(payment.getStripeCheckoutSessionId()));
+                String clientSecret = paymentGateway.retrieveClientSecret(payment.getStripeCheckoutSessionId());
+                if (clientSecret != null) {
+                    return PaymentResponse.from(payment, clientSecret);
+                }
+
+                CheckoutSession session = paymentGateway.checkout(
+                        new CheckoutRequest(bookingId, payment.getPrice(), "Delivery booking " + bookingId));
+                payment.renewCheckoutSession(session.checkoutSessionId());
+
+                log.info("checkout session renewed bookingId={} paymentId={}", bookingId, payment.getId());
+
+                return PaymentResponse.from(payment, session.clientSecret());
             }
             throw new PaymentException(PaymentErrorCode.PAYMENT_ALREADY_EXISTS, "Booking already has a payment: " + bookingId);
         }

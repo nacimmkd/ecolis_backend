@@ -117,6 +117,10 @@ public class Payment {
         this.refundedAt = OffsetDateTime.now();
     }
 
+    public void renewCheckoutSession(String stripeCheckoutSessionId) {
+        this.stripeCheckoutSessionId = stripeCheckoutSessionId;
+    }
+
     // ---- queries ------------------------------------------------------------
 
     public boolean isPending() {

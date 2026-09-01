@@ -115,6 +115,7 @@ public class Parcel {
     }
 
     public void unbook() {
+        assertIsInState(List.of(ParcelState.BOOKED, ParcelState.PUBLISHED));
         this.updateState(ParcelState.PUBLISHED);
     }
 
