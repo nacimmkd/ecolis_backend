@@ -200,7 +200,7 @@ public class Booking {
 
         assertUserInvolved(userId);
         assertIsInState(List.of(BookingState.PENDING, BookingState.WAITING_FOR_ANSWER, BookingState.ACCEPTED), "Booking can not be cancelled");
-        
+
         this.parcel.unbook();
         this.trip.unbook(this);
 
