@@ -14,11 +14,9 @@ import java.util.UUID;
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
 
+    Optional<Conversation> findConversationByBookingId(UUID bookingId);
 
-    @Query("SELECT c FROM Conversation c JOIN c.participants m1 JOIN c.participants m2 WHERE m1.id = :userId1 AND m2.id = :userId2")
-    Optional<Conversation> findByParticipants(@Param("userId1") UUID userId1, @Param("userId2") UUID userId2);
-
-    @Query("SELECT c FROM Conversation c JOIN c.participants m WHERE m.id = :userId")
+    @Query("SELECT c FROM Conversation c WHERE c.sender.id = :userId OR c.carrier.id = :userId")
     List<Conversation> findAllByMemberId(@Param("userId") UUID userId);
 
     @Query("SELECT c FROM Conversation c WHERE c.id = :id")
@@ -56,7 +54,8 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
     SELECT m FROM Message m
     JOIN FETCH m.sender
     JOIN FETCH m.conversation c
-    JOIN FETCH c.participants
+    JOIN FETCH c.sender
+    JOIN FETCH c.carrier
     WHERE m.read = false
       AND m.notified = false
       AND m.sentAt <= :threshold

@@ -27,12 +27,12 @@ public class MessagingController {
     private final MessagingService messagingService;
 
 
-    @PostMapping("/with/{otherUserId}")
+    @PostMapping("/booking/{bookingId}")
     public ResponseEntity<ConversationDetails> getOrCreateConversation(
-            @PathVariable UUID otherUserId,
+            @PathVariable UUID bookingId,
             @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(
-                messagingService.getOrCreateConversation(otherUserId, user.getId())
+                messagingService.getOrCreateConversation(bookingId, user.getId())
         );
     }
 

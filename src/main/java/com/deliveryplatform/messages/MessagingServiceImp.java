@@ -1,5 +1,9 @@
 package com.deliveryplatform.messages;
 
+import com.deliveryplatform.bookings.Booking;
+import com.deliveryplatform.bookings.BookingRepository;
+import com.deliveryplatform.bookings.exceptions.BookingErrorCode;
+import com.deliveryplatform.bookings.exceptions.BookingException;
 import com.deliveryplatform.messages.dto.*;
 import com.deliveryplatform.messages.exceptions.MessageErrorCode;
 import com.deliveryplatform.messages.exceptions.MessageException;
@@ -7,8 +11,6 @@ import com.deliveryplatform.storage.MediaType;
 import com.deliveryplatform.storage.StorageService;
 import com.deliveryplatform.storage.exceptions.StorageErrorCode;
 import com.deliveryplatform.storage.exceptions.StorageException;
-import com.deliveryplatform.users.User;
-import com.deliveryplatform.users.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,7 +25,7 @@ import java.util.UUID;
 public class MessagingServiceImp implements MessagingService {
 
     private final ConversationRepository conversationRepository;
-    private final UserRepository         userRepository;
+    private final BookingRepository      bookingRepository;
     private final StorageService         storageService;
     private final SimpMessagingTemplate  messagingTemplate;
     private final MessageMapper          messageMapper;
@@ -33,10 +35,13 @@ public class MessagingServiceImp implements MessagingService {
 
     @Override
     @Transactional
-    public ConversationDetails getOrCreateConversation(UUID otherUserId, UUID currentUserId) {
+    public ConversationDetails getOrCreateConversation(UUID bookingId, UUID currentUserId) {
+        var booking = getBookingOrThrow(bookingId);
+        booking.assertUserInvolved(currentUserId);
+
         var conversation = conversationRepository
-                .findByParticipants(currentUserId, otherUserId)
-                .orElseGet(() -> createAndSaveConversation(currentUserId, otherUserId));
+                .findConversationByBookingId(bookingId)
+                .orElseGet(() -> conversationRepository.save(Conversation.createFromBooking(booking)));
 
         return messageMapper.toDetailsDto(conversation);
     }
@@ -93,12 +98,9 @@ public class MessagingServiceImp implements MessagingService {
 
     // Private ---------------------------------------------------------------------------
 
-    private Conversation createAndSaveConversation(UUID currentUserId, UUID otherUserId) {
-        var current = getUserOrThrow(currentUserId);
-        var other   = getUserOrThrow(otherUserId);
-        return conversationRepository.save(
-                Conversation.create(List.of(current, other))
-        );
+    private Booking getBookingOrThrow(UUID id) {
+        return bookingRepository.findBookingById(id)
+                .orElseThrow(() -> new BookingException(BookingErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
     }
 
     private Conversation getConversationOrThrow(UUID id) {
@@ -106,11 +108,6 @@ public class MessagingServiceImp implements MessagingService {
                 .orElseThrow(() -> new MessageException(MessageErrorCode.CONVERSATION_NOT_FOUND, "Conversation not found"));
     }
 
-
-    private User getUserOrThrow(UUID id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new MessageException(MessageErrorCode.PARTICIPANT_NOT_FOUND, "Conversation participant not found"));
-    }
 
     private List<MessageImage> resolveImages(List<MessageImageRequest> requests) {
         if (requests == null || requests.isEmpty()) return List.of();

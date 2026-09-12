@@ -1,5 +1,6 @@
 package com.deliveryplatform.messages;
 
+import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.messages.exceptions.MessageErrorCode;
 import com.deliveryplatform.messages.exceptions.MessageException;
 import com.deliveryplatform.users.User;
@@ -24,13 +25,18 @@ public class Conversation {
     private UUID id;
 
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "conversations_participants",
-            joinColumns = @JoinColumn(name = "conversation_id"),
-            inverseJoinColumns = @JoinColumn(name = "participant_id")
-    )
-    private List<User> participants;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = false)
+    private Booking booking;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "carrier_id", nullable = false)
+    private User carrier;
 
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -48,12 +54,12 @@ public class Conversation {
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
 
-    public static Conversation create(List<User> participants) {
-        if (participants.size() != 2)
-            throw new IllegalArgumentException("conversation must have 2 participants");
+    public static Conversation createFromBooking(Booking booking) {
         return Conversation.builder()
+                .booking(booking)
+                .sender(booking.getSender())
+                .carrier(booking.getCarrier())
                 .lastMessage(null)
-                .participants(participants)
                 .build();
     }
 
@@ -63,22 +69,20 @@ public class Conversation {
     }
 
     public boolean involves(UUID userId) {
-        return participants.stream().anyMatch(m -> m.getId().equals(userId));
+        return sender.getId().equals(userId) || carrier.getId().equals(userId);
     }
 
 
     public User resolveParticipant(UUID userId) {
-        return participants.stream()
-                .filter(p -> p.getId().equals(userId))
-                .findFirst()
-                .orElseThrow(() -> new MessageException(MessageErrorCode.PARTICIPANT_NOT_FOUND, "Conversation participant not found"));
+        if (sender.getId().equals(userId)) return sender;
+        if (carrier.getId().equals(userId)) return carrier;
+        throw new MessageException(MessageErrorCode.PARTICIPANT_NOT_FOUND, "Conversation participant not found");
     }
 
     public User resolveOtherParticipant(UUID userId) {
-        return participants.stream()
-                .filter(p -> !p.getId().equals(userId))
-                .findFirst()
-                .orElseThrow(() -> new MessageException(MessageErrorCode.PARTICIPANT_NOT_FOUND, "Other conversation participant not found"));
+        if (sender.getId().equals(userId)) return carrier;
+        if (carrier.getId().equals(userId)) return sender;
+        throw new MessageException(MessageErrorCode.PARTICIPANT_NOT_FOUND, "Other conversation participant not found");
     }
 
     // --------- assertions -------------------------------------------------------------------------------

@@ -1,16 +1,15 @@
 CREATE TABLE conversations (
                                id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+                               booking_id          UUID        NOT NULL,
+                               sender_id           UUID        NOT NULL,
+                               carrier_id          UUID        NOT NULL,
                                last_message_id     UUID,
-                               created_at          TIMESTAMPTZ NOT NULL    DEFAULT now()
-);
+                               created_at          TIMESTAMPTZ NOT NULL    DEFAULT now(),
 
-CREATE TABLE conversations_participants (
-                                conversation_id    UUID     NOT NULL,
-                                participant_id    UUID   NOT NULL,
-
-                                CONSTRAINT pk_conversations_members   PRIMARY KEY (conversation_id, participant_id),
-                                CONSTRAINT conversations_members_conversation    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
-                                CONSTRAINT conversations_members_member    FOREIGN KEY (participant_id)   REFERENCES users(id)   ON DELETE CASCADE
+                               CONSTRAINT conversation_booking FOREIGN KEY (booking_id) REFERENCES bookings(id),
+                               CONSTRAINT conversation_sender  FOREIGN KEY (sender_id)  REFERENCES users(id) ON DELETE CASCADE,
+                               CONSTRAINT conversation_carrier FOREIGN KEY (carrier_id) REFERENCES users(id) ON DELETE CASCADE,
+                               CONSTRAINT conversation_distinct_users CHECK (sender_id <> carrier_id)
 );
 
 
