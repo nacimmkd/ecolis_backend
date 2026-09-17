@@ -13,10 +13,10 @@ sed -i "s/^TAG=.*/TAG=$TAG/" .env
 docker compose pull backend-app
 
 # rollback if something went wrong
-if ! docker compose up -d --wait backend-app; then
+if ! docker compose up -d --wait --remove-orphans backend-app; then
   echo "FAILED, rolling back to $PREVIOUS"
   sed -i "s/^TAG=.*/TAG=$PREVIOUS/" .env
-  docker compose up -d --wait backend-app
+  docker compose up -d --wait --remove-orphans backend-app
   exit 1
 fi
 
