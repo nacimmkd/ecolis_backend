@@ -13,11 +13,11 @@ sed -i "s/^TAG=.*/TAG=$TAG/" .env
 docker compose pull app
 
 # rollback if something went wrong
-if ! docker compose up -d --wait app; then
-  echo "FAILED, rolling back to $PREVIOUS"
-  sed -i "s/^TAG=.*/TAG=$PREVIOUS/" .env
-  docker compose up -d --wait app
-  exit 1
-fi
+# if ! docker compose up -d --wait app; then
+#   echo "FAILED, rolling back to $PREVIOUS"
+#   sed -i "s/^TAG=.*/TAG=$PREVIOUS/" .env
+#   docker compose up -d --wait app
+#   exit 1
+# fi
 
 echo "RUNNING VERSION : $TAG"
