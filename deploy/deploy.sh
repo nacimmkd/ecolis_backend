@@ -10,13 +10,13 @@ TAG=$1
 PREVIOUS=$(grep '^TAG=' .env | cut -d= -f2)
 
 sed -i "s/^TAG=.*/TAG=$TAG/" .env
-docker compose pull app
+docker compose pull backend-app
 
 # rollback if something went wrong
-if ! docker compose up -d --wait app; then
+if ! docker compose up -d --wait backend-app; then
   echo "FAILED, rolling back to $PREVIOUS"
   sed -i "s/^TAG=.*/TAG=$PREVIOUS/" .env
-  docker compose up -d --wait app
+  docker compose up -d --wait backend-app
   exit 1
 fi
 

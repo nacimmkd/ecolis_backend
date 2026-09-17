@@ -1,5 +1,5 @@
 services:
-  app:
+  backend-app:
     image: ${IMAGE}:${TAG}
     container_name: backend-app
     restart: unless-stopped
