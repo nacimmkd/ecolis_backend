@@ -73,7 +73,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/checkout/webhook/stripe").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
-                        .anyRequest().authenticated() // to be changed later
+                        .anyRequest().authenticated()
                 )
 
                 .oauth2Login(oauth2 -> oauth2
