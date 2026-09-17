@@ -19,22 +19,18 @@ import java.util.List;
 public interface MessageMapper {
 
     @Mapping(target = "conversationId", source = "id")
-    @Mapping(target = "participants", expression = "java(resolveParticipants(conversation))")
+    @Mapping(target = "sender", source = "sender")
+    @Mapping(target = "carrier", source = "carrier")
     @Mapping(target = "lastMessage", source = "messages", qualifiedByName = "resolveLastMessage")
     ConversationSummary toSummaryDto(Conversation conversation);
 
     @Mapping(target = "conversationId", source = "id")
-    @Mapping(target = "participants", expression = "java(resolveParticipants(conversation))")
+    @Mapping(target = "sender", source = "sender")
+    @Mapping(target = "carrier", source = "carrier")
     ConversationDetails toDetailsDto(Conversation conversation);
 
     @Mapping(target = "messageId", source = "id")
     MessageSummary toSummaryDto(Message message);
-
-    ProfileBrief toProfileBrief(User user);
-
-    default List<ProfileBrief> resolveParticipants(Conversation conversation) {
-        return List.of(toProfileBrief(conversation.getSender()), toProfileBrief(conversation.getCarrier()));
-    }
 
     @Named("resolveLastMessage")
     default MessageSummary resolveLastMessage(List<Message> messages) {

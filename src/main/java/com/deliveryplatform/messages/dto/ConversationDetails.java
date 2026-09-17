@@ -10,7 +10,8 @@ import java.util.UUID;
 @Builder
 public record ConversationDetails(
         UUID conversationId,
-        List<ProfileBrief> participants,
+        ProfileBrief sender,
+        ProfileBrief carrier,
         List<MessageSummary> messages,
         OffsetDateTime createdAt
 ) {}
