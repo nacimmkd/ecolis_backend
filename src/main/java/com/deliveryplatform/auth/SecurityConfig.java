@@ -71,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/password/reset").permitAll()
                         .requestMatchers("/api/v1/auth/**", "/oauth2/**", "/login/**").permitAll()
                         .requestMatchers("/api/v1/checkout/webhook/stripe").permitAll()
+                        .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated() // to be changed later
                 )
