@@ -28,11 +28,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -42,7 +38,6 @@ public class SecurityConfig {
 
     private final UserRepository userRepository;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CorsProperties corsProperties;
 
     private final OAuth2LoginSuccessHandler oauth2SuccessHandler;
     private final OAuth2LoginFailureHandler oauth2FailureHandler;
@@ -52,10 +47,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // stateless sessions (token based auth)
         // Disable CSRF
+        // Disable CORS
         // Authorise
         http
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(c -> c
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -133,20 +129,5 @@ public class SecurityConfig {
                 .map(UserPrincipal::from)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        var config = new CorsConfiguration();
-
-        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
-        return source;
-    }
-
 
 }

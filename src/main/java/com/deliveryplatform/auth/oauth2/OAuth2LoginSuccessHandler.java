@@ -1,19 +1,15 @@
 package com.deliveryplatform.auth.oauth2;
 
-import com.deliveryplatform.auth.AuthProvider;
 import com.deliveryplatform.auth.AuthResponse;
 import com.deliveryplatform.auth.CookieService;
 import com.deliveryplatform.auth.jwt.JwtConfig;
 import com.deliveryplatform.auth.jwt.JwtService;
 import com.deliveryplatform.common.caching.CachingService;
-import com.deliveryplatform.profiles.Profile;
 import com.deliveryplatform.users.*;
-import com.deliveryplatform.users.events.UserCreatedEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;

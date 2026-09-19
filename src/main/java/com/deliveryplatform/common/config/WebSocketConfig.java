@@ -1,6 +1,5 @@
 package com.deliveryplatform.common.config;
 
-import com.deliveryplatform.auth.CorsProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -15,7 +14,6 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final CorsProperties corsProperties;
     private final WebSocketAuthInterceptor webSocketAuthInterceptor;
 
     @Override
@@ -28,7 +26,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins(corsProperties.getAllowedOrigins().toArray(String[]::new))
                 .addInterceptors(new HttpSessionHandshakeInterceptor(), webSocketAuthInterceptor)
                 .withSockJS();
     }

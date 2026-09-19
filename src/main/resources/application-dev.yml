@@ -18,11 +18,3 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-duration: 120
   refresh-token-duration: 604800
-
-cors:
-  allowed-origins:
-    - ${front-end.base-url}
-    - http://localhost:5173
-    - http://localhost:3000
-    - http://localhost:8080
-    - http://localhost:80
