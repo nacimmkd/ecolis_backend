@@ -4,7 +4,7 @@ import com.deliveryplatform.addresses.AddressService;
 import com.deliveryplatform.bookings.Booking;
 import com.deliveryplatform.bookings.BookingRepository;
 import com.deliveryplatform.parcels.dto.ParcelBookingDto;
-import com.deliveryplatform.parcels.dto.*;
+import com.deliveryplatform .parcels.dto.*;
 import com.deliveryplatform.parcels.exceptions.ParcelErrorCode;
 import com.deliveryplatform.parcels.exceptions.ParcelException;
 import com.deliveryplatform.storage.MediaType;
